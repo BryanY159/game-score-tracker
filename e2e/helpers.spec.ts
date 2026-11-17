@@ -27,3 +27,8 @@ test('flags a horizontal page scroll', async ({ page }) => {
 test('flags a small tap target', async ({ page }) => {
   expect(await run(page, '<button style="width:30px;height:30px">+</button>')).toContain('tap target 30×30');
 });
+test('accepts a two-line row button (name over subtitle)', async ({ page }) => {
+  expect(
+    await run(page, '<button style="display:flex;flex-direction:column;height:68px;width:200px"><span>Alex</span><span>4 games</span></button>'),
+  ).toBe('');
+});

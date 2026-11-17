@@ -21,19 +21,22 @@ export async function expectLayoutClean(page: Page) {
       const s = getComputedStyle(el);
       return r.width > 0 && r.height > 0 && s.visibility !== 'hidden' && s.display !== 'none';
     };
+    /** Most lines any single text run inside `el` occupies. Stacked runs (name over subtitle) are fine. */
     const lineCount = (el: Element) => {
-      const tops = new Set<number>();
+      let max = 0;
       const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
       let n: Node | null;
       while ((n = walker.nextNode())) {
         if (!n.textContent?.trim()) continue;
         const range = document.createRange();
         range.selectNodeContents(n);
+        const tops = new Set<number>();
         for (const rect of Array.from(range.getClientRects())) {
           if (rect.width > 0) tops.add(Math.round(rect.top / 4));
         }
+        max = Math.max(max, tops.size);
       }
-      return tops.size;
+      return max;
     };
 
     const labels = document.querySelectorAll('[data-nowrap], button, a, [role="button"], nav span');
