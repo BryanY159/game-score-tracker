@@ -74,6 +74,7 @@ Each profile has a name, an emoji, a color from the profile palette, and a hide-
 - AC-3: Play continues until one player remains. That player is placed last automatically.
 - AC-4: The game saves the finishing order, each player's pawns home, and the game length.
 - AC-5: The main toolbar button says "See results". It's enabled once the finishing order is complete.
+- AC-6: Each player also has a "Triple doublets" stepper (0 or more) next to pawns home, for the penalty for rolling doubles three times in a row. It works before and after the player is placed, Undo reverses it, and the count is saved with the game and shown in game detail and the History editor. Pawns home moves one step at a time; the triple doublets number can also be typed.
 
 ### FR-7 Ticket to Ride
 
@@ -164,7 +165,7 @@ Each profile has a name, an emoji, a color from the profile palette, and a hide-
 
 ### FR-18 Number entry
 
-- AC-1: Small counts (pawns home, Dutch Blitz pile cards) use +/− steppers.
+- AC-1: Small counts (pawns home, triple doublets, Dutch Blitz pile cards) use +/− steppers. A single tap changes the value by exactly 1. Pressing and holding + or − repeats, starting after about 400 ms and speeding up while held. It stops the moment the finger lifts, slides off, or the value hits its limit. Steppers turn off iOS text selection and the long-press menu.
 - AC-2: Open-ended numbers (Flip 7 score, net worth, ticket values) use a custom keypad with game keys: Next player, Bust, and Flip 7!
 - AC-3: Tapping a number directly opens the iOS number pad instead.
 
@@ -196,11 +197,11 @@ Each profile has a name, an emoji, a color from the profile palette, and a hide-
 | TurnLog | matchId, entries (player, action, routeLength) | Ticket to Ride only, deleted when the game is finalized |
 | Settings | statsMinGames, backupReminder, lastBackupAt | single record |
 
-`Match.log` is the per-game entry log for placement games (Parcheesi pawn steps; Monopoly bankruptcies and the end-early entry, which holds each remaining player's net worth, the final order and how a tie for first was settled), oldest first. The current state is replayed from it, so Undo (FR-5 AC-4) drops the last entry. Rounds games use the Round table instead: the round being entered is saved as an unconfirmed Round on every change, and Confirm Round marks it confirmed. Their `Match.log` holds only a tie decision (FR-11 AC-3), which applies while the number of confirmed rounds is unchanged, so editing the rounds asks again if a tie remains. Ticket to Ride uses TurnLog.
+`Match.log` is the per-game entry log for placement games (Parcheesi pawn steps and triple doublets; Monopoly bankruptcies and the end-early entry, which holds each remaining player's net worth, the final order and how a tie for first was settled), oldest first. The current state is replayed from it, so Undo (FR-5 AC-4) drops the last entry. Rounds games use the Round table instead: the round being entered is saved as an unconfirmed Round on every change, and Confirm Round marks it confirmed. Their `Match.log` holds only a tie decision (FR-11 AC-3), which applies while the number of confirmed rounds is unchanged, so editing the rounds asks again if a tie remains. Ticket to Ride uses TurnLog.
 
 What goes in `details` depends on the game:
 
-- Parcheesi: `pawnsHome`
+- Parcheesi: `pawnsHome`, `tripleDoublets`
 - Ticket to Ride: `routePoints`, `tickets[]` (value, completed), `longestPath`
 - Flip 7: `flip7Count`
 - Monopoly: `netWorth`, `bankruptAt`

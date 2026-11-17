@@ -386,6 +386,9 @@ Also adds the Settings "Merge a file" button (moved from M4).
 
 ## 6. Changes made during batch 1 (M0–M4)
 
+*Batch 2 review (after M7), owner request:* a small PR before M8 adds Parcheesi triple doublets (spec FR-6 AC-6) and hold-to-repeat on every stepper (FR-18 AC-1). M10 adds the matching Parcheesi stat to FR-14 AC-5.
+
+
 - **Screenshots:** saved as CI artifacts for review, not compared against stored reference images (§3).
 - **Test font:** Inter stands in for SF Pro Rounded in tests, so wrapping checks are the same on every machine (§3, R-3).
 - **Tokens:** color tokens live in the stylesheet, `src/styles/index.css` (Tailwind v4 CSS-first config).

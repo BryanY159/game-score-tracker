@@ -62,8 +62,27 @@ describe('Parcheesi results', () => {
       { matchPlayerId: 'm2', playerId: 'b' },
     ];
     expect(parcheesiResults(seats, step('b', 1, 4))).toEqual([
-      { matchPlayerId: 'm1', placement: 2, finalScore: null, marginPastTarget: null, isWinner: false, details: { pawnsHome: 0 } },
-      { matchPlayerId: 'm2', placement: 1, finalScore: null, marginPastTarget: null, isWinner: true, details: { pawnsHome: 4 } },
+      { matchPlayerId: 'm1', placement: 2, finalScore: null, marginPastTarget: null, isWinner: false, details: { pawnsHome: 0, tripleDoublets: 0 } },
+      { matchPlayerId: 'm2', placement: 1, finalScore: null, marginPastTarget: null, isWinner: true, details: { pawnsHome: 4, tripleDoublets: 0 } },
     ]);
+  });
+});
+
+describe('triple doublets (FR-6 AC-6)', () => {
+  const td = (playerId: string, delta: number): MatchEvent => ({ type: 'tripleDoublets', playerId, delta, at: 0 });
+  it('counts per player, never below 0, and undo drops the last entry', () => {
+    const log = [td('a', 1), td('a', 1), td('b', -1), td('c', 3)];
+    const s = parcheesiState(seats, log);
+    expect(s.players.map((p) => p.tripleDoublets)).toEqual([2, 0, 3, 0]);
+    expect(parcheesiState(seats, log.slice(0, -1)).players[2]!.tripleDoublets).toBe(0);
+  });
+  it('can still change after a player is placed, and does not affect places', () => {
+    const s = parcheesiState(seats, [...step('a', 1, 4), td('a', 1)]);
+    expect(s.players[0]).toMatchObject({ placement: 1, tripleDoublets: 1 });
+  });
+  it('is saved in details', async () => {
+    const { parcheesiResults } = await import('./scoring');
+    const r = parcheesiResults([{ matchPlayerId: 'm', playerId: 'a' }, { matchPlayerId: 'n', playerId: 'b' }], [td('a', 2), ...step('b', 1, 4)]);
+    expect(r[0]!.details).toEqual({ pawnsHome: 0, tripleDoublets: 2 });
   });
 });

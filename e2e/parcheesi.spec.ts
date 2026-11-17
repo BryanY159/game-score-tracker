@@ -22,13 +22,13 @@ test('play a full Parcheesi game', async ({ page }) => {
   await start.click();
 
   await expect(page.getByRole('heading', { name: 'Parcheesi' })).toBeVisible();
-  const add = (name: string) => page.getByRole('button', { name: `Add a pawn home for ${name}` });
+  const add = (name: string) => page.getByRole('button', { name: `More pawns home for ${name}` });
   for (let i = 0; i < 4; i++) await add('Sam').click();
   await expect(page.getByText('1st')).toBeVisible();
   await add('Alex').click();
   // Undo the last entry (FR-5 AC-4).
   await page.getByRole('button', { name: 'Undo' }).click();
-  await expect(page.getByLabel('0 pawns home').first()).toBeVisible();
+  await expect(page.getByLabel('pawns home for Alex', { exact: true })).toHaveText('0');
   await add('Pat').click();
   for (let i = 0; i < 4; i++) await add('Alex').click();
 
@@ -64,8 +64,8 @@ test('save happens on every tap: a reload mid-game keeps the state (R-7)', async
   await page.getByRole('button', { name: 'Alex', exact: true }).click();
   await page.getByRole('button', { name: 'Sam', exact: true }).click();
   await page.getByRole('button', { name: 'Start game' }).click();
-  await page.getByRole('button', { name: 'Add a pawn home for Sam' }).click();
-  await page.getByRole('button', { name: 'Add a pawn home for Sam' }).click();
+  await page.getByRole('button', { name: 'More pawns home for Sam' }).click();
+  await page.getByRole('button', { name: 'More pawns home for Sam' }).click();
   // The screen reads from the database, so seeing 2 means it's stored.
   await expect(page.getByLabel('2 of 4 pawns home')).toBeVisible();
   await page.goto('./#/');
@@ -81,11 +81,11 @@ test('cancel asks first, then discards the game (FR-5 AC-3)', async ({ page }) =
   await page.getByRole('button', { name: 'Alex', exact: true }).click();
   await page.getByRole('button', { name: 'Sam', exact: true }).click();
   await page.getByRole('button', { name: 'Start game' }).click();
-  await page.getByRole('button', { name: 'More' }).click();
+  await page.getByRole('button', { name: 'More', exact: true }).click();
   await page.getByRole('button', { name: 'Cancel game' }).click();
   await page.getByRole('button', { name: 'Keep' }).click();
   await expect(page.getByRole('heading', { name: 'Parcheesi' })).toBeVisible();
-  await page.getByRole('button', { name: 'More' }).click();
+  await page.getByRole('button', { name: 'More', exact: true }).click();
   await page.getByRole('button', { name: 'Cancel game' }).click();
   await page.getByRole('button', { name: 'Discard' }).click();
   await expect(page.getByRole('heading', { name: 'Game Night' })).toBeVisible();

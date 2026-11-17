@@ -5,6 +5,7 @@ export const PAWNS = 4;
 export interface ParcheesiPlayerState {
   playerId: string;
   pawnsHome: number;
+  tripleDoublets: number;
   /** Finishing place, or null while still playing. */
   placement: number | null;
 }
@@ -21,10 +22,15 @@ export interface ParcheesiState {
  * Steps outside 0–4, or on a placed player, are ignored.
  */
 export function parcheesiState(seats: string[], log: MatchEvent[]): ParcheesiState {
-  const players = new Map(seats.map((id) => [id, { playerId: id, pawnsHome: 0, placement: null as number | null }]));
+  const players = new Map(seats.map((id) => [id, { playerId: id, pawnsHome: 0, tripleDoublets: 0, placement: null as number | null }]));
   let nextPlace = 1;
 
   for (const e of log) {
+    if (e.type === 'tripleDoublets') {
+      const p = players.get(e.playerId);
+      if (p) p.tripleDoublets = Math.max(0, p.tripleDoublets + e.delta);
+      continue;
+    }
     if (e.type !== 'pawns') continue;
     const p = players.get(e.playerId);
     if (!p || p.placement !== null) continue;
@@ -62,7 +68,14 @@ export function completedAt(log: MatchEvent[]): number | null {
 export function parcheesiResults(
   seats: { matchPlayerId: string; playerId: string }[],
   log: MatchEvent[],
-): { matchPlayerId: string; placement: number | null; finalScore: null; marginPastTarget: null; isWinner: boolean; details: { pawnsHome: number } }[] {
+): {
+  matchPlayerId: string;
+  placement: number | null;
+  finalScore: null;
+  marginPastTarget: null;
+  isWinner: boolean;
+  details: { pawnsHome: number; tripleDoublets: number };
+}[] {
   const state = parcheesiState(
     seats.map((s) => s.playerId),
     log,
@@ -75,7 +88,7 @@ export function parcheesiResults(
       finalScore: null,
       marginPastTarget: null,
       isWinner: p.placement === 1,
-      details: { pawnsHome: p.pawnsHome },
+      details: { pawnsHome: p.pawnsHome, tripleDoublets: p.tripleDoublets },
     };
   });
 }

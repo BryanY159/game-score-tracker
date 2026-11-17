@@ -83,7 +83,7 @@ const SCREENS: Screen[] = [
     ready: 'Parcheesi',
     seed: PARCHEESI_MID,
     act: async (page) => {
-      await page.getByRole('button', { name: 'More' }).click();
+      await page.getByRole('button', { name: 'More', exact: true }).click();
       await page.getByRole('dialog', { name: 'Game options' }).waitFor();
     },
   },
