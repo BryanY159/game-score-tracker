@@ -2,7 +2,7 @@
 
 - **Source:** `docs/spec.md` (approved 2026-11-16), `docs/intent.md`, `docs/mockup/*.dc.html`
 - **Date:** 2026-11-17
-- **Status:** Reviewed by owner 2026-11-17. Decisions A-1, A-2, A-4, A-5, A-6, A-12 and R-1 settled (marked ✅).
+- **Status:** Approved by owner, 2026-11-17. Decisions A-1 to A-6, A-12 and R-1 are settled (marked ✅). Every other item in §1 uses its proposed default.
 
 ## 0. How to read this plan
 
@@ -20,9 +20,9 @@ Each issue has a proposed default. I'll build to the default unless the owner ov
 
 | ID | Issue | Proposed default | Blocks |
 | --- | --- | --- | --- |
-| A-1 ✅ | **The neutral and dark-mode tokens are missing from §6.** CLAUDE.md says "tokens from spec §6 only", but §6 only says "white / near-black" and "neutral charcoal". The mockups use `#1F2430` (charcoal text and buttons), `#5F6470` (secondary text), `#E4E6EA` (borders), `#F2F3F5` (surfaces) and `#1E3A8A` (link hover). The mockups are light-only, so no dark values are given. | Add a neutral token table to §6 using the mockup values, plus dark equivalents (bg `#0B0B0D`, surface `#1C1C1E`, border `#2C2C2E`, text `#F2F3F5`, secondary `#A1A1AA`, charcoal button `#3A3A3C`). **Approved.** The table is added to the spec in the M0 PR. | M0 |
-| A-2 ✅ | **The ×2 card in Flip 7 (C-7).** | **Confirmed:** ×2 doubles the number cards only, not the modifiers. | M8 |
-| A-3 | **Official tie rules for Flip 7 and Dutch Blitz (C-4)** are unconfirmed, yet FR-11 AC-1 already defines margin → total. | Use FR-11 AC-1 as written, then send any remaining tie to the tie screen (AC-3). Treat C-4 as resolved by FR-11 unless the rulebook adds something. | M7 |
+| A-1 ✅ | **The neutral and dark-mode tokens are missing from §6.** CLAUDE.md says "tokens from spec §6 only", but §6 only says "white / near-black" and "neutral charcoal". The mockups use `#1F2430` (charcoal text and buttons), `#5F6470` (secondary text), `#E4E6EA` (borders), `#F2F3F5` (surfaces) and `#1E3A8A` (link hover). The mockups are light-only, so no dark values are given. | Add a neutral token table to §6 using the mockup values, plus dark equivalents (bg `#0B0B0D`, surface `#1C1C1E`, border `#2C2C2E`, text `#F2F3F5`, secondary `#A1A1AA`, charcoal button `#3A3A3C`). **Approved.** The table is now in spec §6. | M0 |
+| A-2 ✅ | **The ×2 card in Flip 7 (C-7).** | **Confirmed** by the publisher's FAQ: ×2 doubles the number cards only, not the modifiers. No constant, and tests cover only this reading. | M8 |
+| A-3 ✅ | **Official tie rules for Flip 7 and Dutch Blitz (C-4).** | **Resolved:** Dutch Blitz's official rule (if more than one player reaches 75 in the same hand, the highest score wins) matches FR-11 AC-1. FR-11 AC-1 is its generalization for handicap targets. Flip 7 uses FR-11 AC-1 as written. An exact tie goes to the tie screen (AC-3). | M7 |
 | A-4 ✅ | **"Fewest rounds to reach 200" (FR-8 AC-5, FR-14)** is unclear under handicap targets. Does it mean a total of 200, or the player's own target? | Count it only for players whose target was exactly 200, grouped by player count. Use the round in which their total first reached 200 or more. **Approved.** | M8, M10 |
 | A-5 ✅ | **"Overall win comparison across all games" (FR-14 AC-1)** has no formula. Pooled win % lets the most-played game dominate, which goes against the intent ("fair, weighted by games played"). | **Approved:** the mean of the player's per-game win %, counting only games where they've reached the minimum. No "wins vs expected" figure in Phase 1. | M10 |
 | A-6 ✅ | **How shared wins count in stats** isn't defined. | A shared win among k players counts as 1/k of a win for each of them in win %. History shows "Shared win". **Approved.** | M2, M10 |
@@ -138,7 +138,7 @@ Principles: scoring and stats are **pure functions** tested in Vitest. Screens a
 7. Vitest and Playwright config, the `noWrap` helper, and the seed hook.
 8. GitHub Actions `ci.yml` and `deploy.yml`, plus the Pages setup.
 
-**Files:** `package.json`, `vite.config.ts`, `tailwind.config.ts`, `postcss.config.js`, `tsconfig*.json`, `index.html`, `public/icons/*`, `src/main.tsx`, `src/App.tsx`, `src/styles/tokens.css`, `src/db/schema.ts`, `src/db/record.ts`, `src/db/repos/settings.ts`, `src/components/{Button,BottomToolbar,TabBar,PlayerPill,NoWrap}.tsx`, `src/screens/{Home,History,Stats,Players}.tsx` (empty states), `vitest.config.ts`, `playwright.config.ts`, `e2e/helpers/noWrap.ts`, `e2e/screens.spec.ts`, `.github/workflows/{ci,deploy}.yml`, `.gitignore`, `docs/spec.md` (A-1 token table).
+**Files:** `package.json`, `vite.config.ts`, `tailwind.config.ts`, `postcss.config.js`, `tsconfig*.json`, `index.html`, `public/icons/*`, `src/main.tsx`, `src/App.tsx`, `src/styles/tokens.css`, `src/db/schema.ts`, `src/db/record.ts`, `src/db/repos/settings.ts`, `src/components/{Button,BottomToolbar,TabBar,PlayerPill,NoWrap}.tsx`, `src/screens/{Home,History,Stats,Players}.tsx` (empty states), `vitest.config.ts`, `playwright.config.ts`, `e2e/helpers/noWrap.ts`, `e2e/screens.spec.ts`, `.github/workflows/{ci,deploy}.yml`, `.gitignore`, `docs/spec.md` (only if token values change during build).
 
 **Tests:**
 - Vitest: `record.test.ts` (uuid and timestamps set, `touch` bumps `updatedAt`, `softDelete` sets `deletedAt`). `schema.test.ts` (opens with fake-indexeddb, all stores exist).
