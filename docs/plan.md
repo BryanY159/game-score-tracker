@@ -341,6 +341,8 @@ Also adds the generic `TieScreen` (FR-11 AC-3), used first for a Monopoly net-wo
 
 **Files:** `src/domain/stats/{core,eligibility,headToHead,perGame}.ts`, `src/screens/{Stats,Players}.tsx`, `src/components/charts/WinTrend.tsx`.
 
+*Built (M10):* `domain/stats.ts` holds every figure as a pure function over plain game records (`db/repos/stats.ts` loads them). Recharts is lazy-loaded in its own chunk, and Workbox still precaches it for offline use. The chip rows on Stats and History wrap rather than scroll sideways, so no chip sits off screen.
+
 **Tests:**
 - Vitest, over a synthetic history:
   - Rates, not totals. Shared wins count 1/k.
