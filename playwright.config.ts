@@ -40,8 +40,8 @@ export default defineConfig({
   projects: [
     ...screenProjects,
     {
-      name: 'pwa',
-      testMatch: /(pwa|helpers)\.spec\.ts/,
+      name: 'flows',
+      testMatch: /(pwa|helpers|players)\.spec\.ts/,
       use: { browserName: 'chromium', viewport: VIEWPORTS['iphone-390'] },
     },
   ],
