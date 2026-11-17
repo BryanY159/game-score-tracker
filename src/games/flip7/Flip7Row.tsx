@@ -1,4 +1,6 @@
 import { NoWrap } from '../../components/NoWrap';
+import { CountUp } from '../../components/CountUp';
+import { CrownIcon } from '../../components/Icons';
 import { Avatar } from '../../components/PlayerPill';
 import type { Seat } from '../../db/repos/matches';
 import { COLOR_HEX } from '../../domain/colors';
@@ -16,7 +18,12 @@ export function Flip7Row({
   compact,
   onSelect,
   disabled,
+  leader = false,
+  crownPop = false,
 }: {
+  /** The current leader gets a crown (FR-19 AC-2); it pops in when the lead changes. */
+  leader?: boolean;
+  crownPop?: boolean;
   seat: Seat;
   raw: Flip7Raw;
   total: number;
@@ -46,16 +53,21 @@ export function Flip7Row({
     >
       <Avatar emoji={seat.player.emoji} size={compact ? 34 : 40} />
       <div className="flex min-w-0 flex-1 flex-col leading-[1.15]">
-        <NoWrap truncate className="text-[17px] font-bold">
-          {name}
-        </NoWrap>
+        <span className="flex min-w-0 items-center gap-1.5">
+          <NoWrap truncate className="text-[17px] font-bold">
+            {name}
+          </NoWrap>
+          {leader && (
+            <span className={`shrink-0 ${crownPop ? 'crown-pop' : ''}`}>
+              <CrownIcon width={16} height={16} role="img" aria-label="Leader" />
+            </span>
+          )}
+        </span>
         {sub && <NoWrap className="text-[13px]">{sub}</NoWrap>}
       </div>
       {hasFlip7(raw) && <NoWrap className="text-[13px] font-extrabold">Flip 7</NoWrap>}
       <NoWrap className="tabular rounded-xl bg-white/22 px-2.5 py-0.5 text-[15px] font-bold">{entry}</NoWrap>
-      <NoWrap className="tabular min-w-10 text-right text-[22px] font-extrabold" aria-label={`${name} total`}>
-        {total}
-      </NoWrap>
+      <CountUp value={total} data-nowrap="" className="tabular min-w-10 text-right text-[22px] font-extrabold whitespace-nowrap" aria-label={`${name} total`} />
     </button>
   );
 }

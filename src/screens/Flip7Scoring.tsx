@@ -14,7 +14,10 @@ import { confirmDraft, listRounds, reopenLastRound, saveDraft, updateRound } fro
 import type { Round } from '../domain/types';
 import { CardsPad } from '../games/flip7/CardsPad';
 import { Flip7Row } from '../games/flip7/Flip7Row';
-import { blankRaw, dealerFor, flip7Entry, flip7Score, isEntered, rawOf, tapNumber, type EntryMode, type Flip7Raw } from '../games/flip7/scoring';
+import { blankRaw, dealerFor, flip7Entry, flip7Score, hasFlip7, isEntered, rawOf, tapNumber, type EntryMode, type Flip7Raw } from '../games/flip7/scoring';
+import { useCelebrate } from '../components/Celebration';
+import { useStandings } from '../hooks/useStandings';
+import { useFlip } from '../hooks/useFlip';
 import { RoundEditor } from '../games/RoundEditor';
 import { RoundsSheet } from '../games/dutchBlitz/RoundsSheets';
 import { outcomeFor } from '../games/outcome';
@@ -51,7 +54,16 @@ export function Flip7Scoring({ bundle }: { bundle: MatchBundle }) {
   const blank = ids.every((id) => !isEntered(raws[id]!));
   const over = outcome.complete;
 
+  const celebrate = useCelebrate();
+  const standing = useStandings(
+    seats.map((s, i) => ({ playerId: s.player.id, name: s.player.name, total: totals[s.player.id] ?? 0, target: targets[i]! })),
+    confirmedCount,
+  );
+  const listRef = useFlip<HTMLDivElement>(standing.order.join());
+
   function set(playerId: string, raw: Flip7Raw) {
+    // A Flip 7 gets a mini celebration (FR-19 AC-2).
+    if (hasFlip7(raw) && !hasFlip7(raws[playerId]!)) celebrate('flip7', seats.find((s) => s.player.id === playerId)!.player.name);
     const next = { ...raws, [playerId]: raw };
     setRaws(next);
     void saveDraft(
@@ -136,10 +148,15 @@ export function Flip7Scoring({ bundle }: { bundle: MatchBundle }) {
           <NoWrap>Player{handicap ? ' · target' : ''}</NoWrap>
           <NoWrap>This round · Total</NoWrap>
         </div>
-        <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
-          {seats.map((s, i) => (
-            <div key={s.mp.id} id={`flip7-row-${s.player.id}`}>
+        <div ref={listRef} className="grid grid-cols-1 gap-2 md:grid-cols-2">
+          {standing.order.map((id) => {
+            const i = ids.indexOf(id);
+            const s = seats[i]!;
+            return (
+            <div key={s.mp.id} id={`flip7-row-${s.player.id}`} data-flip-key={s.player.id}>
               <Flip7Row
+                leader={standing.leaders.includes(s.player.id)}
+                crownPop={standing.popFor === s.player.id}
                 seat={s}
                 raw={raws[s.player.id]!}
                 total={totals[s.player.id] ?? 0}
@@ -152,7 +169,8 @@ export function Flip7Scoring({ bundle }: { bundle: MatchBundle }) {
                 onSelect={() => setActive(s.player.id)}
               />
             </div>
-          ))}
+            );
+          })}
         </div>
       </GameBody>
 

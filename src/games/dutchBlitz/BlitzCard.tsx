@@ -1,5 +1,7 @@
 import { CountStepper } from '../../components/CountStepper';
 import { NoWrap } from '../../components/NoWrap';
+import { CountUp } from '../../components/CountUp';
+import { CrownIcon } from '../../components/Icons';
 import { Avatar } from '../../components/PlayerPill';
 import type { Seat } from '../../db/repos/matches';
 import { COLOR_HEX } from '../../domain/colors';
@@ -15,7 +17,11 @@ export function BlitzCard({
   showTarget,
   onChange,
   disabled = false,
+  leader = false,
+  crownPop = false,
 }: {
+  leader?: boolean;
+  crownPop?: boolean;
   seat: Seat;
   input: BlitzInput;
   total: number | null;
@@ -37,6 +43,11 @@ export function BlitzCard({
           <NoWrap truncate className="text-base font-bold">
             {name}
           </NoWrap>
+          {leader && (
+            <span className={`shrink-0 self-center ${crownPop ? 'crown-pop' : ''}`}>
+              <CrownIcon width={15} height={15} role="img" aria-label="Leader" />
+            </span>
+          )}
           {blitzed ? (
             <NoWrap className="text-[13px] font-bold">Blitz!</NoWrap>
           ) : showTarget ? (
@@ -47,9 +58,7 @@ export function BlitzCard({
           {signed(blitzRoundScore(input))}
         </NoWrap>
         {total !== null && (
-          <NoWrap className="tabular min-w-10 text-right text-[22px] font-extrabold" aria-label={`${name} total`}>
-            {total}
-          </NoWrap>
+          <CountUp value={total} data-nowrap="" className="tabular min-w-10 text-right text-[22px] font-extrabold whitespace-nowrap" aria-label={`${name} total`} />
         )}
       </div>
       <div className="grid grid-cols-2 gap-1.5">

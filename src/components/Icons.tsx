@@ -10,7 +10,8 @@ const base = (p: P) => ({
   strokeWidth: 2,
   strokeLinecap: 'round' as const,
   strokeLinejoin: 'round' as const,
-  'aria-hidden': true,
+  // Decorative unless given a label (then it's read out, e.g. "Leader", "Winner").
+  'aria-hidden': p['aria-label'] ? undefined : true,
   ...p,
 });
 

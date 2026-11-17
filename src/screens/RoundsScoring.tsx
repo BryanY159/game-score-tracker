@@ -13,6 +13,8 @@ import { RoundEditSheet, RoundsSheet } from '../games/dutchBlitz/RoundsSheets';
 import { blitzEntry, blitzInput, clampInput, totals, type BlitzInput } from '../games/dutchBlitz/scoring';
 import { outcomeFor } from '../games/outcome';
 import { requireGame } from '../games/registry';
+import { useStandings } from '../hooks/useStandings';
+import { useFlip } from '../hooks/useFlip';
 
 /** Rounds template (FR-9 Dutch Blitz). */
 export function RoundsScoring({ bundle }: { bundle: MatchBundle }) {
@@ -45,6 +47,11 @@ export function RoundsScoring({ bundle }: { bundle: MatchBundle }) {
   };
   const targets = seats.map((s) => s.mp.target ?? game.defaultTarget ?? 0);
   const handicap = new Set(targets).size > 1;
+  const standing = useStandings(
+    seats.map((s, i) => ({ playerId: s.player.id, name: s.player.name, total: tot[s.player.id] ?? 0, target: targets[i]! })),
+    confirmedCount,
+  );
+  const listRef = useFlip<HTMLDivElement>(standing.order.join());
 
   // Confirming the round that reaches a target goes to Results (FR-9 AC-3). Editing a past
   // round that ends the game shows the Game over banner instead of jumping away.
@@ -87,10 +94,15 @@ export function RoundsScoring({ bundle }: { bundle: MatchBundle }) {
             Game over: a player reached their target. Edit a round or Undo to keep playing.
           </p>
         )}
-        <div className="grid grid-cols-1 gap-2.5 md:grid-cols-2">
-          {seats.map((s, i) => (
+        <div ref={listRef} className="grid grid-cols-1 gap-2.5 md:grid-cols-2">
+          {standing.order.map((id) => {
+            const i = seats.findIndex((x) => x.player.id === id);
+            const s = seats[i]!;
+            return (
+            <div key={s.mp.id} data-flip-key={s.player.id}>
             <BlitzCard
-              key={s.mp.id}
+              leader={standing.leaders.includes(s.player.id)}
+              crownPop={standing.popFor === s.player.id}
               seat={s}
               input={inputs[s.player.id]!}
               total={tot[s.player.id] ?? 0}
@@ -99,7 +111,9 @@ export function RoundsScoring({ bundle }: { bundle: MatchBundle }) {
               disabled={paused || outcome.complete}
               onChange={(next) => change(s.player.id, next)}
             />
-          ))}
+            </div>
+            );
+          })}
         </div>
       </GameBody>
       <BottomToolbar>

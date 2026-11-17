@@ -52,3 +52,6 @@ export const TTR_FIVE = ttrGame([...four, { player: CASEY, color: 'green' }], [6
 
 /** Same play as TTR_TIE, no tickets entered yet: for the ticket tie-break flow. */
 export const TTR_TIEBREAK = ttrGame([four[0]!, four[1]!], [...Array.from({ length: 7 }, () => [6, 6] as Act[]).flat(), 1, 1, 'd', 'd']);
+
+/** One turn before the final round: Alex has 3 trains and it's Alex's turn. */
+export const TTR_BEFORE_FINAL = ttrGame(four, toTwo.slice(0, -2).concat(['d']));

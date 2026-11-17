@@ -100,3 +100,45 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* FR-19 motion. All of it is switched off by the Reduce Motion rule above. */
+@keyframes celebrate-pop {
+  0% { transform: scale(0.6); opacity: 0; }
+  18% { transform: scale(1.08); opacity: 1; }
+  30% { transform: scale(1); }
+  82% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-8px); }
+}
+.celebrate-pop {
+  animation: celebrate-pop 1.6s ease-out both;
+}
+@keyframes celebrate-burst {
+  0% { transform: translate(-50%, -50%) rotate(var(--a)) translateY(0) scale(0.4); opacity: 1; }
+  100% { transform: translate(-50%, -50%) rotate(var(--a)) translateY(-90px) scale(1); opacity: 0; }
+}
+.celebrate-burst {
+  animation: celebrate-burst 0.9s ease-out both;
+}
+@keyframes crown-pop {
+  0% { transform: scale(0) rotate(-30deg); }
+  50% { transform: scale(1.5) rotate(10deg); }
+  100% { transform: scale(1) rotate(0); }
+}
+.crown-pop {
+  animation: crown-pop 0.7s ease-out both;
+}
+@keyframes podium-rise {
+  from { transform: scaleY(0); }
+  to { transform: scaleY(1); }
+}
+.podium-rise {
+  transform-origin: bottom;
+  animation: podium-rise 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+.fade-up {
+  animation: fade-up 0.4s ease-out both;
+}

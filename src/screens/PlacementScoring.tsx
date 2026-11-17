@@ -15,6 +15,7 @@ import { EndEarly } from '../games/monopoly/EndEarly';
 import { monopolyState } from '../games/monopoly/scoring';
 import { outcomeFor } from '../games/outcome';
 import { requireGame } from '../games/registry';
+import { useCelebrate } from '../components/Celebration';
 import { RoundsScoring } from './RoundsScoring';
 import { Flip7Scoring } from './Flip7Scoring';
 import { TtrTurns } from './TtrTurns';
@@ -54,6 +55,7 @@ function PlacementScoring({ bundle }: { bundle: MatchBundle }) {
   const paused = match.pausedAt !== null;
   const outcome = outcomeFor(bundle);
   const [ending, setEnding] = useState(false);
+  const celebrate = useCelebrate();
   const ids = seats.map((s) => s.player.id);
   const monopoly = match.gameKey === 'monopoly' ? monopolyState(ids, match.log) : null;
 
@@ -97,14 +99,21 @@ function PlacementScoring({ bundle }: { bundle: MatchBundle }) {
             seats={seats}
             state={monopoly}
             disabled={paused}
-            onBankrupt={(playerId) => appendEvent(db, match.id, { type: 'bankrupt', playerId })}
+            onBankrupt={(playerId) => {
+              celebrate('bankrupt', seats.find((s) => s.player.id === playerId)!.player.name);
+              void appendEvent(db, match.id, { type: 'bankrupt', playerId });
+            }}
           />
         ) : (
           <ParcheesiBoard
             seats={seats}
             state={parcheesiState(ids, match.log)}
             disabled={paused}
-            onPawns={(playerId, delta) => appendEvent(db, match.id, { type: 'pawns', playerId, delta })}
+            onPawns={(playerId, delta) => {
+              const p = parcheesiState(ids, match.log).players.find((x) => x.playerId === playerId)!;
+              if (delta === 1 && p.pawnsHome === 3) celebrate('allPawnsHome', seats.find((s) => s.player.id === playerId)!.player.name);
+              void appendEvent(db, match.id, { type: 'pawns', playerId, delta });
+            }}
             onTripleDoublets={(playerId, delta) => appendEvent(db, match.id, { type: 'tripleDoublets', playerId, delta })}
           />
         )}

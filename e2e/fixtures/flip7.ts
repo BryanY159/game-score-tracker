@@ -86,3 +86,6 @@ export const FLIP7_TIE = flip7Game(
   ],
   null,
 );
+
+/** Alex leads Sam after round 1 (for the lead-change crown). */
+export const FLIP7_LEAD = flip7Game([four[0]!, four[1]!].map((p) => ({ ...p, target: 200 })), [[100, 90]], null);

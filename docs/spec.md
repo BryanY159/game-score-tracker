@@ -193,6 +193,13 @@ Each profile has a name, an emoji, a color from the profile palette, and a hide-
 - AC-1: Scores count up, and player pills slide when the rankings change.
 - AC-2: Mini celebrations play for a Flip 7, a lead change (the new leader briefly gets a crown), the Ticket to Ride final round, and a Monopoly bankruptcy or all four Parcheesi pawns home.
 - AC-3: All animation is turned off when iOS Reduce Motion is on: no CSS transitions or animations at all, and no JavaScript motion.
+- AC-4: How it works:
+  - Totals count up over about half a second in Flip 7, Dutch Blitz and Ticket to Ride.
+  - In Flip 7 and Dutch Blitz, once a round is confirmed, the player rows are shown in standings order (margin past target, then total), so they slide when the ranking changes. Before the first round they're in seat order, and the order never changes while a round is being entered.
+  - The leader has a crown, which pops in when the lead changes.
+  - A celebration is a short message with a burst (about 1.6 s), with a light vibration where the device supports it (spec C-3).
+  - The podium's steps rise from 3rd to 1st, then the crown pops.
+  - With Reduce Motion, celebrations still show their message, without any motion.
 
 ## 4. Non-functional requirements
 
