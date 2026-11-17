@@ -113,7 +113,7 @@ function Side({ k }: { k: GameKey }) {
       disabled={k.disabled}
       className="flex h-12 items-center justify-center rounded-[14px] border-[1.5px] border-text px-1 text-[15px] font-extrabold text-text disabled:opacity-40"
     >
-      <NoWrap truncate>{k.label}</NoWrap>
+      <NoWrap>{k.label}</NoWrap>
     </button>
   );
 }

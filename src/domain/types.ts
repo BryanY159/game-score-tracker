@@ -69,6 +69,16 @@ export type MatchEvent =
       /** How a tie for first was settled (FR-11 AC-3); null when there was none. */
       tie: null | { kind: 'shared'; playerIds: string[] } | { kind: 'picked'; winnerId: string };
       at: number;
+    }
+  | {
+      /**
+       * How a remaining tie for first was settled in a rounds game (FR-11 AC-3).
+       * Valid only while the game still has `rounds` confirmed rounds.
+       */
+      type: 'tieDecision';
+      decision: { kind: 'shared'; playerIds: string[] } | { kind: 'picked'; winnerId: string };
+      rounds: number;
+      at: number;
     };
 
 export interface MatchPlayer extends BaseRecord {
@@ -96,6 +106,8 @@ export interface Round extends BaseRecord {
   number: number;
   dealerPlayerId: string | null;
   entries: RoundEntry[];
+  /** False while the round is being entered (saved on every tap, R-7); true once confirmed. */
+  confirmed: boolean;
 }
 
 export interface TurnLogEntry {

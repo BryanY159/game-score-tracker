@@ -76,10 +76,10 @@ export function Settings() {
         <section className="flex flex-col gap-2">
           <h2 className="m-0 text-[17px] font-extrabold">Backup</h2>
           <div className="flex flex-col gap-0.5 rounded-2xl bg-surface px-3.5 py-3">
-            <NoWrap truncate className="text-[15px] font-bold">
+            <NoWrap className="text-[15px] font-bold">
               {settings.lastBackupAt ? `Last backup ${relativeDay(settings.lastBackupAt)}` : 'Not backed up yet'}
             </NoWrap>
-            <NoWrap truncate className="text-[13px] text-text-2">
+            <NoWrap className="text-[13px] text-text-2">
               {settings.lastBackupAt ? `${plural(status.gamesSince, 'game')} since then · ` : ''}
               {plural(status.totalGames, 'game')} saved
             </NoWrap>
@@ -157,7 +157,7 @@ export function Settings() {
           <div className="flex items-center justify-between gap-3 rounded-2xl border-[1.5px] border-border py-2 pr-2 pl-3.5">
             <div className="flex min-w-0 flex-col">
               <NoWrap className="text-[15px]">Minimum games</NoWrap>
-              <NoWrap truncate className="text-[13px] text-text-2">
+              <NoWrap className="text-[13px] text-text-2">
                 Before a player's stats show
               </NoWrap>
             </div>

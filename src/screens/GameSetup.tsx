@@ -35,6 +35,8 @@ interface SetupPlayer {
   emoji: string;
   profileColor: PlayerColor;
   color: PlayerColor;
+  /** Target games only (FR-3 AC-2): editable per player for handicaps. */
+  target: number | null;
 }
 
 const GUEST_EMOJI = '🙂';
@@ -59,13 +61,14 @@ function Setup({ game }: { game: GameDefinition }) {
   const limits = playerLimits(game, override);
   const normal = playerLimits(game, false);
   const full = lineup.length >= limits.max;
-  const canStart = lineup.length >= limits.min && lineup.length <= limits.max && !starting;
+  const targetsOk = lineup.every((p) => game.defaultTarget === null || (p.target !== null && p.target > 0));
+  const canStart = lineup.length >= limits.min && lineup.length <= limits.max && targetsOk && !starting;
 
   function add(p: { playerId: string | null; name: string; emoji: string; color: PlayerColor }) {
     setLineup((l) => {
       const color = assignColor(p.color, game.pieceColors, l.map((x) => x.color));
       if (!color || l.length >= limits.max) return l;
-      return [...l, { key: p.playerId ?? `guest-${crypto.randomUUID()}`, ...p, profileColor: p.color, color }];
+      return [...l, { key: p.playerId ?? `guest-${crypto.randomUUID()}`, ...p, profileColor: p.color, color, target: game.defaultTarget }];
     });
   }
   const remove = (key: string) => setLineup((l) => l.filter((x) => x.key !== key));
@@ -106,7 +109,13 @@ function Setup({ game }: { game: GameDefinition }) {
     const match = await createMatch(
       db,
       game.key,
-      lineup.map((p) => ({ playerId: p.playerId, guestName: p.playerId ? undefined : p.name, emoji: p.emoji, color: p.color })),
+      lineup.map((p) => ({
+        playerId: p.playerId,
+        guestName: p.playerId ? undefined : p.name,
+        emoji: p.emoji,
+        color: p.color,
+        target: p.target ?? game.defaultTarget,
+      })),
     );
     navigate(`/play/${match.id}`, { replace: true });
   }
@@ -139,7 +148,14 @@ function Setup({ game }: { game: GameDefinition }) {
             <SortableContext items={lineup.map((x) => x.key)} strategy={verticalListSortingStrategy}>
               <ol className="m-0 flex list-none flex-col gap-2 p-0">
                 {lineup.map((p, i) => (
-                  <SortableRow key={p.key} p={p} first={i === 0} onOpen={() => setOptions(p.key)} />
+                  <SortableRow
+                    key={p.key}
+                    p={p}
+                    first={i === 0}
+                    firstLabel={game.template === 'rounds' ? 'Deals first' : 'Goes first'}
+                    onOpen={() => setOptions(p.key)}
+                    onTarget={(target) => update(p.key, { target })}
+                  />
                 ))}
               </ol>
             </SortableContext>
@@ -256,9 +272,21 @@ function Setup({ game }: { game: GameDefinition }) {
   );
 }
 
-function SortableRow({ p, first, onOpen }: { p: SetupPlayer; first: boolean; onOpen: () => void }) {
+function SortableRow({
+  p,
+  first,
+  firstLabel,
+  onOpen,
+  onTarget,
+}: {
+  p: SetupPlayer;
+  first: boolean;
+  firstLabel: string;
+  onOpen: () => void;
+  onTarget: (t: number | null) => void;
+}) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: p.key });
-  const sub = first ? 'Goes first' : p.color !== p.profileColor && p.playerId ? `Color changed: ${COLOR_NAME[p.color].toLowerCase()}` : undefined;
+  const sub = first ? firstLabel : p.color !== p.profileColor && p.playerId ? `Color changed: ${COLOR_NAME[p.color].toLowerCase()}` : undefined;
   return (
     <li
       ref={setNodeRef}
@@ -274,9 +302,31 @@ function SortableRow({ p, first, onOpen }: { p: SetupPlayer; first: boolean; onO
       >
         <GripIcon />
       </button>
-      <button type="button" onClick={onOpen} aria-label={`${p.name} options`} className="min-w-0 flex-1 text-left">
-        <PlayerPill name={p.name} emoji={p.emoji} color={p.color} sub={sub} />
-      </button>
+      <div className="relative min-w-0 flex-1">
+        <button type="button" onClick={onOpen} aria-label={`${p.name} options`} className="w-full text-left">
+          <PlayerPill name={p.name} emoji={p.emoji} color={p.color} sub={sub}>
+            {p.target !== null && <span className="w-[104px] shrink-0" aria-hidden="true" />}
+          </PlayerPill>
+        </button>
+        {p.target !== null && (
+          // Outside the row button so typing doesn't open the options sheet.
+          <label className="absolute top-1/2 right-1.5 flex -translate-y-1/2 items-center gap-1.5 text-[13px] text-white">
+            <NoWrap>Target</NoWrap>
+            <input
+              aria-label={`${p.name} target`}
+              inputMode="numeric"
+              pattern="[0-9]*"
+              enterKeyHint="done"
+              value={p.target === 0 ? '' : String(p.target)}
+              onChange={(e) => {
+                const d = e.target.value.replace(/\D/g, '').slice(0, 3);
+                onTarget(d === '' ? 0 : Number(d));
+              }}
+              className="tabular h-11 w-[60px] rounded-[22px] bg-white text-center text-[17px] font-extrabold text-[#1F2430] outline-none"
+            />
+          </label>
+        )}
+      </div>
     </li>
   );
 }

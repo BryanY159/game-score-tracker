@@ -41,7 +41,7 @@ export default defineConfig({
     ...screenProjects,
     {
       name: 'flows',
-      testMatch: /(pwa|helpers|players|parcheesi|lifecycle|backup|history|monopoly)\.spec\.ts/,
+      testMatch: /(pwa|helpers|players|parcheesi|lifecycle|backup|history|monopoly|dutchBlitz)\.spec\.ts/,
       use: { browserName: 'chromium', viewport: VIEWPORTS['iphone-390'] },
     },
   ],

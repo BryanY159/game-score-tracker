@@ -25,10 +25,10 @@ export function GamePicker() {
                   <Icon />
                 </span>
                 <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-                  <NoWrap truncate className="text-lg font-extrabold">
+                  <NoWrap className="text-lg font-extrabold">
                     {g.name}
                   </NoWrap>
-                  <NoWrap truncate className="text-[14px] text-text-2">
+                  <NoWrap className="text-[14px] text-text-2">
                     {g.available ? `${g.tagline} · ${rangeLabel(g)}` : 'Coming soon'}
                   </NoWrap>
                 </span>

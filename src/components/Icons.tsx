@@ -151,3 +151,8 @@ export const GameIcons: Record<string, (p: P) => React.JSX.Element> = {
     </svg>
   ),
 };
+export const RoundsIcon = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01" strokeWidth={2.4} />
+  </svg>
+);

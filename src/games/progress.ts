@@ -20,6 +20,9 @@ export function progressLine(b: MatchBundle, now?: number): string {
     ).remaining.length;
     parts.push(`${left} still playing`);
   }
+  if (b.match.gameKey === 'dutchBlitz') {
+    parts.push(`Round ${b.rounds.filter((r) => r.confirmed).length + 1}`);
+  }
   parts.push(formatLength(elapsedMs(b.match, now)));
   if (b.match.pausedAt !== null) parts.push('paused');
   return parts.join(' · ');

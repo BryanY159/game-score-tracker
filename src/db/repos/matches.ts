@@ -1,6 +1,7 @@
 import type { ScoreDb } from '../schema';
 import { newRecord, softDelete, touch } from '../record';
-import type { GameKey, Match, MatchEvent, MatchPlayer, Player, PlayerColor } from '../../domain/types';
+import type { GameKey, Match, MatchEvent, MatchPlayer, Player, PlayerColor, Round } from '../../domain/types';
+import { listRounds } from './rounds';
 
 type DistributiveOmit<T, K extends PropertyKey> = T extends unknown ? Omit<T, K> : never;
 
@@ -22,6 +23,8 @@ export interface Seat {
 export interface MatchBundle {
   match: Match;
   seats: Seat[];
+  /** Rounds games only: confirmed rounds plus at most one draft, by number. */
+  rounds: Round[];
 }
 
 /** FR-3 step 6: start the game. Guests become isGuest profiles; the timer starts (AC-4). */
@@ -98,7 +101,7 @@ export async function getMatchBundle(db: ScoreDb, matchId: string): Promise<Matc
     .sort((a, b) => a.seatOrder - b.seatOrder);
   const players = await db.players.bulkGet(mps.map((mp) => mp.playerId));
   const seats = mps.map((mp, i) => ({ mp, player: players[i]! })).filter((s) => s.player);
-  return { match, seats };
+  return { match, seats, rounds: await listRounds(db, matchId) };
 }
 
 /** Records one entry. Written straight away so nothing is lost if iOS kills the app (R-7). */
@@ -169,10 +172,16 @@ export async function saveFinishedEdit(
   changes: { log?: MatchEvent[]; endedEarly?: boolean },
   results: SeatResult[],
   now: number = Date.now(),
+  rounds: Round[] = [],
 ): Promise<void> {
-  await db.transaction('rw', db.matches, db.matchPlayers, async () => {
+  await db.transaction('rw', db.matches, db.matchPlayers, db.rounds, async () => {
     const m = await db.matches.get(matchId);
     if (!m || m.status !== 'finished') throw new Error('Only a finished game can be edited here');
+    for (const r of rounds) {
+      const stored = await db.rounds.get(r.id);
+      if (!stored || stored.matchId !== matchId) throw new Error('Round not in this game');
+      if (JSON.stringify(stored.entries) !== JSON.stringify(r.entries)) await db.rounds.put(touch(stored, { entries: r.entries }, now));
+    }
     await writeResults(db, matchId, results, now);
     await db.matches.put(touch(m, changes, now));
   });

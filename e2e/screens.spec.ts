@@ -4,6 +4,7 @@ import { openApp } from './helpers/app';
 import { CASEY, EIGHT, FOUR, MORGAN } from './fixtures/players';
 import { NOW } from './fixtures/matches';
 import { MONOPOLY_EIGHT, MONOPOLY_MID, MONOPOLY_SHARED } from './fixtures/monopoly';
+import { BLITZ_DONE, BLITZ_EIGHT, BLITZ_HANDICAP, BLITZ_MID, BLITZ_TIE } from './fixtures/dutchBlitz';
 import { HISTORY, merge, PARCHEESI_DONE, PARCHEESI_MID, PARCHEESI_PAUSED, RECENT } from './fixtures/parcheesi';
 
 /**
@@ -88,6 +89,57 @@ const SCREENS: Screen[] = [
   },
   { name: 'game-picker', hash: '#/new', ready: 'Choose a game' },
   { name: 'history-all', hash: '#/history', ready: 'History', seed: HISTORY },
+  { name: 'blitz-mid', hash: `#/play/${BLITZ_MID.matches[0]!.id}`, ready: 'Dutch Blitz', seed: BLITZ_MID },
+  { name: 'blitz-handicap', hash: `#/play/${BLITZ_HANDICAP.matches[0]!.id}`, ready: 'Dutch Blitz', seed: BLITZ_HANDICAP },
+  { name: 'blitz-eight', hash: `#/play/${BLITZ_EIGHT.matches[0]!.id}`, ready: 'Dutch Blitz', seed: BLITZ_EIGHT },
+  {
+    name: 'blitz-rounds',
+    hash: `#/play/${BLITZ_MID.matches[0]!.id}`,
+    ready: 'Dutch Blitz',
+    seed: BLITZ_MID,
+    act: async (page) => {
+      await page.getByRole('button', { name: 'Rounds', exact: true }).click();
+      await page.getByRole('dialog', { name: 'Rounds' }).waitFor();
+    },
+  },
+  {
+    name: 'blitz-round-edit',
+    hash: `#/play/${BLITZ_MID.matches[0]!.id}`,
+    ready: 'Dutch Blitz',
+    seed: BLITZ_MID,
+    act: async (page) => {
+      await page.getByRole('button', { name: 'Rounds', exact: true }).click();
+      await page.getByRole('button', { name: 'Round 2' }).click();
+      await page.getByRole('dialog', { name: 'Edit round 2' }).waitFor();
+    },
+  },
+  {
+    name: 'blitz-results',
+    hash: `#/play/${BLITZ_DONE.matches[0]!.id}/results`,
+    ready: 'Jordan wins',
+    seed: BLITZ_DONE,
+  },
+  {
+    name: 'blitz-tie',
+    hash: `#/play/${BLITZ_TIE.matches[0]!.id}/results`,
+    ready: 'Tied for first',
+    seed: BLITZ_TIE,
+    act: async (page) => {
+      await page.getByRole('dialog', { name: "It's a tie" }).waitFor();
+    },
+  },
+  {
+    name: 'setup-dutch-blitz',
+    hash: '#/new/dutchBlitz',
+    ready: 'Dutch Blitz setup',
+    seed: { players: EIGHT },
+    act: async (page) => {
+      for (const name of ['Alex', 'Sam', 'Jordan', 'Christopher Alexander']) {
+        await page.getByRole('button', { name, exact: true }).click();
+      }
+      await page.getByRole('textbox', { name: 'Alex target' }).fill('90');
+    },
+  },
   { name: 'monopoly-mid', hash: `#/play/${MONOPOLY_MID.matches[0]!.id}`, ready: 'Monopoly', seed: MONOPOLY_MID },
   { name: 'monopoly-eight', hash: `#/play/${MONOPOLY_EIGHT.matches[0]!.id}`, ready: 'Monopoly', seed: MONOPOLY_EIGHT },
   {

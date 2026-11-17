@@ -107,7 +107,8 @@ Principles: scoring and stats are **pure functions** tested in Vitest. Screens a
     1. every `[data-nowrap]` element has a single line box (`getClientRects().length === 1` and height ≤ 1.5× line-height),
     2. there's no horizontal page scroll (`scrollWidth ≤ innerWidth`),
     3. no `[data-nowrap]` element is clipped unless it has the `truncate` class,
-    4. every `button` and `[role=button]` is at least 44×44 px.
+    4. every `button` and `[role=button]` is at least 44×44 px,
+    5. *(added in M7)* no fixed label is truncated or spills out of its button, chip or pill. Only text people type (marked `data-user-text`, such as player names) may end in an ellipsis.
   - Every short label (buttons, chips, pills, tile and stat labels, toolbar items) gets `data-nowrap`, through the shared components.
 - **Manual iPhone check:** each PR description includes a short device checklist, run on the deployed preview after merge, before the next milestone starts.
 
@@ -268,6 +269,8 @@ Also adds the generic `TieScreen` (FR-11 AC-3), used first for a Monopoly net-wo
 7. Results showing margins.
 
 **Files:** `src/db/repos/rounds.ts`, `src/domain/rounds.ts`, `src/games/dutchBlitz/*`, `src/screens/{RoundsScoring,RoundsList}.tsx`, `src/screens/GameSetup.tsx`, `src/domain/winner.ts`.
+
+*Built (M7):* the draft round is held on screen and saved on every change. It never reloads from database updates, which can arrive late and overwrite newer taps; only Confirm (start blank) and Undo (load the reopened round) replace it. This fixed two races found by the tests. Results waits for a tie decision when one is needed. Finished rounds games are edited round by round from History.
 
 **Tests:**
 - Vitest:

@@ -18,8 +18,14 @@ test('flags a wrapped button label', async ({ page }) => {
 test('flags a nowrap label that overflows without truncating', async ({ page }) => {
   expect(await run(page, '<div style="width:50px"><span data-nowrap style="display:block;white-space:nowrap;overflow:hidden">Very long label</span></div>')).toContain('overflow');
 });
-test('accepts a truncated label', async ({ page }) => {
-  expect(await run(page, '<div style="width:50px"><span data-nowrap style="display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Very long label</span></div>')).toBe('');
+test('accepts truncated user text (a long player name)', async ({ page }) => {
+  expect(await run(page, '<div style="width:50px"><span data-nowrap data-user-text style="display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Christopher Alexander</span></div>')).toBe('');
+});
+test('flags a truncated fixed label', async ({ page }) => {
+  expect(await run(page, '<div style="width:50px"><span data-nowrap style="display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Confirm round</span></div>')).toContain('truncated label');
+});
+test('flags a label that spills out of its button', async ({ page }) => {
+  expect(await run(page, '<button style="width:60px;height:44px;display:flex;justify-content:center"><span data-nowrap style="white-space:nowrap">Confirm round</span></button>')).toContain('spills out');
 });
 test('flags a horizontal page scroll', async ({ page }) => {
   expect(await run(page, '<div style="width:2000px;height:10px"></div>')).toContain('horizontal scroll');

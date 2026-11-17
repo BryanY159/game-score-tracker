@@ -48,9 +48,15 @@ export async function expectLayoutClean(page: Page) {
     for (const el of Array.from(document.querySelectorAll<HTMLElement>('[data-nowrap]'))) {
       if (!visible(el)) continue;
       const truncated = getComputedStyle(el).textOverflow === 'ellipsis';
-      if (!truncated && el.scrollWidth > el.clientWidth + 1) out.push(`overflow: ${describe(el)}`);
+      const cut = el.scrollWidth > el.clientWidth + 1;
+      if (cut && !truncated) out.push(`overflow: ${describe(el)}`);
+      // Truncation is the last resort for text people type; a fixed label must fit (NFR-6).
+      if (cut && truncated && !el.closest('[data-user-text]')) out.push(`truncated label: ${describe(el)}`);
       const r = el.getBoundingClientRect();
       if (r.right > window.innerWidth + 0.5 || r.left < -0.5) out.push(`off-screen: ${describe(el)}`);
+      // The label must also stay inside the box that holds it (a button, a chip, a pill).
+      const box = el.parentElement?.getBoundingClientRect();
+      if (box && (r.right > box.right + 1 || r.left < box.left - 1)) out.push(`spills out of its container: ${describe(el)}`);
     }
 
     if (document.documentElement.scrollWidth > window.innerWidth) {

@@ -15,6 +15,20 @@ export function seatValue(b: MatchBundle, s: Seat): string {
   }
 }
 
+/** Extra per-player detail in game detail: margin and handicap target in target games (FR-13 AC-2). */
+export function seatDetail(b: MatchBundle, s: Seat): string | null {
+  switch (b.match.gameKey) {
+    case 'dutchBlitz':
+    case 'flip7': {
+      const margin = s.mp.marginPastTarget;
+      if (margin === null || s.mp.target === null) return null;
+      return `${margin >= 0 ? '+' : '−'}${Math.abs(margin)} · to ${s.mp.target}`;
+    }
+    default:
+      return null;
+  }
+}
+
 /** Seats by finishing place; unplaced seats keep turn order at the end. */
 export function rankedSeats(b: MatchBundle): Seat[] {
   return [...b.seats].sort((x, y) => (x.mp.placement ?? 99) - (y.mp.placement ?? 99) || x.mp.seatOrder - y.mp.seatOrder);
