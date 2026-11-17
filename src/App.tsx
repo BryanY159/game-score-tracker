@@ -1,9 +1,13 @@
-import { HashRouter, Outlet, Route, Routes } from 'react-router-dom';
+import { HashRouter, Navigate, Outlet, Route, Routes } from 'react-router-dom';
 import { TabBar } from './components/TabBar';
 import { Home } from './screens/Home';
 import { History } from './screens/History';
 import { Stats } from './screens/Stats';
 import { Players } from './screens/Players';
+import { GamePicker } from './screens/GamePicker';
+import { GameSetup } from './screens/GameSetup';
+import { PlayMatch } from './screens/PlacementScoring';
+import { Results } from './screens/Results';
 
 /** Screens with the tab bar. Game screens (later milestones) render without it. */
 function TabLayout() {
@@ -28,6 +32,11 @@ export function App() {
           <Route path="stats" element={<Stats />} />
           <Route path="players" element={<Players />} />
         </Route>
+        <Route path="new" element={<GamePicker />} />
+        <Route path="new/:gameKey" element={<GameSetup />} />
+        <Route path="play/:matchId" element={<PlayMatch />} />
+        <Route path="play/:matchId/results" element={<Results />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </HashRouter>
   );

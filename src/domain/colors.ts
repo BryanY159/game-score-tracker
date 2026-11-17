@@ -26,3 +26,32 @@ export const COLOR_NAME: Record<PlayerColor, string> = {
   orange: 'Orange',
   black: 'Black',
 };
+
+/**
+ * FR-4: start from the preferred color (the profile color) if this game allows
+ * it and nobody has it yet; otherwise the next free color in the game's order.
+ */
+export function assignColor(preferred: PlayerColor, allowed: PlayerColor[], taken: PlayerColor[]): PlayerColor | null {
+  if (allowed.includes(preferred) && !taken.includes(preferred)) return preferred;
+  const start = Math.max(0, allowed.indexOf(preferred));
+  for (let i = 0; i < allowed.length; i++) {
+    const c = allowed[(start + i) % allowed.length]!;
+    if (!taken.includes(c)) return c;
+  }
+  return null;
+}
+
+/** Assign colors for a whole lineup in seat order, never duplicating (FR-4 AC-3). */
+export function assignColors(preferred: PlayerColor[], allowed: PlayerColor[]): (PlayerColor | null)[] {
+  const taken: PlayerColor[] = [];
+  return preferred.map((p) => {
+    const c = assignColor(p, allowed, taken);
+    if (c) taken.push(c);
+    return c;
+  });
+}
+
+/** Colors a player could switch to: allowed and not used by anyone else. */
+export function freeColors(allowed: PlayerColor[], taken: PlayerColor[]): PlayerColor[] {
+  return allowed.filter((c) => !taken.includes(c));
+}

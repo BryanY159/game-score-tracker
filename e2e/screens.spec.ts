@@ -1,7 +1,8 @@
 import { test } from '@playwright/test';
 import { expectLayoutClean } from './helpers/noWrap';
 import { openApp } from './helpers/app';
-import { EIGHT, FOUR } from './fixtures/players';
+import { CASEY, EIGHT, FOUR, MORGAN } from './fixtures/players';
+import { PARCHEESI_DONE, PARCHEESI_MID } from './fixtures/parcheesi';
 
 /**
  * Every screen × every NFR-7 project. Screenshots land in screenshots/<project>/
@@ -53,6 +54,48 @@ const SCREENS: Screen[] = [
       await page.getByRole('button', { name: 'Delete' }).click();
       await page.getByRole('alertdialog').waitFor();
     },
+  },
+  { name: 'home-in-progress', hash: '#/', ready: 'Game night', seed: PARCHEESI_MID },
+  { name: 'game-picker', hash: '#/new', ready: 'Choose a game' },
+  {
+    name: 'setup-parcheesi',
+    hash: '#/new/parcheesi',
+    ready: 'Parcheesi setup',
+    seed: { players: [...FOUR, CASEY, MORGAN] },
+    act: async (page) => {
+      // Riley's profile is gold, so after three others take pawn colors she keeps gold;
+      // Casey (purple) gets the next free pawn color, which shows "Color changed".
+      for (const name of ['Alex', 'Sam', 'Casey', 'Riley']) {
+        await page.getByRole('button', { name, exact: true }).click();
+      }
+    },
+  },
+  {
+    name: 'setup-guest',
+    hash: '#/new/parcheesi',
+    ready: 'Parcheesi setup',
+    seed: { players: FOUR },
+    act: async (page) => {
+      await page.getByRole('button', { name: 'Guest' }).click();
+    },
+  },
+  {
+    name: 'setup-player-options',
+    hash: '#/new/parcheesi',
+    ready: 'Parcheesi setup',
+    seed: { players: FOUR },
+    act: async (page) => {
+      await page.getByRole('button', { name: 'Alex', exact: true }).click();
+      await page.getByRole('button', { name: 'Sam', exact: true }).click();
+      await page.getByRole('button', { name: 'Sam options' }).click();
+    },
+  },
+  { name: 'parcheesi-mid', hash: `#/play/${PARCHEESI_MID.matches[0]!.id}`, ready: 'Parcheesi', seed: PARCHEESI_MID },
+  {
+    name: 'parcheesi-results',
+    hash: `#/play/${PARCHEESI_DONE.matches[0]!.id}/results`,
+    ready: 'Riley wins',
+    seed: PARCHEESI_DONE,
   },
 ];
 

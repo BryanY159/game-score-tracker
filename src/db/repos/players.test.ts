@@ -78,7 +78,7 @@ describe('players repo (FR-2)', () => {
     const mk = (status: Match['status']) =>
       newRecord<Omit<Match, keyof import('../../domain/types').BaseRecord>>({
         gameKey: 'parcheesi', status, startedAt: 0, endedAt: 0, pausedDurationMs: 0, pausedAt: null,
-        settings: {}, notes: '', endedEarly: false,
+        settings: {}, notes: '', endedEarly: false, log: [],
       });
     const finished = mk('finished');
     const inProgress = mk('inProgress');
