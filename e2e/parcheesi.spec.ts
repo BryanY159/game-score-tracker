@@ -66,6 +66,8 @@ test('save happens on every tap: a reload mid-game keeps the state (R-7)', async
   await page.getByRole('button', { name: 'Start game' }).click();
   await page.getByRole('button', { name: 'Add a pawn home for Sam' }).click();
   await page.getByRole('button', { name: 'Add a pawn home for Sam' }).click();
+  // The screen reads from the database, so seeing 2 means it's stored.
+  await expect(page.getByLabel('2 of 4 pawns home')).toBeVisible();
   await page.goto('./#/');
   await page.reload();
   await page.getByRole('button', { name: 'Resume' }).click();
@@ -83,6 +85,7 @@ test('cancel asks first, then discards the game (FR-5 AC-3)', async ({ page }) =
   await page.getByRole('button', { name: 'Cancel game' }).click();
   await page.getByRole('button', { name: 'Keep' }).click();
   await expect(page.getByRole('heading', { name: 'Parcheesi' })).toBeVisible();
+  await page.getByRole('button', { name: 'More' }).click();
   await page.getByRole('button', { name: 'Cancel game' }).click();
   await page.getByRole('button', { name: 'Discard' }).click();
   await expect(page.getByRole('heading', { name: 'Game night' })).toBeVisible();

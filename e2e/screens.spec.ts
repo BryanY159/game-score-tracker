@@ -2,7 +2,7 @@ import { test } from '@playwright/test';
 import { expectLayoutClean } from './helpers/noWrap';
 import { openApp } from './helpers/app';
 import { CASEY, EIGHT, FOUR, MORGAN } from './fixtures/players';
-import { PARCHEESI_DONE, PARCHEESI_MID } from './fixtures/parcheesi';
+import { merge, PARCHEESI_DONE, PARCHEESI_MID, PARCHEESI_PAUSED, RECENT } from './fixtures/parcheesi';
 
 /**
  * Every screen × every NFR-7 project. Screenshots land in screenshots/<project>/
@@ -56,6 +56,34 @@ const SCREENS: Screen[] = [
     },
   },
   { name: 'home-in-progress', hash: '#/', ready: 'Game night', seed: PARCHEESI_MID },
+  { name: 'home-full', hash: '#/', ready: 'Game night', seed: merge(PARCHEESI_PAUSED, ...RECENT) },
+  { name: 'home-recent-only', hash: '#/', ready: 'Game night', seed: merge(...RECENT) },
+  {
+    name: 'parcheesi-paused',
+    hash: `#/play/${PARCHEESI_PAUSED.matches[0]!.id}`,
+    ready: 'Parcheesi',
+    seed: PARCHEESI_PAUSED,
+  },
+  {
+    name: 'parcheesi-notes',
+    hash: `#/play/${PARCHEESI_MID.matches[0]!.id}`,
+    ready: 'Parcheesi',
+    seed: PARCHEESI_MID,
+    act: async (page) => {
+      await page.getByRole('button', { name: 'Notes' }).click();
+      await page.getByRole('dialog', { name: 'Notes' }).waitFor();
+    },
+  },
+  {
+    name: 'parcheesi-more',
+    hash: `#/play/${PARCHEESI_MID.matches[0]!.id}`,
+    ready: 'Parcheesi',
+    seed: PARCHEESI_MID,
+    act: async (page) => {
+      await page.getByRole('button', { name: 'More' }).click();
+      await page.getByRole('dialog', { name: 'Game options' }).waitFor();
+    },
+  },
   { name: 'game-picker', hash: '#/new', ready: 'Choose a game' },
   {
     name: 'setup-parcheesi',

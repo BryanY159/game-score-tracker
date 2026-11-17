@@ -13,18 +13,20 @@ export function GameHeader({
   sub,
   trailing,
   backTo = '/',
+  onBack,
 }: {
   title: string;
   sub?: ReactNode;
   trailing?: ReactNode;
   backTo?: string | null;
+  onBack?: () => void;
 }) {
   const navigate = useNavigate();
   return (
     <header className="pt-safe">
       <div className="flex items-center gap-3 px-5 pt-4 pb-3">
         {backTo !== null && (
-          <IconButton label="Back" onClick={() => navigate(backTo)}>
+          <IconButton label="Back" onClick={() => (onBack ? onBack() : navigate(backTo))}>
             <BackIcon />
           </IconButton>
         )}
@@ -44,7 +46,7 @@ export function GameHeader({
   );
 }
 
-/** Running game clock (FR-3 AC-4). Pause arrives with the lifecycle milestone. */
+/** Running game clock (FR-3 AC-4), with the pause button as its child. */
 export function TimerChip({ match, children }: { match: Match; children?: ReactNode }) {
   const running = match.endedAt === null && match.pausedAt === null;
   const now = useNow(1000, running);
@@ -99,4 +101,9 @@ export function PrimaryToolButton({
 /** Full-height column for game screens: header, scrolling body, fixed toolbar. */
 export function GameScreen({ children }: { children: ReactNode }) {
   return <div className="mx-auto flex min-h-dvh w-full max-w-3xl flex-col">{children}</div>;
+}
+
+/** The scrolling body of a game screen; hosts the paused overlay. */
+export function GameBody({ children, className = '' }: { children: ReactNode; className?: string }) {
+  return <main className={`relative flex flex-1 flex-col ${className}`}>{children}</main>;
 }
