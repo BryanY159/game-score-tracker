@@ -71,6 +71,7 @@ test('Flip 7 by keyboard: cards, Shift digits, a modifier, ×2, Enter confirms, 
   await expect(page.getByRole('button', { name: 'Resume' }).first()).toBeVisible();
   await page.keyboard.press(' ');
   await expect(page.getByText('Paused', { exact: true })).toHaveCount(0);
+  await expect(page.getByRole('group', { name: "Riley's score keypad" })).toBeVisible();
   await page.keyboard.press('?');
   await expect(overlay(page)).toBeVisible();
   await expect(overlay(page).getByText('Flip 7!')).toBeVisible();

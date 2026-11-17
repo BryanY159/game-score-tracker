@@ -34,8 +34,12 @@ export function ShortcutProvider({ children }: { children: ReactNode }) {
       if ((e.key === ' ' || e.key === 'Enter') && isKeyboardFocusedControl(e.target)) return;
       if (!typing && e.key === '?' && !e.metaKey && !e.ctrlKey && !e.altKey) {
         e.preventDefault();
-        const snap = activeLayers(layers.current).filter((l) => l.shortcuts.some((s) => s.listed !== false));
-        setOverlay((o) => (o ? null : snap));
+        // Snapshot one task later, so layers from a render that just committed (a panel that
+        // reappeared on resume) have registered first.
+        setTimeout(() => {
+          const snap = activeLayers(layers.current).filter((l) => l.shortcuts.some((s) => s.listed !== false));
+          setOverlay((o) => (o ? null : snap));
+        }, 0);
         return;
       }
       const s = resolve(layers.current, e, typing);
