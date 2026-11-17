@@ -81,6 +81,12 @@ export type MatchEvent =
       decision: { kind: 'shared'; playerIds: string[] } | { kind: 'picked'; winnerId: string };
       rounds: number;
       at: number;
+    }
+  | {
+      /** Flip 7 tie: everyone plays another round after this many confirmed rounds (FR-11 AC-4). */
+      type: 'extraRound';
+      afterRounds: number;
+      at: number;
     };
 
 export interface MatchPlayer extends BaseRecord {

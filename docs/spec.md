@@ -97,7 +97,10 @@ Each profile has a name, an emoji, a color from the profile palette, and a hide-
   - A Flip 7 is detected automatically.
 - AC-3: The dealer rotates every round. Confirm Round updates the totals and the round count.
 - AC-4: The game ends after a round in which any player reaches their target.
-- AC-5: The game saves scores, rounds played, and each player's Flip 7 count. It also tracks the fewest rounds to reach 200 for each player count.
+- AC-5: The game saves scores, rounds played, and each player's Flip 7 count and busts. It also tracks the fewest rounds to reach 200 for each player count (saved per player as `roundsTo200`, only for players whose target was 200).
+- AC-6: Action cards (Freeze, Flip Three, Second Chance) aren't tracked. The "Bust?" prompt for a duplicate number card offers **Bust** or **Not a bust, remove card**, which covers a Second Chance save.
+- AC-7: Each player's entry comes from the keypad: digits, **Next player**, **Bust** (scores 0 and moves on) and **Flip 7!**. Tapping a player's row selects them. Confirm Round needs an entry for every player (NFR-2: one entry per player plus a confirm).
+- AC-8: Editing a past round uses Number entry (the score before the bonus, plus Bust and Flip 7!), whichever mode the round was entered in.
 
 ### FR-9 Dutch Blitz (Rounds template)
 
@@ -118,7 +121,7 @@ Each profile has a name, an emoji, a color from the profile palette, and a hide-
 - AC-1: In target games (Flip 7 and Dutch Blitz), the winner is the player with the largest margin past their own target. If margins tie, the higher total wins.
 - AC-2: In Ticket to Ride, a tie on total score goes to the player with the most completed destination tickets, then to the longest-path holder.
 - AC-3: If a tie remains or the game has no official tie-breaker, a tie screen offers two choices: declare a shared win, or pick the winner of an outside tie-breaker. With a shared win, Results says "Shared win" with the winners' names on the line below.
-- AC-4: In Flip 7, if players are still tied on both margin and total, the tie screen's default option is "Play another round" (per the official FAQ). It continues the game with all players, not just the tied ones. After that round, the winner is decided again under AC-1, and the tie screen comes back if the tie remains, as many times as needed. Shared win and the outside tie-breaker stay available each time.
+- AC-4: In Flip 7, if players are still tied on both margin and total, the tie screen's default option is "Play another round" (per the official FAQ). It continues the game with all players, not just the tied ones. The extra round adds to the running totals, targets don't change, and the dealer keeps rotating. Any player can win it, including one who wasn't tied. After that round, the winner is decided again under AC-1, and the tie screen comes back if the tie remains, as many times as needed. Shared win and the outside tie-breaker stay available each time. Example: Alex and Sam both on 212 to a 200 target (+12), Jordan on 185. In the extra round Alex scores 20, Sam busts and Jordan scores 30: Alex wins on 232 (+32), Jordan is 2nd on 215 (+15), Sam 3rd on 212.
 
 ### FR-12 Results and Finalize
 
@@ -197,13 +200,13 @@ Each profile has a name, an emoji, a color from the profile palette, and a hide-
 | TurnLog | matchId, entries (player, action, routeLength) | Ticket to Ride only, deleted when the game is finalized |
 | Settings | statsMinGames, backupReminder, lastBackupAt | single record |
 
-`Match.log` is the per-game entry log for placement games (Parcheesi pawn steps and triple doublets; Monopoly bankruptcies and the end-early entry, which holds each remaining player's net worth, the final order and how a tie for first was settled), oldest first. The current state is replayed from it, so Undo (FR-5 AC-4) drops the last entry. Rounds games use the Round table instead: the round being entered is saved as an unconfirmed Round on every change, and Confirm Round marks it confirmed. Their `Match.log` holds only a tie decision (FR-11 AC-3), which applies while the number of confirmed rounds is unchanged, so editing the rounds asks again if a tie remains. Ticket to Ride uses TurnLog.
+`Match.log` is the per-game entry log for placement games (Parcheesi pawn steps and triple doublets; Monopoly bankruptcies and the end-early entry, which holds each remaining player's net worth, the final order and how a tie for first was settled), oldest first. The current state is replayed from it, so Undo (FR-5 AC-4) drops the last entry. Rounds games use the Round table instead: the round being entered is saved as an unconfirmed Round on every change, and Confirm Round marks it confirmed. Their `Match.log` holds only a tie decision (FR-11 AC-3) or, in Flip 7, an "extra round" entry (FR-11 AC-4), which applies while the number of confirmed rounds is unchanged, so editing the rounds asks again if a tie remains. Ticket to Ride uses TurnLog.
 
 What goes in `details` depends on the game:
 
 - Parcheesi: `pawnsHome`, `tripleDoublets`
 - Ticket to Ride: `routePoints`, `tickets[]` (value, completed), `longestPath`
-- Flip 7: `flip7Count`
+- Flip 7: `flip7Count`, `busts`, `roundsTo200`
 - Monopoly: `netWorth`, `bankruptAt`
 
 ## 6. Style guide

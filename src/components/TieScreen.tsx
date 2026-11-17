@@ -17,7 +17,10 @@ export function TieScreen({
   reason,
   onDecide,
   onClose,
+  playAnotherRound,
 }: {
+  /** Flip 7 (FR-11 AC-4): the default option, everyone plays one more round. */
+  playAnotherRound?: () => void;
   tied: Seat[];
   reason: string;
   onDecide: (d: TieDecision) => void;
@@ -33,7 +36,14 @@ export function TieScreen({
         </p>
         {!picking ? (
           <div className="flex flex-col gap-2">
-            <Button onClick={() => onDecide({ kind: 'shared' })}>Shared win</Button>
+            {playAnotherRound && (
+              <Button autoFocus onClick={playAnotherRound}>
+                Play another round
+              </Button>
+            )}
+            <Button variant={playAnotherRound ? 'outline' : 'primary'} onClick={() => onDecide({ kind: 'shared' })}>
+              Shared win
+            </Button>
             <Button variant="outline" onClick={() => setPicking(true)}>
               Pick the tie-breaker winner
             </Button>

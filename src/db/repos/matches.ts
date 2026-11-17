@@ -250,3 +250,12 @@ export async function listRecentFinished(db: ScoreDb, limit = Infinity): Promise
   const bundles = await Promise.all(finished.map((m) => getMatchBundle(db, m.id)));
   return bundles.filter((b): b is MatchBundle => b !== null);
 }
+
+/** Game settings that can change mid-game, e.g. Flip 7 entry mode (FR-3 AC-3). */
+export async function updateMatchSettings(db: ScoreDb, matchId: string, patch: Record<string, unknown>, now: number = Date.now()): Promise<void> {
+  await db.transaction('rw', db.matches, async () => {
+    const m = await db.matches.get(matchId);
+    if (!m) return;
+    await db.matches.put(touch(m, { settings: { ...m.settings, ...patch } }, now));
+  });
+}
