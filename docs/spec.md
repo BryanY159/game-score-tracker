@@ -83,7 +83,7 @@ Each profile has a name, an emoji, a color from the profile palette, and a hide-
 - AC-3: A scoreboard shows each player's route points and trains left, starting from 45.
 - AC-4: A turn log can be viewed during the game, and any logged turn can be edited.
 - AC-5: When a player ends a turn with 2 or fewer trains, a Final Round banner appears. Every player, that player included, gets exactly one more turn, then the app moves to end-of-game scoring.
-- AC-6: End-of-game scoring lists each player's destination tickets. Each ticket has a value and is marked completed (+value) or failed (−value). The ticket keypad has **Completed** and **Failed** buttons that add the ticket with that status. The completed/failed toggle on each ticket row stays, for changing it later.
+- AC-6: End-of-game scoring lists each player's destination tickets. Each ticket has a value and is marked completed (+value) or failed (−value). The ticket keypad has **Completed** and **Failed** buttons that add the ticket with that status. **Add ticket** stays open for back-to-back entry: after a ticket is added, its value clears for the next one. While it's open, it lists the tickets added so far for that player (value and status) with a running total, and any of them can be removed there. Only **Done**, a tap outside, or Esc (⌘.) closes it. The completed/failed toggle on each ticket row stays, for changing it later.
 - AC-7: The player with the longest continuous path is selected and gets +10. If players tie for it, each gets +10.
 - AC-8: Finalizing deletes the turn log. The final score breakdown is kept: route points, tickets completed and failed, and the longest-path bonus. The deletion happens in the same save as finalizing.
 - AC-9: Phase 1 supports the US map only: route lengths 1–6. Longer routes (the Europe map's 8-length, 21 points) and Stations aren't included (owner decision).
@@ -218,7 +218,7 @@ These only apply when a hardware keyboard is used (iPad with a keyboard case). N
   - Enter goes to the next player, and on the last player it's Confirm round.
 - AC-3: Ticket to Ride:
   - 1–6 claim a route of that length. T draws train cards, D draws tickets, L opens the turn log.
-  - In end-of-game scoring: digits type a ticket value, C or X marks it completed or failed, Enter adds the next ticket, and P toggles the longest path for the current player.
+  - In end-of-game scoring: digits type a ticket value, and C or X adds it as completed or failed. Enter with a value typed adds it as completed (the default for new tickets). Each of these keeps Add ticket open for the next one. Enter with nothing typed closes it. P toggles the longest path for the current player.
 - AC-4: Dutch Blitz:
   - Tab or the arrow keys move between players and between the Dutch and Blitz fields.
   - Digits type a value, and + or − change it by 1 (holding repeats).
@@ -231,7 +231,7 @@ These only apply when a hardware keyboard is used (iPad with a keyboard case). N
   - Space and Enter press a button that has a visible keyboard focus ring, as usual, instead of running the shortcut.
   - The game-wide keys (⌘Z, Space, Esc and ?) also work in Parcheesi and Monopoly.
   - Flip 7: card keys toggle, like taps, so pressing a selected card's key again unselects it. Only B (the Bust button) records a bust. K switches between the cards and the keypad. In the keypad, Delete removes a digit. After +, any other key cancels the modifier.
-  - Ticket to Ride: Enter on the turn screen opens final scoring once play is over. In end-of-game scoring, a digit opens Add ticket starting with that digit, C or X adds it as completed or failed, Enter opens Add ticket for the next one, the left and right arrows move between players, and Esc goes back to the game.
+  - Ticket to Ride: Enter on the turn screen opens final scoring once play is over. In end-of-game scoring, a digit opens Add ticket starting with that digit, and Enter opens it empty. Inside it, C, X and Enter add tickets as described in AC-3, and Enter with nothing typed or Esc closes it. Outside it, the left and right arrows move between players and Esc goes back to the game.
   - Dutch Blitz: Tab skips the − and + buttons, since + and − (or =) do their job. The first arrow press goes to the first field. Holding + or − repeats through the keyboard's own key repeat.
   - On the iPad, Tab may only move between text fields unless keyboard navigation is on in Settings. Nothing in FR-20 needs Tab to reach a button.
 
