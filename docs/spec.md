@@ -121,11 +121,11 @@ Each profile has a name, an emoji, a color from the profile palette, and a hide-
 ### FR-12 Results and Finalize
 
 - AC-1: The results screen shows an animated podium in player colors, final scores, and margins past target where they apply.
-- AC-2: Finalize saves the game to history and marks it finished. A finished game can still be edited from History.
+- AC-2: Finalize saves the game to history and marks it finished. A finished game can still be edited from History. The edit changes it in place: changes are a draft until Save, the game stays finished, and its length doesn't change.
 
 ### FR-13 History
 
-- AC-1: History lists finished games, newest first, and can be filtered by game and by player.
+- AC-1: History lists finished games, newest first, and can be filtered by game and by player. Games are grouped as This week (the last 7 days), Earlier in <month>, then <Month Year>. The player filter lists saved players who appear in history, deleted ones included.
 - AC-2: Each game's detail screen shows players, scores, the game's score breakdown, length, handicap targets, and notes.
 
 ### FR-14 Stats

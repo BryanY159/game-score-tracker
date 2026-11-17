@@ -57,3 +57,25 @@ export function canStep(state: ParcheesiState, playerId: string, delta: 1 | -1):
 export function completedAt(log: MatchEvent[]): number | null {
   return log.length ? log[log.length - 1]!.at : null;
 }
+
+/** Seat outcomes to save (FR-6 AC-4): place, pawns home, winner. */
+export function parcheesiResults(
+  seats: { matchPlayerId: string; playerId: string }[],
+  log: MatchEvent[],
+): { matchPlayerId: string; placement: number | null; finalScore: null; marginPastTarget: null; isWinner: boolean; details: { pawnsHome: number } }[] {
+  const state = parcheesiState(
+    seats.map((s) => s.playerId),
+    log,
+  );
+  return seats.map((s) => {
+    const p = state.players.find((x) => x.playerId === s.playerId)!;
+    return {
+      matchPlayerId: s.matchPlayerId,
+      placement: p.placement,
+      finalScore: null,
+      marginPastTarget: null,
+      isWinner: p.placement === 1,
+      details: { pawnsHome: p.pawnsHome },
+    };
+  });
+}

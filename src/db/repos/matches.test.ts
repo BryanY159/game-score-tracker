@@ -12,6 +12,7 @@ import {
   pauseMatch,
   resumeMatch,
   setNotes,
+  saveFinishedEdit,
   undoLastEvent,
 } from './matches';
 
@@ -136,5 +137,27 @@ describe('game lifecycle (FR-5)', () => {
     await cancelMatch(db, c.id);
     expect((await listRecentFinished(db, 5)).map((x) => x.match.id)).toEqual([b.id, a.id]);
     expect(await listRecentFinished(db, 1)).toHaveLength(1);
+  });
+});
+
+describe('editing a finished game (FR-12 AC-2, M5)', () => {
+  it('changes it in place and it stays finished', async () => {
+    const { alex, match } = await twoPlayerGame();
+    const b = (await getMatchBundle(db, match.id))!;
+    const seat = (i: number, placement: number) => ({
+      matchPlayerId: b.seats[i]!.mp.id, placement, finalScore: null, marginPastTarget: null, isWinner: placement === 1, details: {},
+    });
+    await finalizeMatch(db, match.id, [seat(0, 2), seat(1, 1)], 9000, 10_000);
+    const log = [{ type: 'pawns' as const, playerId: alex.id, delta: 1 as const, at: 9000 }];
+    await saveFinishedEdit(db, match.id, { log }, [seat(0, 1), seat(1, 2)], 20_000);
+    const after = (await getMatchBundle(db, match.id))!;
+    expect(after.match).toMatchObject({ status: 'finished', endedAt: 9000, log });
+    expect(after.match.updatedAt).toBe(20_000);
+    expect(after.seats.map((s) => [s.mp.placement, s.mp.isWinner])).toEqual([[1, true], [2, false]]);
+  });
+
+  it('refuses games that are not finished', async () => {
+    const { match } = await twoPlayerGame();
+    await expect(saveFinishedEdit(db, match.id, {}, [])).rejects.toThrow('Only a finished game');
   });
 });

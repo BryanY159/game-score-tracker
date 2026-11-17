@@ -9,6 +9,8 @@ import { GameSetup } from './screens/GameSetup';
 import { PlayMatch } from './screens/PlacementScoring';
 import { Results } from './screens/Results';
 import { Settings } from './screens/Settings';
+import { MatchDetail } from './screens/MatchDetail';
+import { EditFinished } from './screens/EditFinished';
 
 /** Screens with the tab bar. Game screens (later milestones) render without it. */
 function TabLayout() {
@@ -34,6 +36,8 @@ export function App() {
           <Route path="players" element={<Players />} />
         </Route>
         <Route path="settings" element={<Settings />} />
+        <Route path="history/:matchId" element={<MatchDetail />} />
+        <Route path="history/:matchId/edit" element={<EditFinished />} />
         <Route path="new" element={<GamePicker />} />
         <Route path="new/:gameKey" element={<GameSetup />} />
         <Route path="play/:matchId" element={<PlayMatch />} />

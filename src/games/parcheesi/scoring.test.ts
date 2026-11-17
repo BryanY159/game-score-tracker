@@ -53,3 +53,17 @@ describe('Parcheesi scoring (FR-6)', () => {
     expect([1, 2, 3, 4, 11, 12, 13, 21, 22].map(ordinal)).toEqual(['1st', '2nd', '3rd', '4th', '11th', '12th', '13th', '21st', '22nd']);
   });
 });
+
+describe('Parcheesi results', () => {
+  it('maps the finished state to saved seat results (FR-6 AC-4)', async () => {
+    const { parcheesiResults } = await import('./scoring');
+    const seats = [
+      { matchPlayerId: 'm1', playerId: 'a' },
+      { matchPlayerId: 'm2', playerId: 'b' },
+    ];
+    expect(parcheesiResults(seats, step('b', 1, 4))).toEqual([
+      { matchPlayerId: 'm1', placement: 2, finalScore: null, marginPastTarget: null, isWinner: false, details: { pawnsHome: 0 } },
+      { matchPlayerId: 'm2', placement: 1, finalScore: null, marginPastTarget: null, isWinner: true, details: { pawnsHome: 4 } },
+    ]);
+  });
+});

@@ -228,6 +228,8 @@ Pulled early because real data now exists (C-2, R-5).
 
 **Files:** `src/db/repos/matches.ts` (queries), `src/screens/{History,MatchDetail}.tsx`, `src/games/*/Breakdown.tsx` (Parcheesi now, the rest added in each game's milestone).
 
+*Built (M5):* editing works on a draft copy and saves with `saveFinishedEdit`. For Parcheesi, the editor uses the game's entry log: Undo steps back to reopen places, and Save needs a complete finishing order. Home's Recent games rows and "See all" now open History.
+
 **Tests:**
 - Vitest: filter and sort query, and soft-deleted players still resolve in history.
 - Playwright: History (all, filtered, empty), MatchDetail for Parcheesi (with notes and with a deleted player).
