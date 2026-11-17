@@ -12,15 +12,15 @@ import { Sheet } from './Sheet';
 type Open = null | 'more' | 'notes' | 'cancel';
 
 /**
- * Shared game controls: More (Save and exit, Cancel), Notes, and Pause.
- * FR-5 AC-1 to AC-3 and AC-6.
+ * Shared game controls: More (Notes when the toolbar has no room for it, and
+ * Cancel), Notes, and Pause. FR-5 AC-1 to AC-3 and AC-6.
  */
-export function useGameControls(match: Match) {
+export function useGameControls(match: Match, { notesInMenu = false }: { notesInMenu?: boolean } = {}) {
   const navigate = useNavigate();
   const [open, setOpen] = useState<Open>(null);
 
-  /** Save and Exit (AC-2): the game stays under In Progress, paused so time away doesn't count. */
-  const saveAndExit = async () => {
+  /** Back (AC-2): pause, return Home; the game stays under In Progress. */
+  const exitToHome = async () => {
     await pauseMatch(db, match.id);
     navigate('/', { replace: true });
   };
@@ -29,11 +29,18 @@ export function useGameControls(match: Match) {
     <>
       {open === 'more' && (
         <Sheet title="Game options" closeLabel="Close" onClose={() => setOpen(null)}>
-          <div className="flex flex-col gap-2">
-            <Button onClick={saveAndExit}>Save and exit</Button>
+          <div className="flex flex-col gap-3">
+            {notesInMenu && (
+              <Button variant="secondary" onClick={() => setOpen('notes')}>
+                Notes
+              </Button>
+            )}
             <Button variant="outline" onClick={() => setOpen('cancel')}>
               Cancel game
             </Button>
+            <p className="m-0 text-center text-[13px] text-text-2">
+              To keep the game for later, use the back arrow. It pauses the game.
+            </p>
           </div>
         </Sheet>
       )}
@@ -57,7 +64,7 @@ export function useGameControls(match: Match) {
     element,
     openMore: () => setOpen('more'),
     openNotes: () => setOpen('notes'),
-    saveAndExit,
+    exitToHome,
   };
 }
 

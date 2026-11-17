@@ -39,7 +39,7 @@ test('play a full Parcheesi game', async ({ page }) => {
   await page.getByRole('button', { name: 'See results' }).click();
   await page.getByRole('button', { name: 'Finalize' }).click();
 
-  await expect(page.getByRole('heading', { name: 'Game night' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Game Night' })).toBeVisible();
   await expect(page.getByText('In progress')).toHaveCount(0);
   // The saved result (FR-6 AC-4).
   const saved = await page.evaluate(async () => {
@@ -88,6 +88,6 @@ test('cancel asks first, then discards the game (FR-5 AC-3)', async ({ page }) =
   await page.getByRole('button', { name: 'More' }).click();
   await page.getByRole('button', { name: 'Cancel game' }).click();
   await page.getByRole('button', { name: 'Discard' }).click();
-  await expect(page.getByRole('heading', { name: 'Game night' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Game Night' })).toBeVisible();
   await expect(page.getByText('In progress')).toHaveCount(0);
 });

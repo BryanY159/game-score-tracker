@@ -65,7 +65,7 @@ function ParcheesiScoring({ bundle }: { bundle: MatchBundle }) {
       <GameHeader
         title={game.name}
         sub="Pawns home"
-        onBack={controls.saveAndExit}
+        onBack={controls.exitToHome}
         trailing={
           <TimerChip match={match}>
             <PauseButton match={match} />

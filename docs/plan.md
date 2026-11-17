@@ -175,7 +175,7 @@ Principles: scoring and stats are **pure functions** tested in Vitest. Screens a
 5. Matches repo (create, inProgress, cancel), with the timer started at Start.
 6. `parcheesi/scoring.ts` (stepper → auto-placement → the last player placed automatically).
 7. `PlacementScoring` screen with undo and cancel.
-8. `domain/winner.ts` (ranking and tie detection), `Results` with a static `Podium` and `TieScreen`, then Finalize.
+8. `domain/winner.ts` (ranking and tie detection), `Results` with a static `Podium`, then Finalize. *(Changed: `TieScreen` moved to M6, since Parcheesi can't tie. The basic In progress card on Home moved here from M3, so a started game can be resumed.)*
 
 **Files:** `src/games/registry.ts`, `src/games/parcheesi/*`, `src/domain/{colors,winner,timer}.ts`, `src/db/repos/matches.ts`, `src/components/{Stepper,Podium,TieScreen,TimerChip}.tsx`, `src/screens/{GamePicker,GameSetup,PlacementScoring,Results}.tsx`.
 
@@ -186,7 +186,7 @@ Principles: scoring and stats are **pure functions** tested in Vitest. Screens a
   - `parcheesi/scoring.test.ts`: places assigned in the order players reach 4, the last player placed automatically, undo un-places a player, steps clamped to 0–4.
   - `winner.test.ts`: placement winner, and a shared-win flag.
   - `timer.test.ts`.
-- Playwright: GamePicker, GameSetup (4 players with a guest, the color-changed note, and an override warning), Placement mid-game (mockup state), Results and TieScreen.
+- Playwright: GamePicker, GameSetup (4 players with a guest, the color-changed note, and an override warning), Placement mid-game (mockup state), Results.
 
 ### M3 · Game lifecycle and Home
 
@@ -194,13 +194,13 @@ Principles: scoring and stats are **pure functions** tested in Vitest. Screens a
 
 **Covers:** FR-5 (AC-1, AC-2, AC-6), FR-3 AC-4 (paused time excluded), the Home mockup (In progress card, Recent games), A-16 (Settings button on Home), R-6, R-7.
 
-**Order:** pause and resume in the timer and repo, then the pause overlay, then Save and Exit (the More menu), then Home's In progress card and Resume routing, then the notes sheet (in game and on Results), then Recent games.
+**Order:** pause and resume in the timer and repo, then the pause overlay, then Back pausing and returning Home (FR-5 AC-2; Save and Exit was dropped after batch 1 review), then the In progress card's progress line, then the notes sheet (in game and on Results), then Recent games.
 
 **Files:** `src/domain/timer.ts`, `src/db/repos/matches.ts`, `src/components/{MoreMenu,NotesSheet}.tsx`, `src/screens/Home.tsx`, scoring screens (toolbar wiring).
 
 **Tests:**
 - Vitest: elapsed time excludes paused intervals across several pauses. Resuming after a simulated suspend (clock jump) gives the correct elapsed time. Cancelled matches are excluded from recents.
-- Playwright: Home with an In progress card and recents, Home empty, the pause state, the notes sheet. An e2e test: start Parcheesi, save and exit, reload, then resume to the same state.
+- Playwright: Home with an In progress card and recents, Home empty, the pause state, the notes sheet. An e2e test: start Parcheesi, tap Back, reload, then resume to the same state.
 
 ### M4 · Backup: export, restore, reminder, Settings
 
@@ -237,6 +237,8 @@ Pulled early because real data now exists (C-2, R-5).
 **Usable result:** play Monopoly to the last player standing, or end it early by net worth.
 
 **Covers:** FR-10 (AC-1 to AC-4), FR-18 (AC-2 base keypad, AC-3 native pad), A-9.
+
+Also adds the generic `TieScreen` (FR-11 AC-3), used first for a Monopoly net-worth tie (moved from M2).
 
 **Order:** `Keypad` component (digits, delete, slots for game keys) with a hidden numeric input, then `monopoly/scoring.ts` (bankrupt order with timestamps, last one standing, early-end ranking), then the Monopoly variant of `PlacementScoring` (Bankrupt button), then the early-end net worth entry and drag ranking, then the Monopoly breakdown.
 
@@ -344,6 +346,8 @@ Pulled early because real data now exists (C-2, R-5).
 
 **Covers:** FR-16 (AC-1 to AC-4), R-9.
 
+Also adds the Settings "Merge a file" button (moved from M4).
+
 **Order:** pure `merge.ts` planner (new, skip, conflict with newer `updatedAt` winning, deletions carried over) for each table, then the preview counts, then an automatic backup (an export kept in an IndexedDB `backups` store, keeping the last 3), then apply in one transaction, then detect same-name players and show "Merge these?", then the Settings player-merge tool (reassign MatchPlayers, soft-delete the duplicate, block same-match collisions).
 
 **Files:** `src/domain/backup/{merge,playerMerge}.ts`, `src/db/schema.ts` (v2: `backups` store, plus a migration test), `src/screens/{MergePreview,PlayerMerge,Settings}.tsx`.
@@ -373,7 +377,18 @@ Pulled early because real data now exists (C-2, R-5).
 
 ---
 
-## 6. Traceability
+## 6. Changes made during batch 1 (M0–M4)
+
+- **Screenshots:** saved as CI artifacts for review, not compared against stored reference images (§3).
+- **Test font:** Inter stands in for SF Pro Rounded in tests, so wrapping checks are the same on every machine (§3, R-3).
+- **Tokens:** color tokens live in the stylesheet, `src/styles/index.css` (Tailwind v4 CSS-first config).
+- **Tie screen:** moved from M2 to M6.
+- **"Merge a file" button:** moved from M4 to M11.
+- **In progress card:** moved from M3 to M2.
+- **Save and Exit removed:** Back pauses and returns Home (spec FR-5 AC-2). The More menu holds Cancel game, plus Notes on screens whose toolbar has no room for it.
+- **Undo log:** placement games keep their entries in `Match.log` (spec §5).
+
+## 7. Traceability
 
 | Requirement | Milestone(s) |
 | --- | --- |

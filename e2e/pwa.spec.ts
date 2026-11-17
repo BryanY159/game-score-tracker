@@ -28,7 +28,7 @@ test('works offline after the first load (FR-1 AC-1, NFR-1)', async ({ page, con
 
   await context.setOffline(true);
   await page.reload();
-  await expect(page.getByRole('heading', { name: 'Game night' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Game Night' })).toBeVisible();
   await page.getByRole('link', { name: 'History' }).click();
   await expect(page.getByRole('heading', { name: 'History' })).toBeVisible();
   await page.goto('./#/players');

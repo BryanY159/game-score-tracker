@@ -24,11 +24,10 @@ test('pause stops the clock and paused time is left out (FR-5 AC-1)', async ({ p
   await expect(clock).toHaveText('43:37');
 });
 
-test('save and exit keeps the game paused under In progress (FR-5 AC-2)', async ({ page }) => {
+test('back pauses the game and keeps it under In progress (FR-5 AC-2)', async ({ page }) => {
   await openApp(page, `#/play/${id}`, PARCHEESI_MID);
-  await page.getByRole('button', { name: 'More' }).click();
-  await page.getByRole('button', { name: 'Save and exit' }).click();
-  await expect(page.getByRole('heading', { name: 'Game night' })).toBeVisible();
+  await page.getByRole('button', { name: 'Back' }).click();
+  await expect(page.getByRole('heading', { name: 'Game Night' })).toBeVisible();
   await expect(page.getByText('1 placed · 42 min · paused')).toBeVisible();
 
   await page.getByRole('button', { name: 'Resume' }).click();
@@ -39,10 +38,13 @@ test('save and exit keeps the game paused under In progress (FR-5 AC-2)', async 
   await expect(page.getByLabel('2 of 4 pawns home')).toHaveCount(2);
 });
 
-test('back also saves and exits', async ({ page }) => {
+test('the More menu holds Cancel only, and Cancel asks first (FR-5 AC-3)', async ({ page }) => {
   await openApp(page, `#/play/${id}`, PARCHEESI_MID);
-  await page.getByRole('button', { name: 'Back' }).click();
-  await expect(page.getByText(/paused/)).toBeVisible();
+  await page.getByRole('button', { name: 'More' }).click();
+  const menu = page.getByRole('dialog', { name: 'Game options' });
+  await expect(menu.getByRole('button')).toHaveText(['Close', 'Cancel game']);
+  await menu.getByRole('button', { name: 'Cancel game' }).click();
+  await expect(page.getByRole('alertdialog', { name: 'Cancel this game?' })).toBeVisible();
 });
 
 test('notes are kept (FR-5 AC-6)', async ({ page }) => {

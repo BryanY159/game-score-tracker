@@ -74,7 +74,10 @@ test('backup reminder appears on Home after 10 games, and clears after a backup 
 test('settings persist: reminder mode and minimum games', async ({ page }) => {
   await openApp(page, '#/settings');
   await page.getByRole('radio', { name: 'Month' }).click();
+  await expect(page.getByRole('radio', { name: 'Month' })).toHaveAttribute('aria-checked', 'true');
   await page.getByRole('button', { name: 'More games', exact: true }).click();
+  // The screen reads from the database, so seeing 6 means it's stored.
+  await expect(page.getByLabel('6 games')).toBeVisible();
   await page.reload();
   await expect(page.getByRole('radio', { name: 'Month' })).toHaveAttribute('aria-checked', 'true');
   await expect(page.getByLabel('6 games')).toBeVisible();
