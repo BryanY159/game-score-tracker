@@ -10,6 +10,7 @@ import { FinalForm } from '../games/ticketToRide/FinalForm';
 import { ttrState, type TtrFinal } from '../games/ticketToRide/scoring';
 import { ttrFinals } from '../games/outcome';
 import { Gone } from './PlacementScoring';
+import { isEscape, useShortcuts } from '../hooks/useShortcuts';
 
 export function TtrFinalScreen() {
   const { matchId = '' } = useParams();
@@ -29,6 +30,10 @@ function Final({ bundle }: { bundle: MatchBundle }) {
   const [playerId, setPlayerId] = useState(seats[0]!.player.id);
   const i = seats.findIndex((s) => s.player.id === playerId);
   const next = seats[i + 1];
+
+  useShortcuts('Final scoring', [
+    { keys: 'Esc', label: 'Back to the game', match: isEscape, run: () => navigate(`/play/${match.id}`) },
+  ]);
 
   function change(id: string, f: TtrFinal) {
     setFinals((x) => ({ ...x, [id]: f }));

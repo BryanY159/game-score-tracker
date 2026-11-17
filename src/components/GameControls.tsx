@@ -8,6 +8,7 @@ import { ConfirmDialog } from './ConfirmDialog';
 import { PauseIcon, PlayIcon } from './Icons';
 import { NoWrap } from './NoWrap';
 import { Sheet } from './Sheet';
+import { cmd, isEscape, isTypingTarget, key, useShortcuts, type Shortcut } from '../hooks/useShortcuts';
 
 type Open = null | 'more' | 'notes' | 'cancel';
 
@@ -127,4 +128,39 @@ export function PausedOverlay({ match }: { match: Match }) {
       </Button>
     </div>
   );
+}
+
+/**
+ * FR-20 AC-1 on a game screen: ⌘Z Undo, Space pause or resume, Esc back (it
+ * pauses, like the back arrow). `keys` are the game's own (AC-2 to AC-4).
+ * Esc in a text field leaves the field first.
+ */
+export function useGameShortcuts(
+  title: string,
+  match: Match,
+  { back, undo, keys = [] }: { back: () => void; undo?: { run: () => void; enabled: boolean }; keys?: Shortcut[] },
+) {
+  const paused = match.pausedAt !== null;
+  useShortcuts(title, [
+    ...keys,
+    ...(undo ? [{ keys: '⌘Z', label: 'Undo', match: cmd('z'), run: undo.run, enabled: undo.enabled && !paused }] : []),
+    {
+      keys: 'Space',
+      label: paused ? 'Resume' : 'Pause',
+      match: key(' '),
+      run: () => void (paused ? resumeMatch(db, match.id) : pauseMatch(db, match.id)),
+      enabled: match.endedAt === null,
+    },
+    {
+      keys: 'Esc',
+      label: 'Back (pauses the game)',
+      match: isEscape,
+      whileTyping: true,
+      run: () => {
+        const el = document.activeElement;
+        if (isTypingTarget(el)) (el as HTMLElement).blur();
+        else back();
+      },
+    },
+  ]);
 }

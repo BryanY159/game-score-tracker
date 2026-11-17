@@ -1,5 +1,7 @@
 import { CelebrationProvider } from './components/Celebration';
-import { HashRouter, Navigate, Outlet, Route, Routes } from 'react-router-dom';
+import { ShortcutProvider } from './components/ShortcutsOverlay';
+import { HashRouter, Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom';
+import { useLandscape } from './hooks/useLandscape';
 import { TabBar } from './components/TabBar';
 import { Home } from './screens/Home';
 import { History } from './screens/History';
@@ -16,9 +18,13 @@ import { EditFinished } from './screens/EditFinished';
 
 /** Screens with the tab bar. Game screens (later milestones) render without it. */
 function TabLayout() {
+  // NFR-3: History and Stats use the full width in landscape, for list and detail side by side.
+  const land = useLandscape();
+  const { pathname } = useLocation();
+  const wide = land && ['/history', '/stats'].includes(pathname);
   return (
     <div className="flex min-h-dvh flex-col">
-      <main className="mx-auto w-full max-w-3xl flex-1 pb-4">
+      <main className={`mx-auto w-full flex-1 pb-4 ${wide ? 'max-w-[1180px]' : 'max-w-3xl'}`}>
         <Outlet />
       </main>
       <TabBar />
@@ -30,6 +36,7 @@ export function App() {
   return (
     // HashRouter: a relaunch on any route never 404s on GitHub Pages (plan R-8).
     <HashRouter>
+      <ShortcutProvider>
       <CelebrationProvider>
       <Routes>
         <Route element={<TabLayout />}>
@@ -49,6 +56,7 @@ export function App() {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       </CelebrationProvider>
+      </ShortcutProvider>
     </HashRouter>
   );
 }

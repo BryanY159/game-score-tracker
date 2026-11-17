@@ -8,6 +8,7 @@ import { Sheet } from '../../components/Sheet';
 import type { Seat } from '../../db/repos/matches';
 import { COLOR_HEX } from '../../domain/colors';
 import { LONGEST_PATH_BONUS, ttrTotal, type TtrFinal } from './scoring';
+import { digitOf, key, useShortcuts } from '../../hooks/useShortcuts';
 
 /**
  * FR-7 AC-6, AC-7: each player's destination tickets (completed +value, failed
@@ -29,9 +30,21 @@ export function FinalForm({
   /** Editing a finished game: the turn log is gone, so route points are typed (A-11). */
   routePointsEditable?: boolean;
 }) {
-  const [adding, setAdding] = useState(false);
+  // null: closed; a number: open, starting from that digit typed on the keyboard.
+  const [adding, setAdding] = useState<null | { first: number | null }>(null);
   const seat = seats.find((s) => s.player.id === playerId)!;
   const f = finals[playerId]!;
+  const at = seats.findIndex((s) => s.player.id === playerId);
+  // FR-20 AC-3, end-of-game scoring.
+  useShortcuts(`Final scoring: ${seat.player.name}`, [
+    { keys: '0–9', label: 'Type a ticket value', match: (e) => digitOf(e) !== null, run: (e) => setAdding({ first: digitOf(e) || null }) },
+    { keys: 'Enter', label: 'Add the next ticket', match: key('Enter'), run: () => setAdding({ first: null }) },
+    { keys: 'P', label: `Longest path for ${seat.player.name}`, match: key('p'), run: () => onChange(playerId, { ...f, longestPath: !f.longestPath }) },
+    { keys: '← →', label: 'Previous or next player', match: (e) => key('ArrowLeft')(e) || key('ArrowRight')(e), run: (e) => {
+      const to = seats[at + (e.key === 'ArrowLeft' ? -1 : 1)];
+      if (to) onSelect(to.player.id);
+    } },
+  ]);
   const ticketSum = f.tickets.reduce((a, t) => a + (t.completed ? t.value : -t.value), 0);
 
   return (
@@ -110,7 +123,7 @@ export function FinalForm({
             </li>
           ))}
         </ul>
-        <Button variant="outline" onClick={() => setAdding(true)}>
+        <Button variant="outline" onClick={() => setAdding({ first: null })}>
           Add ticket
         </Button>
       </section>
@@ -150,18 +163,26 @@ export function FinalForm({
         </NoWrap>
       </div>
 
-      {adding && <AddTicket onClose={() => setAdding(false)} onAdd={(value, completed) => onChange(playerId, { ...f, tickets: [...f.tickets, { value, completed }] })} />}
+      {adding && <AddTicket first={adding.first} onClose={() => setAdding(null)} onAdd={(value, completed) => onChange(playerId, { ...f, tickets: [...f.tickets, { value, completed }] })} />}
     </div>
   );
 }
 
 /** FR-7 AC-6 (M13): type the value, then Completed or Failed adds the ticket with that status. */
-function AddTicket({ onAdd, onClose }: { onAdd: (v: number, completed: boolean) => void; onClose: () => void }) {
-  const [value, setValue] = useState<number | null>(null);
+function AddTicket({ first, onAdd, onClose }: { first: number | null; onAdd: (v: number, completed: boolean) => void; onClose: () => void }) {
+  const [value, setValue] = useState<number | null>(first);
   const add = (completed: boolean) => {
     if (value) onAdd(value, completed);
     onClose();
   };
+  const text = value === null ? '' : String(value);
+  // Digits type, C or X adds it as completed or failed (FR-20 AC-3).
+  useShortcuts('Add ticket', [
+    { keys: '0–9', label: 'Type the value', match: (e) => digitOf(e) !== null, run: (e) => text.length < 2 && setValue(Number((text === '0' ? '' : text) + digitOf(e))) },
+    { keys: 'Delete', label: 'Delete a digit', match: key('Backspace'), run: () => setValue(text.length > 1 ? Number(text.slice(0, -1)) : null) },
+    { keys: 'C', label: 'Completed', match: key('c'), run: () => add(true), enabled: !!value },
+    { keys: 'X', label: 'Failed', match: key('x'), run: () => add(false), enabled: !!value },
+  ]);
   return (
     <Sheet title="Add ticket" onClose={onClose}>
       <div className="flex flex-col gap-2">

@@ -15,6 +15,8 @@ import { resultLine } from '../domain/summary';
 import { elapsedMs, formatLength } from '../domain/timer';
 import type { GameKey, Player } from '../domain/types';
 import { GAMES, requireGame } from '../games/registry';
+import { useLandscape } from '../hooks/useLandscape';
+import { MatchDetailPanel } from './MatchDetail';
 
 /** FR-13 AC-1: finished games, newest first, filtered by game and player. */
 export function History() {
@@ -22,6 +24,9 @@ export function History() {
   const all = useLiveQuery(() => listRecentFinished(db), []);
   const [filter, setFilter] = useState<HistoryFilter>({ gameKey: null, playerId: null });
   const [pickPlayer, setPickPlayer] = useState(false);
+  // NFR-3 landscape: the list and the selected game side by side.
+  const land = useLandscape();
+  const [picked, setPicked] = useState<string | null>(null);
 
   if (!all) return <ScreenHeader title="History" />;
 
@@ -30,6 +35,7 @@ export function History() {
   const shown = filterHistory(all, filter);
   const selectedPlayer = players.find((p) => p.id === filter.playerId);
   const setGame = (gameKey: GameKey | null) => setFilter((f) => ({ ...f, gameKey }));
+  const selected = land ? (shown.find((b) => b.match.id === picked) ?? shown[0] ?? null) : null;
 
   return (
     <>
@@ -53,19 +59,30 @@ export function History() {
           </div>
 
           {shown.length === 0 && <EmptyState title="No matching games" body="Try another game or player." />}
-          <div className="flex flex-col px-4 pt-2">
+          <div className={land ? 'grid grid-cols-[400px_minmax(0,1fr)] gap-6 px-4 pt-2' : ''}>
+          <div className={land ? 'flex flex-col' : 'flex flex-col px-4 pt-2'}>
             {groupByPeriod(shown).map((group) => (
               <section key={group.label}>
                 <h2 className="m-0 pt-3 pb-1 text-[14px] font-bold text-text-2">{group.label}</h2>
-                <ul className="m-0 grid list-none grid-cols-1 gap-x-6 p-0 md:grid-cols-2">
+                <ul className={`m-0 grid list-none grid-cols-1 gap-x-6 p-0 ${land ? '' : 'md:grid-cols-2'}`}>
                   {group.items.map((b) => (
                     <li key={b.match.id}>
-                      <HistoryRow b={b} onOpen={() => navigate(`/history/${b.match.id}`)} />
+                      <HistoryRow
+                        b={b}
+                        current={selected?.match.id === b.match.id}
+                        onOpen={() => (land ? setPicked(b.match.id) : navigate(`/history/${b.match.id}`))}
+                      />
                     </li>
                   ))}
                 </ul>
               </section>
             ))}
+          </div>
+          {selected && (
+            <div className="sticky top-2 max-h-[calc(100dvh-120px)] self-start overflow-y-auto pt-3 pb-4">
+              <MatchDetailPanel matchId={selected.match.id} />
+            </div>
+          )}
           </div>
         </>
       )}
@@ -107,11 +124,16 @@ export function History() {
   );
 }
 
-function HistoryRow({ b, onOpen }: { b: MatchBundle; onOpen: () => void }) {
+function HistoryRow({ b, onOpen, current = false }: { b: MatchBundle; onOpen: () => void; current?: boolean }) {
   const winners = b.seats.filter((s) => s.mp.isWinner);
   const single = winners.length === 1 ? winners[0]! : null;
   return (
-    <button type="button" onClick={onOpen} className="flex h-[68px] w-full items-center gap-3 border-b border-border text-left text-text">
+    <button
+      type="button"
+      onClick={onOpen}
+      aria-current={current || undefined}
+      className={`flex h-[68px] w-full items-center gap-3 border-b border-border text-left text-text ${current ? '-mx-2 w-[calc(100%+16px)] rounded-2xl bg-surface px-2' : ''}`}
+    >
       {single ? (
         <span className="rounded-full" style={{ background: COLOR_HEX[single.mp.color] }}>
           <Avatar emoji={single.player.emoji} size={40} />
