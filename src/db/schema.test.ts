@@ -7,12 +7,12 @@ afterEach(async () => {
   await db.delete();
 });
 
-describe('Dexie schema v1', () => {
+describe('Dexie schema', () => {
   it('opens with every table', async () => {
     db = new ScoreDb('schema-test');
     await db.open();
-    expect(db.tables.map((t) => t.name).sort()).toEqual([...TABLES].sort());
-    expect(db.verno).toBe(1);
+    expect(db.tables.map((t) => t.name).sort()).toEqual([...TABLES, 'backups'].sort());
+    expect(db.verno).toBe(2);
   });
 
   it('creates the Settings singleton with defaults once', async () => {
