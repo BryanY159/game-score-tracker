@@ -11,7 +11,7 @@ const digits = async (page: Page, v: string) => {
 };
 const chip = (page: Page, name: string) => page.getByRole('button', { name: `Type ${name}'s round score` });
 
-test('a full game: card selector, keypad from a score chip, bust, not a bust, Flip 7 (FR-8)', async ({ page }) => {
+test('a full game: card selector, keypad from a score chip, bust, toggling a card, Flip 7 (FR-8)', async ({ page }) => {
   await openApp(page, '#/', { players: FOUR });
   await page.getByRole('button', { name: 'New game' }).click();
   await page.getByRole('button', { name: /Flip 7/ }).click();
@@ -44,12 +44,13 @@ test('a full game: card selector, keypad from a score chip, bust, not a bust, Fl
 
   await page.getByRole('button', { name: 'Card 5', exact: true }).click();
   await page.getByRole('button', { name: 'Card 9', exact: true }).click();
+  await page.getByRole('button', { name: 'Card 5', exact: true }).click(); // a second tap unselects
+  await expect(page.getByLabel('Round sum')).toHaveText('(9) =9');
   await page.getByRole('button', { name: 'Card 5', exact: true }).click();
-  await page.getByRole('alertdialog', { name: 'Bust?' }).getByRole('button', { name: 'Not a bust, remove card' }).click();
   await page.getByRole('button', { name: '+10' }).click();
   await page.getByRole('button', { name: '×2' }).click();
   // ×2 doubles number cards only: (5 + 9) × 2 + 10.
-  await expect(page.getByLabel('Round sum')).toHaveText('2×(5+9) + 10 =38');
+  await expect(page.getByLabel('Round sum')).toHaveText('2×(9+5) + 10 =38');
   await expect(chip(page, 'Sam')).toHaveText('+38');
   await confirm.click();
 
@@ -77,15 +78,18 @@ test('the keypad opens from a score chip, and Back to cards returns (FR-8 AC-7)'
   await expect(page.getByRole('group', { name: "Riley's cards" })).toBeVisible();
 });
 
-test('a bust on the card selector', async ({ page }) => {
+test('a bust on the card selector comes only from the Bust button', async ({ page }) => {
   await openApp(page, '#/', { players: FOUR });
   await page.getByRole('button', { name: 'New game' }).click();
   await page.getByRole('button', { name: /Flip 7/ }).click();
   for (const n of ['Alex', 'Sam']) await page.getByRole('button', { name: n, exact: true }).click();
   await page.getByRole('button', { name: 'Start game' }).click();
   await page.getByRole('button', { name: 'Card 8', exact: true }).click();
+  await page.getByRole('button', { name: 'Card 8', exact: true }).click(); // just unselects, no prompt
+  await expect(page.getByRole('alertdialog')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Card 8', exact: true })).toHaveAttribute('aria-pressed', 'false');
   await page.getByRole('button', { name: 'Card 8', exact: true }).click();
-  await page.getByRole('alertdialog', { name: 'Bust?' }).getByRole('button', { name: 'Bust', exact: true }).click();
+  await page.getByRole('group', { name: "Alex's cards" }).getByRole('button', { name: 'Bust', exact: true }).click(); // only the Bust button busts
   await expect(chip(page, 'Alex')).toHaveText('Bust');
   await expect(page.getByRole('group', { name: "Sam's cards" })).toBeVisible(); // moved on
 });
@@ -146,4 +150,52 @@ test('editing a past round opens the keypad (FR-5 AC-4, FR-8 AC-8)', async ({ pa
   await sheet.getByRole('button', { name: 'Save round' }).click();
   await page.getByRole('button', { name: 'Close' }).click();
   await expect(total(page, 'Jordan')).toHaveText('139');
+});
+
+test('every card toggles: a second tap unselects, the score goes back, and selected cards show the ring and ✓ (FR-8 AC-2)', async ({ page }) => {
+  await openApp(page, `#/play/${FLIP7_CARDS.matches[0]!.id}`, FLIP7_CARDS);
+  await page.getByRole('button', { name: /^Alex, this round/ }).click();
+  const group = page.getByRole('group', { name: "Alex's cards" });
+  const sumText = page.getByLabel('Round sum');
+  await expect(sumText).toHaveText('(3+7+12) + 4 =26');
+  const badge = (name: string) => group.getByRole('button', { name, exact: true }).locator('span[aria-hidden="true"]');
+  const ringed = (name: string) => group.getByRole('button', { name, exact: true }).evaluate((el) => getComputedStyle(el).boxShadow !== 'none');
+
+  // Number card: on, then off again.
+  const card = group.getByRole('button', { name: 'Card 9', exact: true });
+  await card.click();
+  await expect(card).toHaveAttribute('aria-pressed', 'true');
+  await expect(sumText).toHaveText('(3+7+12+9) + 4 =35');
+  await card.click();
+  await expect(card).toHaveAttribute('aria-pressed', 'false');
+  await expect(sumText).toHaveText('(3+7+12) + 4 =26');
+  await expect(page.getByRole('alertdialog')).toHaveCount(0);
+
+  // Modifiers: on shows the ring and ✓; a second tap takes it off and the score goes back.
+  for (const m of ['+2', '+10', '×2']) {
+    const b = group.getByRole('button', { name: m, exact: true });
+    await b.click();
+    await expect(b).toHaveAttribute('aria-pressed', 'true');
+    await expect(badge(m)).toBeVisible();
+    expect(await ringed(m)).toBe(true);
+  }
+  await expect(sumText).toHaveText('2×(3+7+12) + 4 + 2 + 10 =60');
+  for (const m of ['+2', '+10', '×2']) await group.getByRole('button', { name: m, exact: true }).click();
+  for (const m of ['+2', '+10', '×2']) {
+    await expect(group.getByRole('button', { name: m, exact: true })).toHaveAttribute('aria-pressed', 'false');
+    await expect(badge(m)).toHaveCount(0);
+    expect(await ringed(m)).toBe(false);
+  }
+  await expect(sumText).toHaveText('(3+7+12) + 4 =26');
+  // The +4 from the fixture: off, then on.
+  await group.getByRole('button', { name: '+4', exact: true }).click();
+  await expect(sumText).toHaveText('(3+7+12) =22');
+  await group.getByRole('button', { name: '+4', exact: true }).click();
+  await expect(sumText).toHaveText('(3+7+12) + 4 =26');
+
+  // Unselecting the 7th card removes the Flip 7 bonus.
+  for (const n of [0, 1, 2, 4]) await group.getByRole('button', { name: `Card ${n}`, exact: true }).click();
+  await expect(sumText).toHaveText('(3+7+12+0+1+2+4) + 4 + 15 =48');
+  await group.getByRole('button', { name: 'Card 4', exact: true }).click();
+  await expect(sumText).toHaveText('(3+7+12+0+1+2) + 4 =29');
 });

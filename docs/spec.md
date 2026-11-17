@@ -94,16 +94,17 @@ Each profile has a name, an emoji, a color from the profile palette, and a hide-
 
 - AC-1: Keypad: type a round score, or tap Bust to score 0. Flip 7! adds 15 points.
 - AC-2: The card selector (mockup `Flip7Cards`), used during play, works like this:
-  - Number cards 0–12 can each be tapped once. Tapping a duplicate asks "Bust?"
-  - Modifiers +2, +4, +6, +8, +10 and ×2 can also be tapped.
+  - Every card is a toggle: tapping a number card (0–12) or a modifier (+2, +4, +6, +8, +10, ×2) selects it, and tapping it again unselects it.
+  - Selected cards, number and modifier alike, show the dark ring and the ✓ badge from the mockup (`aria-pressed` set).
+  - A bust is recorded only with the **Bust** button. Tapping a selected card never asks about a bust.
   - The score is (number cards, doubled if ×2 is present) + modifiers + 15 if there are 7 unique numbers.
-  - A Flip 7 is detected automatically.
+  - A Flip 7 is detected automatically when 7 different number cards are selected, and it goes away if one of them is unselected. Once there are 7, no more number cards can be added (a Flip 7 ends the turn).
   - **Bust** scores 0 and moves to the next player. **Clear** empties the player's cards for this round.
   - The panel shows the player's sum, e.g. "(3+5+8+12) + 4 = 32".
 - AC-3: The dealer rotates every round. Confirm Round updates the totals and the round count.
 - AC-4: The game ends after a round in which any player reaches their target.
 - AC-5: The game saves scores, rounds played, and each player's Flip 7 count and busts. It also tracks the fewest rounds to reach 200 for each player count (saved per player as `roundsTo200`, only for players whose target was 200).
-- AC-6: Action cards (Freeze, Flip Three, Second Chance) aren't tracked. The "Bust?" prompt for a duplicate number card offers **Bust** or **Not a bust, remove card**, which covers a Second Chance save.
+- AC-6: Action cards (Freeze, Flip Three, Second Chance) aren't tracked. The **Bust** button covers every bust.
 - AC-7: Each player's pill has an outlined round-score chip. Tapping the chip opens the custom keypad for that player (mockup `Flip7Keypad`): digits, **Bust**, **Flip 7!**, delete and **Next player**. Its **Back to cards** button returns to the card selector. Tapping the rest of a pill selects that player for the card selector. Confirm Round needs an entry for every player (NFR-2: one entry per player plus a confirm).
 - AC-8: Editing a past round opens the keypad by default (the score before the bonus, plus Bust and Flip 7!), whichever way the round was entered.
 - AC-9: Games and rounds saved before this change (entered in either the old Number or Cards mode) still load, show and edit normally.
@@ -210,8 +211,8 @@ These only apply when a hardware keyboard is used (iPad with a keyboard case). N
 
 - AC-1: Everywhere: ⌘Z Undo, Space pause or resume, Esc close a sheet or go back, ? show the shortcut list.
 - AC-2: Flip 7:
-  - 0–9 pick that number card, and Shift+1/2/3 pick 10/11/12.
-  - + then 2/4/6/8/0 picks a modifier (+0 means +10). X is ×2.
+  - 0–9 toggle that number card, and Shift+1/2/3 toggle 10/11/12.
+  - + then 2/4/6/8/0 toggles a modifier (+0 means +10). X toggles ×2.
   - B is Bust and C is Clear.
   - K opens the keypad, where digits type and F marks a Flip 7.
   - Enter goes to the next player, and on the last player it's Confirm round.
@@ -229,7 +230,7 @@ These only apply when a hardware keyboard is used (iPad with a keyboard case). N
   - Esc: ⌘. also works, because the Magic Keyboard for iPad has no Esc key. Esc in a text field leaves the field first; on a game screen it goes back (and pauses, as the back arrow does); in a sheet or dialog it closes it.
   - Space and Enter press a button that has a visible keyboard focus ring, as usual, instead of running the shortcut.
   - The game-wide keys (⌘Z, Space, Esc and ?) also work in Parcheesi and Monopoly.
-  - Flip 7: K switches between the cards and the keypad. In the keypad, Delete removes a digit. In the Bust? question, B or Enter is Bust and Esc is "Not a bust, remove card". After +, any other key cancels the modifier.
+  - Flip 7: card keys toggle, like taps, so pressing a selected card's key again unselects it. Only B (the Bust button) records a bust. K switches between the cards and the keypad. In the keypad, Delete removes a digit. After +, any other key cancels the modifier.
   - Ticket to Ride: Enter on the turn screen opens final scoring once play is over. In end-of-game scoring, a digit opens Add ticket starting with that digit, C or X adds it as completed or failed, Enter opens Add ticket for the next one, the left and right arrows move between players, and Esc goes back to the game.
   - Dutch Blitz: Tab skips the − and + buttons, since + and − (or =) do their job. The first arrow press goes to the first field. Holding + or − repeats through the keyboard's own key repeat.
   - On the iPad, Tab may only move between text fields unless keyboard navigation is on in Settings. Nothing in FR-20 needs Tab to reach a button.
@@ -314,7 +315,7 @@ What goes in `details` depends on the game:
 | Modifier card | orange `#F5A623`, border `#D98A12`, coral `#E8524A` numerals with the same dark outline |
 | Bust button | `#B91C1C` with white text |
 
-The cards keep these colors in dark mode, like real cards.
+The cards keep these colors in dark mode, like real cards. The selected ring and ✓ badge use the Text color: `#1F2430` in light mode, as in the mockup, and light in dark mode so they stay visible on the dark panel.
 
 ## 7. Screens
 
