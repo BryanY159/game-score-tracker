@@ -60,10 +60,10 @@ Each issue has a proposed default. I'll build to the default unless the owner ov
 ```
 index.html                  apple-mobile-web-app meta, theme-color (light/dark), viewport-fit=cover
 vite.config.ts              base path, vite-plugin-pwa (manifest, Workbox precache)
-tailwind.config.ts          tokens only (palette + neutrals from A-1), font stack, tabular-nums utility
+(Tailwind v4: tokens live in src/styles/index.css, no tailwind.config)
 src/
   main.tsx, App.tsx         HashRouter, tab layout, SW update hook
-  styles/tokens.css         CSS variables for light/dark (prefers-color-scheme), reduced-motion rules
+  styles/index.css          tokens + CSS variables for light/dark (prefers-color-scheme), reduced-motion rules
   db/
     schema.ts               Dexie db, versioned stores (players, matches, matchPlayers, rounds, turnLogs, settings)
     record.ts               newRecord()/touch()/softDelete(): uuid, createdAt, updatedAt, deletedAt (NFR-5)
@@ -100,8 +100,9 @@ Principles: scoring and stats are **pure functions** tested in Vitest. Screens a
 ## 3. Testing approach (applies to every milestone)
 
 - **Vitest:** colocated `*.test.ts` for everything in `domain/` and `games/*/scoring.ts`, using `fake-indexeddb` for repo tests.
-- **Playwright (NFR-7):** projects for `iphone-se` 375×667, `iphone-14` 390×844 and `ipad` 820×1180, each run with `colorScheme: 'light'` and `'dark'`, so 6 renders per screen. The browser is WebKit, with the clock frozen and reduced motion forced on for stable images. Screens are seeded with `dev/seed.ts` and reached through hash routes.
-  - `toHaveScreenshot()` baselines are committed. They're generated in CI's Linux container and contain only synthetic data.
+- **Playwright (NFR-7):** projects for `iphone-375` 375×667, `iphone-390` 390×844 and `ipad-820` 820×1180, each run with `colorScheme: 'light'` and `'dark'`, so 6 renders per screen. CI runs them in **WebKit and Chromium**, with reduced motion forced on for stable images. Screens are seeded through test-only hooks (`src/dev/testHooks.ts`, left out of production builds) and reached through hash routes.
+  - Text is rendered with Inter, a test-only stand-in font whose widths are close to SF Pro (R-3), so wrapping checks give the same result on every machine.
+  - Every screenshot is saved as a CI artifact (`screenshots/<project>/<screen>.png`) and reviewed before merge. *(Changed in M0: no committed pixel baselines. WebKit baselines can't be generated outside CI, and the automated checks below catch the layout faults that matter.)*
   - The `noWrap` helper runs on every screen:
     1. every `[data-nowrap]` element has a single line box (`getClientRects().length === 1` and height ≤ 1.5× line-height),
     2. there's no horizontal page scroll (`scrollWidth ≤ innerWidth`),
@@ -130,7 +131,7 @@ Principles: scoring and stats are **pure functions** tested in Vitest. Screens a
 
 **Order of work:**
 1. Scaffold Vite + React + TS, ESLint, Prettier and `.gitignore`.
-2. Tailwind config and `tokens.css`, holding only the §6 palette plus the A-1 neutrals in light and dark. Font stack `ui-rounded, 'SF Pro Rounded', system-ui`, plus the `tabular-nums` utility.
+2. Tailwind v4 tokens in `src/styles/index.css` (CSS-first config, default palette cleared), holding only the §6 palette plus the A-1 neutrals in light and dark. Font stack `ui-rounded, 'SF Pro Rounded', system-ui`, plus the `tabular-nums` utility.
 3. Shared primitives: `Button` (charcoal), `BottomToolbar`, `TabBar`, `PlayerPill` (white text on color), `NoWrap`.
 4. Dexie `schema.ts` v1 with every table, `record.ts`, and the Settings singleton.
 5. vite-plugin-pwa: manifest, icons and the update flow. `storage.persist()` on first launch.
@@ -138,7 +139,7 @@ Principles: scoring and stats are **pure functions** tested in Vitest. Screens a
 7. Vitest and Playwright config, the `noWrap` helper, and the seed hook.
 8. GitHub Actions `ci.yml` and `deploy.yml`, plus the Pages setup.
 
-**Files:** `package.json`, `vite.config.ts`, `tailwind.config.ts`, `postcss.config.js`, `tsconfig*.json`, `index.html`, `public/icons/*`, `src/main.tsx`, `src/App.tsx`, `src/styles/tokens.css`, `src/db/schema.ts`, `src/db/record.ts`, `src/db/repos/settings.ts`, `src/components/{Button,BottomToolbar,TabBar,PlayerPill,NoWrap}.tsx`, `src/screens/{Home,History,Stats,Players}.tsx` (empty states), `vitest.config.ts`, `playwright.config.ts`, `e2e/helpers/noWrap.ts`, `e2e/screens.spec.ts`, `.github/workflows/{ci,deploy}.yml`, `.gitignore`, `docs/spec.md` (only if token values change during build).
+**Files:** `package.json`, `vite.config.ts`, `tsconfig.json`, `eslint.config.js`, `index.html`, `public/icons/*`, `src/main.tsx`, `src/App.tsx`, `src/styles/index.css`, `src/db/schema.ts`, `src/db/record.ts`, `src/db/repos/settings.ts`, `src/components/{Button,BottomToolbar,TabBar,PlayerPill,NoWrap}.tsx`, `src/screens/{Home,History,Stats,Players}.tsx` (empty states), `vitest.config.ts`, `playwright.config.ts`, `e2e/helpers/noWrap.ts`, `e2e/screens.spec.ts`, `.github/workflows/{ci,deploy}.yml`, `.gitignore`, `docs/spec.md` (only if token values change during build).
 
 **Tests:**
 - Vitest: `record.test.ts` (uuid and timestamps set, `touch` bumps `updatedAt`, `softDelete` sets `deletedAt`). `schema.test.ts` (opens with fake-indexeddb, all stores exist).
