@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Settings and backup</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#1D4ED8}a:hover{color:#1E3A8A}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #FFFFFF; color: #1F2430; font-family: ui-rounded, 'SF Pro Rounded', 'Nunito', system-ui, sans-serif; display: flex; flex-direction: column; overflow: hidden">
+
+<div style="padding: 52px 20px 12px; display: flex; align-items: center; gap: 12px">
+<a href="Home.dc.html" aria-label="Back" style="width: 44px; height: 44px; background: #F2F3F5; border-radius: 22px; display: flex; align-items: center; justify-content: center; color: #1F2430"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg></a>
+<span style="font-size: 26px; font-weight: 800">Settings</span>
+</div>
+
+<div style="padding: 0 16px; display: flex; flex-direction: column; gap: 18px">
+
+<div style="display: flex; flex-direction: column; gap: 8px">
+<span style="font-size: 17px; font-weight: 800">Backup</span>
+<div style="background: #F2F3F5; border-radius: 16px; padding: 12px 14px; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 15px; font-weight: 700">Last backup Nov 4</span><span style="font-size: 13px; color: #5F6470">12 games since then · 214 games saved</span></div>
+<button style="height: 52px; border: none; border-radius: 16px; background: #1F2430; color: #FFFFFF; font-family: inherit; font-size: 16px; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 8px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3M7 8l5-5 5 5M4 15v4a2 2 0 002 2h12a2 2 0 002-2v-4"></path></svg>Export backup file</button>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+<button style="height: 64px; border: 1.5px solid #1F2430; border-radius: 16px; background: #FFFFFF; color: #1F2430; font-family: inherit; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.2"><span style="font-size: 15px; font-weight: 800">Merge a file</span><span style="font-size: 12px; color: #5F6470">Combine devices</span></button>
+<button style="height: 64px; border: 1.5px solid #E4E6EA; border-radius: 16px; background: #FFFFFF; color: #1F2430; font-family: inherit; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.2"><span style="font-size: 15px; font-weight: 800">Restore</span><span style="font-size: 12px; color: #5F6470">Replace all data</span></button>
+</div>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 8px">
+<span style="font-size: 17px; font-weight: 800">Reminders</span>
+<div style="border: 1.5px solid #E4E6EA; border-radius: 16px; padding: 0 14px; display: flex; flex-direction: column">
+<label style="height: 56px; display: flex; align-items: center; justify-content: space-between; gap: 12px; border-bottom: 1px solid #E4E6EA; font-size: 15px; white-space: nowrap">Remind me to back up<input type="checkbox" checked style="width: 24px; height: 24px; accent-color: #1F2430"></label>
+<div style="height: 56px; display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 15px; white-space: nowrap"><span>Every</span><div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; background: #F2F3F5; border-radius: 14px; padding: 3px"><button style="height: 38px; border: none; border-radius: 11px; background: #FFFFFF; color: #1F2430; padding: 0 12px; font-family: inherit; font-size: 14px; font-weight: 800">10 games</button><button style="height: 38px; border: none; border-radius: 11px; background: transparent; color: #5F6470; padding: 0 12px; font-family: inherit; font-size: 14px; font-weight: 700">Month</button></div></div>
+</div>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 8px">
+<span style="font-size: 17px; font-weight: 800">Stats</span>
+<div style="border: 1.5px solid #E4E6EA; border-radius: 16px; padding: 8px 8px 8px 14px; display: flex; align-items: center; justify-content: space-between; gap: 12px">
+<div style="display: flex; flex-direction: column; white-space: nowrap"><span style="font-size: 15px">Minimum games</span><span style="font-size: 13px; color: #5F6470">Before a player's stats show</span></div>
+<div style="display: flex; align-items: center; gap: 4px"><button aria-label="Fewer games" style="width: 44px; height: 44px; border: 1.5px solid #1F2430; border-radius: 22px; background: #FFFFFF; color: #1F2430; font-size: 20px; font-weight: 800">−</button><span style="width: 28px; text-align: center; font-size: 20px; font-weight: 800">5</span><button aria-label="More games" style="width: 44px; height: 44px; border: none; border-radius: 22px; background: #1F2430; color: #FFFFFF; font-size: 20px; font-weight: 800">+</button></div>
+</div>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 8px">
+<span style="font-size: 17px; font-weight: 800">Appearance</span>
+<div style="background: #F2F3F5; border-radius: 16px; padding: 12px 14px; font-size: 14px; color: #5F6470; line-height: 1.4">Light and dark mode follow your iPhone setting. Animations turn off when Reduce Motion is on.</div>
+</div>
+
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

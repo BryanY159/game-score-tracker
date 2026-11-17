@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Ticket to Ride end-of-game entry</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#1D4ED8}a:hover{color:#1E3A8A}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #FFFFFF; color: #1F2430; font-family: ui-rounded, 'SF Pro Rounded', 'Nunito', system-ui, sans-serif; display: flex; flex-direction: column; overflow: hidden">
+
+<div style="padding: 52px 20px 12px; display: flex; flex-direction: column; gap: 2px">
+<span style="font-size: 22px; font-weight: 800">Final scoring</span>
+<span style="font-size: 14px; color: #5F6470">Ticket to Ride · tickets and longest path</span>
+</div>
+
+<div style="padding: 0 16px; display: flex; gap: 6px">
+<button aria-pressed="true" style="flex: 1; height: 48px; border: none; border-radius: 24px; background: #C0392B; color: #FFFFFF; font-family: inherit; font-size: 15px; font-weight: 800; box-shadow: 0 0 0 3px #FFFFFF, 0 0 0 5px #1F2430">Alex</button>
+<button style="flex: 1; height: 48px; border: none; border-radius: 24px; background: #1D4ED8; color: #FFFFFF; font-family: inherit; font-size: 15px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 4px">Sam <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Done"><path d="M5 12l5 5 9-10"></path></svg></button>
+<button style="flex: 1; height: 48px; border: none; border-radius: 24px; background: #1C1C1E; color: #FFFFFF; font-family: inherit; font-size: 15px; font-weight: 700">Jordan</button>
+<button style="flex: 1; height: 48px; border: none; border-radius: 24px; background: #EAB308; color: #FFFFFF; font-family: inherit; font-size: 15px; font-weight: 700">Riley</button>
+</div>
+
+<div style="margin: 14px 16px 0; background: #F2F3F5; border-radius: 16px; height: 48px; padding: 0 16px; display: flex; align-items: center; justify-content: space-between"><span style="font-size: 15px; color: #5F6470">Alex · route points</span><span style="font-size: 20px; font-weight: 800">78</span></div>
+
+<div style="padding: 16px 16px 0; display: flex; flex-direction: column; gap: 8px">
+<span style="font-size: 17px; font-weight: 800">Destination tickets</span>
+
+<div style="display: flex; align-items: center; gap: 8px">
+<span style="width: 56px; height: 44px; border-radius: 14px; border: 1.5px solid #E4E6EA; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 800">13</span>
+<div style="flex: 1; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; background: #F2F3F5; border-radius: 14px; padding: 3px">
+<button aria-pressed="true" style="height: 40px; border: none; border-radius: 11px; background: #15803D; color: #FFFFFF; font-family: inherit; font-size: 14px; font-weight: 800">Completed +13</button>
+<button style="height: 40px; border: none; border-radius: 11px; background: transparent; color: #5F6470; font-family: inherit; font-size: 14px; font-weight: 700">Failed</button>
+</div>
+</div>
+
+<div style="display: flex; align-items: center; gap: 8px">
+<span style="width: 56px; height: 44px; border-radius: 14px; border: 1.5px solid #E4E6EA; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 800">20</span>
+<div style="flex: 1; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; background: #F2F3F5; border-radius: 14px; padding: 3px">
+<button aria-pressed="true" style="height: 40px; border: none; border-radius: 11px; background: #15803D; color: #FFFFFF; font-family: inherit; font-size: 14px; font-weight: 800">Completed +20</button>
+<button style="height: 40px; border: none; border-radius: 11px; background: transparent; color: #5F6470; font-family: inherit; font-size: 14px; font-weight: 700">Failed</button>
+</div>
+</div>
+
+<div style="display: flex; align-items: center; gap: 8px">
+<span style="width: 56px; height: 44px; border-radius: 14px; border: 1.5px solid #E4E6EA; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 800">8</span>
+<div style="flex: 1; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; background: #F2F3F5; border-radius: 14px; padding: 3px">
+<button style="height: 40px; border: none; border-radius: 11px; background: transparent; color: #5F6470; font-family: inherit; font-size: 14px; font-weight: 700">Completed</button>
+<button aria-pressed="true" style="height: 40px; border: none; border-radius: 11px; background: #1F2430; color: #FFFFFF; font-family: inherit; font-size: 14px; font-weight: 800">Failed −8</button>
+</div>
+</div>
+
+<button style="height: 48px; border: 1.5px dashed #5F6470; border-radius: 14px; background: #FFFFFF; color: #1F2430; font-family: inherit; font-size: 15px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 6px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>Add ticket</button>
+</div>
+
+<div style="padding: 16px 16px 0; display: flex; flex-direction: column; gap: 8px">
+<div style="display: flex; justify-content: space-between; align-items: baseline"><span style="font-size: 17px; font-weight: 800">Longest path · +10</span><span style="font-size: 13px; color: #5F6470">Pick all who tie</span></div>
+<div style="display: flex; gap: 6px">
+<button aria-pressed="true" style="flex: 1; height: 44px; border: 2px solid #1F2430; border-radius: 22px; background: #1F2430; color: #FFFFFF; font-family: inherit; font-size: 14px; font-weight: 800">Alex</button>
+<button style="flex: 1; height: 44px; border: 1.5px solid #E4E6EA; border-radius: 22px; background: #FFFFFF; color: #1F2430; font-family: inherit; font-size: 14px; font-weight: 700">Sam</button>
+<button style="flex: 1; height: 44px; border: 1.5px solid #E4E6EA; border-radius: 22px; background: #FFFFFF; color: #1F2430; font-family: inherit; font-size: 14px; font-weight: 700">Jordan</button>
+<button style="flex: 1; height: 44px; border: 1.5px solid #E4E6EA; border-radius: 22px; background: #FFFFFF; color: #1F2430; font-family: inherit; font-size: 14px; font-weight: 700">Riley</button>
+</div>
+</div>
+
+<div style="margin: 16px 16px 0; background: #C0392B; color: #FFFFFF; border-radius: 24px; height: 56px; padding: 0 18px; display: flex; align-items: center; justify-content: space-between"><span style="font-size: 15px; white-space: nowrap">Alex · 78 + 33 − 8 + 10</span><span style="font-size: 26px; font-weight: 800">113</span></div>
+
+<div style="flex: 1"></div>
+<div style="border-top: 1px solid #E4E6EA; padding: 8px 12px 28px; display: flex; align-items: center; gap: 8px; background: #FFFFFF">
+<button style="flex: 1; height: 52px; border: none; background: transparent; color: #1F2430; font-family: inherit; font-size: 12px; font-weight: 700; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg>Back to game</button>
+<a href="Results.dc.html" style="flex: 2; height: 52px; border-radius: 16px; background: #1F2430; color: #FFFFFF; text-decoration: none; font-size: 17px; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 8px">Next: Sam</a>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

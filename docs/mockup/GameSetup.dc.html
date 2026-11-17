@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Game setup for Flip 7</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#1D4ED8}a:hover{color:#1E3A8A}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #FFFFFF; color: #1F2430; font-family: ui-rounded, 'SF Pro Rounded', 'Nunito', system-ui, sans-serif; display: flex; flex-direction: column; overflow: hidden">
+
+<div style="padding: 52px 20px 12px; display: flex; align-items: center; gap: 12px">
+<a href="GamePicker.dc.html" aria-label="Back" style="width: 44px; height: 44px; background: #F2F3F5; border-radius: 22px; display: flex; align-items: center; justify-content: center; color: #1F2430"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg></a>
+<div style="flex: 1; display: flex; flex-direction: column"><span style="font-size: 22px; font-weight: 800">Flip 7 setup</span><span style="font-size: 14px; color: #5F6470">4 players · 2+ allowed</span></div>
+</div>
+
+<div style="padding: 0 16px; display: flex; flex-direction: column; gap: 8px">
+<div style="display: flex; justify-content: space-between; align-items: center"><span style="font-size: 17px; font-weight: 800">Turn order</span><button style="height: 36px; border: 1.5px solid #E4E6EA; background: #FFFFFF; color: #1F2430; border-radius: 18px; padding: 0 12px; font-family: inherit; font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 6px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"></path></svg>Randomize</button></div>
+
+<div style="display: flex; align-items: center; gap: 8px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5F6470" stroke-width="2" stroke-linecap="round" role="img" aria-label="Drag to reorder"><path d="M8 6h.01M8 12h.01M8 18h.01M16 6h.01M16 12h.01M16 18h.01"></path></svg><div style="flex: 1; background: #C0392B; color: #FFFFFF; border-radius: 26px; height: 52px; padding: 0 6px 0 6px; display: flex; align-items: center; gap: 10px"><span style="width: 40px; height: 40px; border-radius: 20px; background: rgba(255,255,255,0.22); display: flex; align-items: center; justify-content: center; font-size: 22px">🦊</span><div style="flex: 1; display: flex; flex-direction: column; line-height: 1.15; white-space: nowrap"><span style="font-size: 17px; font-weight: 700">Alex</span><span style="font-size: 13px">Deals first</span></div><label style="display: flex; align-items: center; gap: 6px; font-size: 13px">Target<input value="250" aria-label="Alex target" style="width: 60px; height: 40px; border: none; border-radius: 20px; text-align: center; font-family: inherit; font-size: 17px; font-weight: 800; color: #1F2430; background: #FFFFFF"></label></div></div>
+
+<div style="display: flex; align-items: center; gap: 8px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5F6470" stroke-width="2" stroke-linecap="round" role="img" aria-label="Drag to reorder"><path d="M8 6h.01M8 12h.01M8 18h.01M16 6h.01M16 12h.01M16 18h.01"></path></svg><div style="flex: 1; background: #1D4ED8; color: #FFFFFF; border-radius: 26px; height: 52px; padding: 0 6px 0 6px; display: flex; align-items: center; gap: 10px"><span style="width: 40px; height: 40px; border-radius: 20px; background: rgba(255,255,255,0.22); display: flex; align-items: center; justify-content: center; font-size: 22px">🐢</span><span style="flex: 1; font-size: 17px; font-weight: 700">Sam</span><label style="display: flex; align-items: center; gap: 6px; font-size: 13px">Target<input value="200" aria-label="Sam target" style="width: 60px; height: 40px; border: none; border-radius: 20px; text-align: center; font-family: inherit; font-size: 17px; font-weight: 800; color: #1F2430; background: #FFFFFF"></label></div></div>
+
+<div style="display: flex; align-items: center; gap: 8px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5F6470" stroke-width="2" stroke-linecap="round" role="img" aria-label="Drag to reorder"><path d="M8 6h.01M8 12h.01M8 18h.01M16 6h.01M16 12h.01M16 18h.01"></path></svg><div style="flex: 1; background: #15803D; color: #FFFFFF; border-radius: 26px; height: 52px; padding: 0 6px 0 6px; display: flex; align-items: center; gap: 10px"><span style="width: 40px; height: 40px; border-radius: 20px; background: rgba(255,255,255,0.22); display: flex; align-items: center; justify-content: center; font-size: 22px">🌵</span><span style="flex: 1; font-size: 17px; font-weight: 700">Jordan</span><label style="display: flex; align-items: center; gap: 6px; font-size: 13px">Target<input value="200" aria-label="Jordan target" style="width: 60px; height: 40px; border: none; border-radius: 20px; text-align: center; font-family: inherit; font-size: 17px; font-weight: 800; color: #1F2430; background: #FFFFFF"></label></div></div>
+
+<div style="display: flex; align-items: center; gap: 8px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5F6470" stroke-width="2" stroke-linecap="round" role="img" aria-label="Drag to reorder"><path d="M8 6h.01M8 12h.01M8 18h.01M16 6h.01M16 12h.01M16 18h.01"></path></svg><div style="flex: 1; background: #EAB308; color: #FFFFFF; border-radius: 26px; height: 52px; padding: 0 6px 0 6px; display: flex; align-items: center; gap: 10px"><span style="width: 40px; height: 40px; border-radius: 20px; background: rgba(255,255,255,0.25); display: flex; align-items: center; justify-content: center; font-size: 22px">🐙</span><div style="flex: 1; display: flex; flex-direction: column; line-height: 1.15; white-space: nowrap"><span style="font-size: 17px; font-weight: 700">Riley</span><span style="font-size: 13px">Color changed: gold</span></div><label style="display: flex; align-items: center; gap: 6px; font-size: 13px">Target<input value="200" aria-label="Riley target" style="width: 60px; height: 40px; border: none; border-radius: 20px; text-align: center; font-family: inherit; font-size: 17px; font-weight: 800; color: #1F2430; background: #FFFFFF"></label></div></div>
+</div>
+
+<div style="padding: 18px 16px 0; display: flex; flex-direction: column; gap: 8px">
+<span style="font-size: 17px; font-weight: 800">Add players</span>
+<div style="display: flex; flex-wrap: wrap; gap: 8px">
+<button style="height: 40px; border: 1.5px solid #E4E6EA; background: #FFFFFF; color: #1F2430; border-radius: 20px; padding: 0 14px 0 6px; font-family: inherit; font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 6px"><span style="width: 28px; height: 28px; border-radius: 14px; background: #6D28D9; display: flex; align-items: center; justify-content: center; font-size: 15px">🦉</span>Casey</button>
+<button style="height: 40px; border: 1.5px solid #E4E6EA; background: #FFFFFF; color: #1F2430; border-radius: 20px; padding: 0 14px 0 6px; font-family: inherit; font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 6px"><span style="width: 28px; height: 28px; border-radius: 14px; background: #0F766E; display: flex; align-items: center; justify-content: center; font-size: 15px">🐳</span>Morgan</button>
+<button style="height: 40px; border: 1.5px dashed #5F6470; background: #FFFFFF; color: #1F2430; border-radius: 20px; padding: 0 14px; font-family: inherit; font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 6px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>Guest</button>
+</div>
+</div>
+
+<div style="padding: 18px 16px 0; display: flex; flex-direction: column; gap: 8px">
+<span style="font-size: 17px; font-weight: 800">Score entry</span>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; background: #F2F3F5; border-radius: 16px; padding: 4px">
+<button style="height: 44px; border: none; border-radius: 12px; background: #FFFFFF; color: #1F2430; font-family: inherit; font-size: 15px; font-weight: 800">Type the score</button>
+<button style="height: 44px; border: none; border-radius: 12px; background: transparent; color: #5F6470; font-family: inherit; font-size: 15px; font-weight: 700">Tap the cards</button>
+</div>
+</div>
+
+<div style="flex: 1"></div>
+<div style="border-top: 1px solid #E4E6EA; padding: 8px 16px 28px; background: #FFFFFF">
+<a href="Main.dc.html" style="height: 56px; border-radius: 16px; background: #1F2430; color: #FFFFFF; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 18px; font-weight: 800"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"></path></svg>Start game</a>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

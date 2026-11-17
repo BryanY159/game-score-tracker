@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Game picker</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#1D4ED8}a:hover{color:#1E3A8A}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #FFFFFF; color: #1F2430; font-family: ui-rounded, 'SF Pro Rounded', 'Nunito', system-ui, sans-serif; display: flex; flex-direction: column; overflow: hidden">
+
+<div style="padding: 52px 20px 16px; display: flex; align-items: center; gap: 12px">
+<a href="Home.dc.html" aria-label="Back" style="width: 44px; height: 44px; background: #F2F3F5; border-radius: 22px; display: flex; align-items: center; justify-content: center; color: #1F2430"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg></a>
+<span style="font-size: 26px; font-weight: 800">Choose a game</span>
+</div>
+
+<div style="padding: 0 16px; display: flex; flex-direction: column; gap: 10px">
+
+<a href="GameSetup.dc.html" style="min-height: 84px; border: 1.5px solid #E4E6EA; border-radius: 20px; padding: 14px 16px; display: flex; align-items: center; gap: 14px; color: #1F2430; text-decoration: none">
+<span style="width: 48px; height: 48px; border-radius: 14px; background: #F2F3F5; display: flex; align-items: center; justify-content: center"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#1F2430" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="3" width="11" height="15" rx="2"></rect><path d="M9 21h9a2 2 0 002-2V8"></path></svg></span>
+<div style="flex: 1; display: flex; flex-direction: column; gap: 2px; white-space: nowrap"><span style="font-size: 18px; font-weight: 800">Flip 7</span><span style="font-size: 14px; color: #5F6470">Rounds to 200 · 2+ players</span></div>
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5F6470" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
+</a>
+
+<a href="GameSetup.dc.html" style="min-height: 84px; border: 1.5px solid #E4E6EA; border-radius: 20px; padding: 14px 16px; display: flex; align-items: center; gap: 14px; color: #1F2430; text-decoration: none">
+<span style="width: 48px; height: 48px; border-radius: 14px; background: #F2F3F5; display: flex; align-items: center; justify-content: center"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#1F2430" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="8" height="12" rx="2"></rect><rect x="13" y="7" width="8" height="12" rx="2"></rect></svg></span>
+<div style="flex: 1; display: flex; flex-direction: column; gap: 2px; white-space: nowrap"><span style="font-size: 18px; font-weight: 800">Dutch Blitz</span><span style="font-size: 14px; color: #5F6470">Rounds to 75 · 2–8 players</span></div>
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5F6470" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
+</a>
+
+<a href="GameSetup.dc.html" style="min-height: 84px; border: 1.5px solid #E4E6EA; border-radius: 20px; padding: 14px 16px; display: flex; align-items: center; gap: 14px; color: #1F2430; text-decoration: none">
+<span style="width: 48px; height: 48px; border-radius: 14px; background: #F2F3F5; display: flex; align-items: center; justify-content: center"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#1F2430" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="8" width="18" height="8" rx="2"></rect><circle cx="7.5" cy="18" r="1.5"></circle><circle cx="16.5" cy="18" r="1.5"></circle><path d="M9 8V6M15 8V6"></path></svg></span>
+<div style="flex: 1; display: flex; flex-direction: column; gap: 2px; white-space: nowrap"><span style="font-size: 18px; font-weight: 800">Ticket to Ride</span><span style="font-size: 14px; color: #5F6470">Turn tracker · 2–5 players</span></div>
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5F6470" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
+</a>
+
+<a href="GameSetup.dc.html" style="min-height: 84px; border: 1.5px solid #E4E6EA; border-radius: 20px; padding: 14px 16px; display: flex; align-items: center; gap: 14px; color: #1F2430; text-decoration: none">
+<span style="width: 48px; height: 48px; border-radius: 14px; background: #F2F3F5; display: flex; align-items: center; justify-content: center"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#1F2430" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"></rect><path d="M4 12h16M12 4v16"></path></svg></span>
+<div style="flex: 1; display: flex; flex-direction: column; gap: 2px; white-space: nowrap"><span style="font-size: 18px; font-weight: 800">Parcheesi</span><span style="font-size: 14px; color: #5F6470">Finishing order · 2–4 players</span></div>
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5F6470" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
+</a>
+
+<a href="GameSetup.dc.html" style="min-height: 84px; border: 1.5px solid #E4E6EA; border-radius: 20px; padding: 14px 16px; display: flex; align-items: center; gap: 14px; color: #1F2430; text-decoration: none">
+<span style="width: 48px; height: 48px; border-radius: 14px; background: #F2F3F5; display: flex; align-items: center; justify-content: center"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#1F2430" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10l8-6 8 6v10z"></path><path d="M10 20v-5h4v5"></path></svg></span>
+<div style="flex: 1; display: flex; flex-direction: column; gap: 2px; white-space: nowrap"><span style="font-size: 18px; font-weight: 800">Monopoly</span><span style="font-size: 14px; color: #5F6470">Last one standing · 2–8 players</span></div>
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5F6470" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
+</a>
+
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>
