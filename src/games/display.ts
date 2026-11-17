@@ -5,6 +5,11 @@ export function seatValue(b: MatchBundle, s: Seat): string {
   switch (b.match.gameKey) {
     case 'parcheesi':
       return `${(s.mp.details.pawnsHome as number | undefined) ?? 0} home`;
+    case 'monopoly': {
+      const nw = s.mp.details.netWorth as number | undefined;
+      if (nw !== undefined) return nw.toLocaleString('en-US');
+      return s.mp.details.bankruptAt !== undefined ? 'Bankrupt' : 'Last standing';
+    }
     default:
       return s.mp.finalScore !== null ? String(s.mp.finalScore) : '';
   }

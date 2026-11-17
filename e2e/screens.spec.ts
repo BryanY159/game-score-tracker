@@ -3,6 +3,7 @@ import { expectLayoutClean } from './helpers/noWrap';
 import { openApp } from './helpers/app';
 import { CASEY, EIGHT, FOUR, MORGAN } from './fixtures/players';
 import { NOW } from './fixtures/matches';
+import { MONOPOLY_EIGHT, MONOPOLY_MID, MONOPOLY_SHARED } from './fixtures/monopoly';
 import { HISTORY, merge, PARCHEESI_DONE, PARCHEESI_MID, PARCHEESI_PAUSED, RECENT } from './fixtures/parcheesi';
 
 /**
@@ -87,6 +88,62 @@ const SCREENS: Screen[] = [
   },
   { name: 'game-picker', hash: '#/new', ready: 'Choose a game' },
   { name: 'history-all', hash: '#/history', ready: 'History', seed: HISTORY },
+  { name: 'monopoly-mid', hash: `#/play/${MONOPOLY_MID.matches[0]!.id}`, ready: 'Monopoly', seed: MONOPOLY_MID },
+  { name: 'monopoly-eight', hash: `#/play/${MONOPOLY_EIGHT.matches[0]!.id}`, ready: 'Monopoly', seed: MONOPOLY_EIGHT },
+  {
+    name: 'monopoly-net-worth',
+    hash: `#/play/${MONOPOLY_MID.matches[0]!.id}`,
+    ready: 'Monopoly',
+    seed: MONOPOLY_MID,
+    act: async (page) => {
+      await page.getByRole('button', { name: 'End game' }).click();
+      for (const d of '1520') await page.getByRole('button', { name: d, exact: true }).click();
+      await page.getByRole('button', { name: 'Next player' }).click();
+    },
+  },
+  {
+    name: 'monopoly-net-worth-eight',
+    hash: `#/play/${MONOPOLY_EIGHT.matches[0]!.id}`,
+    ready: 'Monopoly',
+    seed: MONOPOLY_EIGHT,
+    act: async (page) => {
+      await page.getByRole('button', { name: 'End game' }).click();
+    },
+  },
+  {
+    name: 'monopoly-rank',
+    hash: `#/play/${MONOPOLY_MID.matches[0]!.id}`,
+    ready: 'Monopoly',
+    seed: MONOPOLY_MID,
+    act: async (page) => {
+      await page.getByRole('button', { name: 'End game' }).click();
+      for (const v of ['2400', '2400', '900']) {
+        for (const d of v) await page.getByRole('button', { name: d, exact: true }).click();
+        await page.getByRole('button', { name: /Next player|Rank players/ }).click();
+      }
+    },
+  },
+  {
+    name: 'monopoly-tie',
+    hash: `#/play/${MONOPOLY_MID.matches[0]!.id}`,
+    ready: 'Monopoly',
+    seed: MONOPOLY_MID,
+    act: async (page) => {
+      await page.getByRole('button', { name: 'End game' }).click();
+      for (const v of ['2400', '2400', '900']) {
+        for (const d of v) await page.getByRole('button', { name: d, exact: true }).click();
+        await page.getByRole('button', { name: /Next player|Rank players/ }).click();
+      }
+      await page.getByRole('button', { name: 'See results' }).click();
+      await page.getByRole('dialog', { name: "It's a tie" }).waitFor();
+    },
+  },
+  {
+    name: 'monopoly-results-shared',
+    hash: `#/play/${MONOPOLY_SHARED.matches[0]!.id}/results`,
+    ready: 'Shared win',
+    seed: MONOPOLY_SHARED,
+  },
   {
     name: 'history-player-filter',
     hash: '#/history',

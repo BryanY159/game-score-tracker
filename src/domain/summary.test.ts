@@ -3,7 +3,7 @@ import { resultLine } from './summary';
 import type { MatchBundle } from '../db/repos/matches';
 
 const seat = (name: string, isWinner: boolean) => ({ mp: { isWinner }, player: { name } }) as unknown as MatchBundle['seats'][0];
-const bundle = (...seats: MatchBundle['seats']) => ({ match: {}, seats }) as unknown as MatchBundle;
+const bundle = (...seats: MatchBundle['seats']) => ({ match: { endedEarly: false }, seats }) as unknown as MatchBundle;
 
 describe('resultLine', () => {
   it('names the winner', () => {
@@ -12,5 +12,12 @@ describe('resultLine', () => {
   it('names a shared win (A-6)', () => {
     expect(resultLine(bundle(seat('Alex', true), seat('Sam', true), seat('Jo', false)))).toBe('Shared win · Alex and Sam');
     expect(resultLine(bundle(seat('A', true), seat('B', true), seat('C', true)))).toBe('Shared win · A, B and C');
+  });
+});
+
+describe('resultLine for an early end', () => {
+  it('says ended early (mockup: "Riley won · ended early")', () => {
+    const b = { match: { endedEarly: true }, seats: [seat('Riley', true), seat('Sam', false)] } as unknown as MatchBundle;
+    expect(resultLine(b)).toBe('Riley won · ended early');
   });
 });

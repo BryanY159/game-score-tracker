@@ -9,12 +9,12 @@ import { NoWrap } from '../components/NoWrap';
 import { Avatar } from '../components/PlayerPill';
 import { Podium, type PodiumEntry } from '../components/Podium';
 import { db } from '../db/schema';
-import { finalizeMatch, getMatchBundle, type MatchBundle, type SeatResult } from '../db/repos/matches';
+import { finalizeMatch, getMatchBundle, type MatchBundle } from '../db/repos/matches';
 import { COLOR_HEX } from '../domain/colors';
 import { ordinal } from '../domain/placement';
 import { elapsedMs, formatLength } from '../domain/timer';
+import { headline, outcomeFor, sharedNames } from '../games/outcome';
 import { requireGame } from '../games/registry';
-import { completedAt, parcheesiResults, parcheesiState } from '../games/parcheesi/scoring';
 import { Gone } from './PlacementScoring';
 
 export function Results() {
@@ -22,45 +22,35 @@ export function Results() {
   const bundle = useLiveQuery(() => getMatchBundle(db, matchId), [matchId]);
   if (bundle === undefined) return null;
   if (bundle === null || bundle.match.status !== 'inProgress') return <Gone />;
-  return <ParcheesiResults bundle={bundle} />;
+  return <ResultsView bundle={bundle} />;
 }
 
-/** FR-12 for Parcheesi: podium, finishing order, length; Finalize saves (FR-6 AC-4). */
-function ParcheesiResults({ bundle }: { bundle: MatchBundle }) {
+/** FR-12: podium, places, length; Finalize saves (FR-6 AC-4, FR-10 AC-4). */
+function ResultsView({ bundle }: { bundle: MatchBundle }) {
   const { match, seats } = bundle;
   const navigate = useNavigate();
   const game = requireGame(match.gameKey);
   const [saving, setSaving] = useState(false);
   const controls = useGameControls(match);
-  const state = parcheesiState(
-    seats.map((s) => s.player.id),
-    match.log,
-  );
-  if (!state.complete) return <Navigate to={`/play/${match.id}`} replace />;
+  const outcome = outcomeFor(bundle);
+  if (!outcome.complete) return <Navigate to={`/play/${match.id}`} replace />;
 
-  const endedAt = completedAt(match.log) ?? match.updatedAt;
+  const endedAt = outcome.endedAt ?? match.updatedAt;
   const length = elapsedMs({ ...match, endedAt });
-  const ranked = seats
-    .map((s) => ({ ...s, st: state.players.find((p) => p.playerId === s.player.id)! }))
-    .sort((a, b) => a.st.placement! - b.st.placement!);
-  const winner = ranked[0]!;
-
-  const podium: PodiumEntry[] = ranked.slice(0, 3).map((r) => ({
-    key: r.mp.id,
-    name: r.player.name,
-    emoji: r.player.emoji,
-    color: r.mp.color,
-    place: r.st.placement!,
-    secondary: `${r.st.pawnsHome} home`,
-  }));
+  const podium: PodiumEntry[] = outcome.rows.slice(0, 3).map((r, i) => ({
+      key: r.seat.mp.id,
+      name: r.seat.player.name,
+      emoji: r.seat.player.emoji,
+      color: r.seat.mp.color,
+      place: r.place,
+      step: (i + 1) as 1 | 2 | 3,
+      secondary: r.value,
+    }));
+  const rest = outcome.rows.slice(podium.length);
 
   async function finalize() {
     setSaving(true);
-    const results: SeatResult[] = parcheesiResults(
-      seats.map((s) => ({ matchPlayerId: s.mp.id, playerId: s.player.id })),
-      match.log,
-    );
-    await finalizeMatch(db, match.id, results, endedAt);
+    await finalizeMatch(db, match.id, outcome.results, endedAt, undefined, { endedEarly: outcome.endedEarly });
     navigate('/', { replace: true });
   }
 
@@ -69,24 +59,29 @@ function ParcheesiResults({ bundle }: { bundle: MatchBundle }) {
       <header className="pt-safe flex flex-col items-center gap-0.5 px-5 pt-8 text-center">
         <NoWrap className="text-[15px] text-text-2">{game.name} · Final results</NoWrap>
         <NoWrap as="h1" truncate className="m-0 max-w-full text-[30px] font-extrabold">
-          {winner.player.name} wins
+          {headline(outcome)}
         </NoWrap>
-        <NoWrap className="text-[15px] text-text-2">First with all 4 pawns home</NoWrap>
+        {sharedNames(outcome) && (
+          <NoWrap truncate className="max-w-full text-[17px] font-bold">
+            {sharedNames(outcome)}
+          </NoWrap>
+        )}
+        <NoWrap className="text-[15px] text-text-2">{outcome.subtitle}</NoWrap>
       </header>
       <main className="flex flex-1 flex-col pb-4">
         <Podium entries={podium} />
         <ul className="m-0 mt-3.5 flex list-none flex-col gap-2 px-4">
-          {ranked.slice(3).map((r) => (
+          {rest.map((r) => (
             <li
-              key={r.mp.id}
+              key={r.seat.mp.id}
               className="flex h-12 items-center gap-2.5 rounded-3xl pr-4 pl-1.5 text-white"
-              style={{ background: COLOR_HEX[r.mp.color] }}
+              style={{ background: COLOR_HEX[r.seat.mp.color] }}
             >
-              <Avatar emoji={r.player.emoji} size={36} />
+              <Avatar emoji={r.seat.player.emoji} size={36} />
               <NoWrap truncate className="flex-1 text-base font-bold">
-                {ordinal(r.st.placement!)} · {r.player.name}
+                {ordinal(r.place)} · {r.seat.player.name}
               </NoWrap>
-              <NoWrap className="text-[14px]">{r.st.pawnsHome} home</NoWrap>
+              <NoWrap className="tabular text-[14px]">{r.value}</NoWrap>
             </li>
           ))}
         </ul>

@@ -61,7 +61,7 @@ export const GAMES: GameDefinition[] = [
     defaultTarget: null,
     pieceColors: PALETTE,
     tieBreakers: [],
-    available: false,
+    available: true,
   },
 ];
 

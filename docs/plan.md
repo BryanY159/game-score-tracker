@@ -246,6 +246,8 @@ Also adds the generic `TieScreen` (FR-11 AC-3), used first for a Monopoly net-wo
 
 **Files:** `src/components/Keypad.tsx`, `src/games/monopoly/*`, `src/screens/{PlacementScoring,MonopolyEndEarly}.tsx`.
 
+*Built (M6):* the end-early net worth, order and tie decision are one entry in `Match.log`, so Undo and editing from History both work. A shared outcome layer (`games/outcome.ts`) now drives Results, History and the editor for every game, and `SortableList` holds the drag-to-reorder used for ranking.
+
 **Tests:**
 - Vitest: bankruptcy order sets placements from the bottom up. The last remaining player wins. Early end ranks remaining players by net worth above bankrupt players, and a manual reorder is kept. Undo of a bankruptcy. Length excludes pauses.
 - Playwright: Monopoly mid-game at 8 players at 375×667 (R-2), net worth entry with the keypad, the drag ranking screen, and the breakdown.
