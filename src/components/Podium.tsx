@@ -30,7 +30,11 @@ export function Podium({ entries }: { entries: PodiumEntry[] }) {
         const first = e.step === 1;
         return (
           <div key={e.key} role="listitem" className="flex min-w-0 flex-1 flex-col items-center gap-1.5">
-            {e.place === 1 && <CrownIcon role="img" aria-label="Winner" />}
+            {e.place === 1 && (
+              <span className="crown-pop" style={{ animationDelay: '900ms' }}>
+                <CrownIcon role="img" aria-label="Winner" />
+              </span>
+            )}
             <span
               aria-hidden="true"
               className="flex items-center justify-center rounded-full bg-surface"
@@ -42,9 +46,11 @@ export function Podium({ entries }: { entries: PodiumEntry[] }) {
               {e.name}
             </NoWrap>
             <div
-              className="flex w-full flex-col items-center gap-0.5 rounded-t-[20px] rounded-b-lg pt-3 text-white"
+              className="podium-rise flex w-full flex-col items-center gap-0.5 rounded-t-[20px] rounded-b-lg pt-3 text-white"
               style={{
                 height: HEIGHTS[e.step],
+                // The 3rd step rises first and the winner's last (FR-12 AC-1).
+                animationDelay: `${({ 3: 0, 2: 200, 1: 400 } as Record<number, number>)[e.step]}ms`,
                 background: COLOR_HEX[e.color],
                 boxShadow: e.color === 'black' ? 'inset 0 0 0 1.5px var(--black-outline)' : undefined,
               }}

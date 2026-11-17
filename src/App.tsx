@@ -1,3 +1,4 @@
+import { CelebrationProvider } from './components/Celebration';
 import { HashRouter, Navigate, Outlet, Route, Routes } from 'react-router-dom';
 import { TabBar } from './components/TabBar';
 import { Home } from './screens/Home';
@@ -29,6 +30,7 @@ export function App() {
   return (
     // HashRouter: a relaunch on any route never 404s on GitHub Pages (plan R-8).
     <HashRouter>
+      <CelebrationProvider>
       <Routes>
         <Route element={<TabLayout />}>
           <Route index element={<Home />} />
@@ -46,6 +48,7 @@ export function App() {
         <Route path="play/:matchId/final" element={<TtrFinalScreen />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      </CelebrationProvider>
     </HashRouter>
   );
 }

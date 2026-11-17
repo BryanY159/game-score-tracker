@@ -13,6 +13,8 @@ import { COLOR_HEX } from '../domain/colors';
 import { canClaim, ROUTE_LENGTHS, ROUTE_POINTS, ttrState } from '../games/ticketToRide/scoring';
 import { describeTurn, TurnLogSheet } from '../games/ticketToRide/TurnLogSheet';
 import { requireGame } from '../games/registry';
+import { useCelebrate } from '../components/Celebration';
+import { CountUp } from '../components/CountUp';
 
 /** FR-7 AC-1 to AC-5: the turn tracker. */
 export function TtrTurns({ bundle }: { bundle: MatchBundle }) {
@@ -27,6 +29,15 @@ export function TtrTurns({ bundle }: { bundle: MatchBundle }) {
   const seatOf = (id: string) => seats.find((s) => s.player.id === id)!;
   const cur = seatOf(st.current);
   const curState = st.players.find((p) => p.playerId === st.current)!;
+
+  // The final round starting gets a mini celebration (FR-19 AC-2).
+  const celebrate = useCelebrate();
+  const finalWas = useRef(!!st.finalRound);
+  useEffect(() => {
+    if (st.finalRound && !finalWas.current) celebrate('finalRound', seatOf(st.finalRound.triggeredBy).player.name);
+    finalWas.current = !!st.finalRound;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [!!st.finalRound]);
 
   // After every player's last turn, go to end-of-game scoring (AC-5).
   const was = useRef(st.playComplete);
@@ -128,9 +139,12 @@ export function TtrTurns({ bundle }: { bundle: MatchBundle }) {
                   </NoWrap>
                   {now && <NoWrap className="rounded-lg bg-white/22 px-2 text-[12px] font-bold">now</NoWrap>}
                   <NoWrap className="tabular w-8 text-right text-[15px]">{p.trains}</NoWrap>
-                  <NoWrap className="tabular w-10 text-right text-[20px] font-extrabold" aria-label={`${s.player.name} route points`}>
-                    {p.routePoints}
-                  </NoWrap>
+                  <CountUp
+                    value={p.routePoints}
+                    data-nowrap=""
+                    className="tabular w-10 text-right text-[20px] font-extrabold whitespace-nowrap"
+                    aria-label={`${s.player.name} route points`}
+                  />
                 </li>
               );
             })}

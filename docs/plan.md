@@ -2,7 +2,7 @@
 
 - **Source:** `docs/spec.md` (approved 2026-11-16), `docs/intent.md`, `docs/mockup/*.dc.html`
 - **Date:** 2026-11-17
-- **Status:** Approved by owner, 2026-11-17. Decisions A-1 to A-6, A-12 and R-1 are settled (marked ✅). Every other item in §1 uses its proposed default.
+- **Status:** Approved by owner, 2026-11-17. All milestones M0–M12 built (Phase 1 complete, pending the owner's iPhone check). Decisions A-1 to A-6, A-12 and R-1 are settled (marked ✅). Every other item in §1 uses its proposed default.
 
 ## 0. How to read this plan
 
@@ -387,6 +387,8 @@ Also adds the Settings "Merge a file" button (moved from M4).
 **Order:** a `useReducedMotion` hook and a motion utility, then score count-up and pill reordering (FLIP technique), then the lead-change crown, then the celebrations (Flip 7, Ticket to Ride final round, Monopoly bankruptcy, all 4 Parcheesi pawns home), then the podium animation. Last, a full screenshot pass of all 13 mockup screens plus the extras in A-13, checked against NFR-6, and a 44 pt audit.
 
 **Files:** `src/hooks/useReducedMotion.ts`, `src/components/{CountUp,Celebration,Crown}.tsx`, `src/components/{PlayerPill,Podium}.tsx`, scoring screens.
+
+*Built (M12):* the motion is CSS keyframes (celebrations, crown, podium), the Web Animations API (rows sliding, using FLIP) and a requestAnimationFrame count-up. The CSS is switched off by the global Reduce Motion rule; the JavaScript checks `useReducedMotion`. Icons given an `aria-label` are no longer hidden from VoiceOver (the Leader and Winner crowns).
 
 **Tests:**
 - Vitest: lead-change detection (which player gets the crown), and the event → celebration mapping.
