@@ -102,9 +102,12 @@ function ResultsView({ bundle }: { bundle: MatchBundle }) {
             </li>
           ))}
         </ul>
-        <div className="mx-4 mt-4 grid grid-cols-2 gap-2">
+        <div className={`mx-4 mt-4 grid gap-2 ${match.gameKey === 'flip7' ? 'grid-cols-3' : 'grid-cols-2'}`}>
           <Tile label="Length" value={formatLength(length)} />
           {isRounds ? <Tile label="Rounds" value={String(outcome.roundCount)} /> : <Tile label="Players" value={String(seats.length)} />}
+          {match.gameKey === 'flip7' && (
+            <Tile label="Flip 7s" value={String(outcome.results.reduce((n, r) => n + Number((r.details as { flip7Count?: number }).flip7Count ?? 0), 0))} />
+          )}
         </div>
         {isRounds && (
           <p className="mx-4 mt-3 mb-0 rounded-2xl border-[1.5px] border-border px-3.5 py-3 text-[14px] leading-snug text-text-2">
@@ -129,7 +132,20 @@ function ResultsView({ bundle }: { bundle: MatchBundle }) {
       </BottomToolbar>
       {controls.element}
       {tied.length > 0 && tieOpen && (
-        <TieScreen tied={tied} reason="are tied on margin past target and on total." onClose={() => setTieOpen(false)} onDecide={decideTie} />
+        <TieScreen
+          tied={tied}
+          reason={`are tied on margin past target and on total.${match.gameKey === 'flip7' ? ' The official rule: everyone plays another round.' : ''}`}
+          onClose={() => setTieOpen(false)}
+          onDecide={decideTie}
+          playAnotherRound={
+            match.gameKey === 'flip7'
+              ? async () => {
+                  await appendEvent(db, match.id, { type: 'extraRound', afterRounds: outcome.roundCount });
+                  navigate(`/play/${match.id}`, { replace: true });
+                }
+              : undefined
+          }
+        />
       )}
     </GameScreen>
   );

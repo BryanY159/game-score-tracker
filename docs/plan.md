@@ -290,6 +290,8 @@ Also adds the generic `TieScreen` (FR-11 AC-3), used first for a Monopoly net-wo
 
 **Files:** `src/games/flip7/*`, `src/components/{Keypad,CardGrid}.tsx`, `src/screens/RoundsScoring.tsx`.
 
+*Built (M8):* the entry mode is a game setting that can be switched from the keypad at any time. The round being entered is held on screen as in M7. "Play another round" is an entry in `Match.log` after the confirmed round count, so editing the rounds re-evaluates it. Rounds logic for all target games now lives in `games/rounds.ts`.
+
 **Tests:**
 - Vitest:
   - Number mode: score, Bust gives 0, the Flip 7! box adds +15.

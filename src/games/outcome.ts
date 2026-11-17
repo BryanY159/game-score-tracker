@@ -2,8 +2,9 @@ import type { MatchBundle, Seat, SeatResult } from '../db/repos/matches';
 import type { MatchEvent } from '../domain/types';
 import { completedAt, parcheesiResults, parcheesiState } from './parcheesi/scoring';
 import { formatMoney, monopolyResults, monopolyState } from './monopoly/scoring';
-import { reachedTarget, totals } from './dutchBlitz/scoring';
-import { rankTargetGame, signed, type TieDecision } from '../domain/targets';
+import { signed } from '../domain/targets';
+import { roundsResult } from './rounds';
+import { flip7Details } from './flip7/stats';
 import { requireGame } from './registry';
 
 export interface OutcomeRow {
@@ -29,15 +30,8 @@ export interface Outcome {
   tie: Seat[];
   /** Confirmed rounds (rounds games). */
   roundCount: number;
-}
-
-/** The tie decision that still applies: made after the same number of confirmed rounds. */
-export function currentTieDecision(log: MatchEvent[], rounds: number): TieDecision | null {
-  for (let i = log.length - 1; i >= 0; i--) {
-    const e = log[i]!;
-    if (e.type === 'tieDecision') return e.rounds === rounds ? e.decision : null;
-  }
-  return null;
+  /** Flip 7: "Play another round" chosen and that round not yet confirmed (FR-11 AC-4). */
+  extraRound?: boolean;
 }
 
 export function outcomeFor(b: MatchBundle, log: MatchEvent[] = b.match.log, rounds = b.rounds): Outcome {
@@ -46,42 +40,36 @@ export function outcomeFor(b: MatchBundle, log: MatchEvent[] = b.match.log, roun
 
   if (requireGame(b.match.gameKey).template === 'rounds') {
     const game = requireGame(b.match.gameKey);
+    const targets = b.seats.map((s) => ({ playerId: s.player.id, target: s.mp.target ?? game.defaultTarget ?? 0 }));
+    const res = roundsResult(targets, rounds, log);
     const confirmed = rounds.filter((r) => r.confirmed);
-    const tot = totals(
-      b.seats.map((s) => s.player.id),
-      confirmed,
-    );
-    const targets = Object.fromEntries(b.seats.map((s) => [s.player.id, s.mp.target ?? game.defaultTarget ?? 0]));
-    const over = confirmed.length > 0 && reachedTarget(tot, targets);
-    const ranking = rankTargetGame(
-      b.seats.map((s) => ({ playerId: s.player.id, total: tot[s.player.id] ?? 0, target: targets[s.player.id]! })),
-      currentTieDecision(log, confirmed.length),
-    );
-    const rows = ranking.rows.map((r) => ({
+    const rows = res.ranking.rows.map((r) => ({
       seat: seatOf(r.playerId),
       place: r.place,
       isWinner: r.isWinner,
       value: String(r.total),
       detail: `${signed(r.margin)} · to ${r.target}`,
     }));
-    const winners = ranking.rows.filter((r) => r.isWinner);
-    const lead = winners[0] ?? ranking.rows[0];
+    const winners = res.ranking.rows.filter((r) => r.isWinner);
+    const lead = winners[0] ?? res.ranking.rows[0];
     const last = confirmed[confirmed.length - 1];
+    const flip7 = b.match.gameKey === 'flip7' ? flip7Details(targets, confirmed) : null;
     return {
-      complete: over,
-      endedAt: over && last ? last.updatedAt : null,
+      complete: res.over,
+      endedAt: res.over && last ? last.updatedAt : null,
       endedEarly: false,
       subtitle: lead ? `${signed(lead.margin)} past target · ${lead.total} points` : '',
       rows,
-      tie: over ? ranking.unresolvedTie.map(seatOf) : [],
-      roundCount: confirmed.length,
-      results: ranking.rows.map((r) => ({
+      tie: res.over ? res.ranking.unresolvedTie.map(seatOf) : [],
+      roundCount: res.confirmed,
+      extraRound: res.extraRound,
+      results: res.ranking.rows.map((r) => ({
         matchPlayerId: seatOf(r.playerId).mp.id,
         placement: r.place,
         finalScore: r.total,
         marginPastTarget: r.margin,
         isWinner: r.isWinner,
-        details: {},
+        details: flip7?.[r.playerId] ?? {},
       })),
     };
   }

@@ -13,7 +13,7 @@ export const GAMES: GameDefinition[] = [
     defaultTarget: 200,
     pieceColors: PALETTE,
     tieBreakers: ['marginPastTarget', 'total', 'playAnotherRound'],
-    available: false,
+    available: true,
   },
   {
     key: 'dutchBlitz',

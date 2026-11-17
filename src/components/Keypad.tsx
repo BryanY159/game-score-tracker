@@ -5,6 +5,8 @@ export interface GameKey {
   label: string;
   onPress: () => void;
   disabled?: boolean;
+  /** A toggle key that is on (e.g. Flip 7!). */
+  pressed?: boolean;
 }
 
 /**
@@ -19,7 +21,13 @@ export function Keypad({
   next,
   sideKeys = [],
   maxDigits = 7,
+  bare = false,
+  headerExtra,
 }: {
+  /** Extra control on the label row, e.g. the Flip 7 Number/Cards switch. */
+  headerExtra?: React.ReactNode;
+  /** Inside a panel that already has a border and padding. */
+  bare?: boolean;
   label: string;
   value: number | null;
   onChange: (v: number | null) => void;
@@ -43,8 +51,8 @@ export function Keypad({
   );
 
   return (
-    <div className="border-t border-border bg-bg px-3 pt-2 pb-2" role="group" aria-label="Number pad">
-      <div className="mx-auto flex max-w-lg flex-col gap-2">
+    <div className={bare ? '' : 'border-t border-border bg-bg px-3 pt-2 pb-2'} role="group" aria-label="Number pad">
+      <div className="mx-auto flex max-w-lg flex-col gap-1.5">
       <div className="flex items-center gap-3 px-1">
         <NoWrap truncate className="flex-1 text-[15px] font-bold">
           {label}
@@ -67,10 +75,13 @@ export function Keypad({
               next?.onPress();
             }
           }}
-          className="tabular h-11 w-36 rounded-[14px] border-[1.5px] border-border bg-surface px-3 text-right text-[24px] font-extrabold text-text outline-none focus:border-text"
+          className={`tabular h-11 rounded-[14px] border-[1.5px] border-border bg-surface px-3 text-right text-[24px] font-extrabold text-text outline-none focus:border-text ${
+            headerExtra ? 'w-20' : 'w-36'
+          }`}
         />
+        {headerExtra}
       </div>
-      <div className="grid gap-1.5" style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}>
+      <div className="grid gap-1" style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}>
         {['1', '2', '3'].map(digit)}
         {sideKeys[0] && <Side k={sideKeys[0]} />}
         {['4', '5', '6'].map(digit)}
@@ -89,7 +100,7 @@ export function Keypad({
             type="button"
             onClick={next.onPress}
             disabled={next.disabled}
-            className="flex h-12 items-center justify-center rounded-[14px] bg-btn px-2 text-[16px] font-extrabold text-btn-text disabled:opacity-40"
+            className="flex h-11 items-center justify-center rounded-[14px] bg-btn px-2 text-[16px] font-extrabold text-btn-text disabled:opacity-40"
             style={{ gridColumn: `span ${cols - 2}` }}
           >
             <NoWrap>{next.label}</NoWrap>
@@ -103,7 +114,7 @@ export function Keypad({
   );
 }
 
-const KEY = 'tabular flex h-12 items-center justify-center rounded-[14px] bg-surface text-[22px] font-bold text-text';
+const KEY = 'tabular flex h-11 items-center justify-center rounded-[14px] bg-surface text-[22px] font-bold text-text';
 
 function Side({ k }: { k: GameKey }) {
   return (
@@ -111,7 +122,10 @@ function Side({ k }: { k: GameKey }) {
       type="button"
       onClick={k.onPress}
       disabled={k.disabled}
-      className="flex h-12 items-center justify-center rounded-[14px] border-[1.5px] border-text px-1 text-[15px] font-extrabold text-text disabled:opacity-40"
+      aria-pressed={k.pressed}
+      className={`flex h-11 items-center justify-center rounded-[14px] border-[1.5px] border-text px-1 text-[15px] font-extrabold disabled:opacity-40 ${
+        k.pressed ? 'bg-text text-bg' : 'text-text'
+      }`}
     >
       <NoWrap>{k.label}</NoWrap>
     </button>

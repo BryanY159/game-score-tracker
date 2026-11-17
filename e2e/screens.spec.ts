@@ -5,6 +5,7 @@ import { CASEY, EIGHT, FOUR, MORGAN } from './fixtures/players';
 import { NOW } from './fixtures/matches';
 import { MONOPOLY_EIGHT, MONOPOLY_MID, MONOPOLY_SHARED } from './fixtures/monopoly';
 import { BLITZ_DONE, BLITZ_EIGHT, BLITZ_HANDICAP, BLITZ_MID, BLITZ_TIE } from './fixtures/dutchBlitz';
+import { FLIP7_CARDS, FLIP7_DONE, FLIP7_EIGHT, FLIP7_MID, FLIP7_TIE } from './fixtures/flip7';
 import { HISTORY, merge, PARCHEESI_DONE, PARCHEESI_MID, PARCHEESI_PAUSED, RECENT } from './fixtures/parcheesi';
 
 /**
@@ -89,6 +90,50 @@ const SCREENS: Screen[] = [
   },
   { name: 'game-picker', hash: '#/new', ready: 'Choose a game' },
   { name: 'history-all', hash: '#/history', ready: 'History', seed: HISTORY },
+  { name: 'flip7-mid', hash: `#/play/${FLIP7_MID.matches[0]!.id}`, ready: 'Flip 7', seed: FLIP7_MID },
+  { name: 'flip7-cards', hash: `#/play/${FLIP7_CARDS.matches[0]!.id}`, ready: 'Flip 7', seed: FLIP7_CARDS },
+  {
+    name: 'flip7-bust-prompt',
+    hash: `#/play/${FLIP7_CARDS.matches[0]!.id}`,
+    ready: 'Flip 7',
+    seed: FLIP7_CARDS,
+    act: async (page) => {
+      await page.getByRole('button', { name: /^Alex, this round/ }).click();
+      await page.getByRole('button', { name: 'Card 7' }).click();
+      await page.getByRole('alertdialog', { name: 'Bust?' }).waitFor();
+    },
+  },
+  { name: 'flip7-eight', hash: `#/play/${FLIP7_EIGHT.matches[0]!.id}`, ready: 'Flip 7', seed: FLIP7_EIGHT },
+  {
+    name: 'flip7-round-edit',
+    hash: `#/play/${FLIP7_MID.matches[0]!.id}`,
+    ready: 'Flip 7',
+    seed: FLIP7_MID,
+    act: async (page) => {
+      await page.getByRole('button', { name: 'Rounds', exact: true }).click();
+      await page.getByRole('button', { name: 'Round 2' }).click();
+      await page.getByRole('dialog', { name: 'Edit round 2' }).waitFor();
+    },
+  },
+  { name: 'flip7-results', hash: `#/play/${FLIP7_DONE.matches[0]!.id}/results`, ready: 'Jordan wins', seed: FLIP7_DONE },
+  {
+    name: 'flip7-tie',
+    hash: `#/play/${FLIP7_TIE.matches[0]!.id}/results`,
+    ready: 'Tied for first',
+    seed: FLIP7_TIE,
+    act: async (page) => {
+      await page.getByRole('dialog', { name: "It's a tie" }).waitFor();
+    },
+  },
+  {
+    name: 'setup-flip7',
+    hash: '#/new/flip7',
+    ready: 'Flip 7 setup',
+    seed: { players: FOUR },
+    act: async (page) => {
+      for (const name of ['Alex', 'Sam', 'Jordan']) await page.getByRole('button', { name, exact: true }).click();
+    },
+  },
   { name: 'blitz-mid', hash: `#/play/${BLITZ_MID.matches[0]!.id}`, ready: 'Dutch Blitz', seed: BLITZ_MID },
   { name: 'blitz-handicap', hash: `#/play/${BLITZ_HANDICAP.matches[0]!.id}`, ready: 'Dutch Blitz', seed: BLITZ_HANDICAP },
   { name: 'blitz-eight', hash: `#/play/${BLITZ_EIGHT.matches[0]!.id}`, ready: 'Dutch Blitz', seed: BLITZ_EIGHT },

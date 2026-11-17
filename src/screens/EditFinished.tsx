@@ -12,7 +12,8 @@ import { NoWrap } from '../components/NoWrap';
 import { Avatar } from '../components/PlayerPill';
 import { TieScreen } from '../components/TieScreen';
 import { COLOR_HEX } from '../domain/colors';
-import { RoundEditSheet, RoundsList } from '../games/dutchBlitz/RoundsSheets';
+import { RoundsList } from '../games/dutchBlitz/RoundsSheets';
+import { RoundEditor } from '../games/RoundEditor';
 import { ParcheesiBoard } from '../games/parcheesi/ParcheesiBoard';
 import { parcheesiState } from '../games/parcheesi/scoring';
 import { MonopolyBoard } from '../games/monopoly/MonopolyBoard';
@@ -82,7 +83,8 @@ function RoundsEdit({ bundle }: { bundle: MatchBundle }) {
         </PrimaryToolButton>
       </BottomToolbar>
       {editing && (
-        <RoundEditSheet
+        <RoundEditor
+          gameKey={match.gameKey}
           seats={seats}
           round={editing}
           onClose={() => setEditing(null)}
