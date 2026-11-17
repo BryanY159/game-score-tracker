@@ -1,7 +1,8 @@
 import type { ScoreDb } from '../schema';
 import { newRecord, softDelete, touch } from '../record';
-import type { GameKey, Match, MatchEvent, MatchPlayer, Player, PlayerColor, Round } from '../../domain/types';
+import type { GameKey, Match, MatchEvent, MatchPlayer, Player, PlayerColor, Round, TurnLogEntry } from '../../domain/types';
 import { listRounds } from './rounds';
+import { deleteTurnLog, getTurnLog } from './turnLogs';
 
 type DistributiveOmit<T, K extends PropertyKey> = T extends unknown ? Omit<T, K> : never;
 
@@ -25,6 +26,8 @@ export interface MatchBundle {
   seats: Seat[];
   /** Rounds games only: confirmed rounds plus at most one draft, by number. */
   rounds: Round[];
+  /** Ticket to Ride only, while in progress (deleted on finalize, FR-7 AC-8). */
+  turns: TurnLogEntry[];
 }
 
 /** FR-3 step 6: start the game. Guests become isGuest profiles; the timer starts (AC-4). */
@@ -101,7 +104,7 @@ export async function getMatchBundle(db: ScoreDb, matchId: string): Promise<Matc
     .sort((a, b) => a.seatOrder - b.seatOrder);
   const players = await db.players.bulkGet(mps.map((mp) => mp.playerId));
   const seats = mps.map((mp, i) => ({ mp, player: players[i]! })).filter((s) => s.player);
-  return { match, seats, rounds: await listRounds(db, matchId) };
+  return { match, seats, rounds: await listRounds(db, matchId), turns: (await getTurnLog(db, matchId))?.entries ?? [] };
 }
 
 /** Records one entry. Written straight away so nothing is lost if iOS kills the app (R-7). */
@@ -152,13 +155,16 @@ export async function finalizeMatch(
   results: SeatResult[],
   endedAt: number,
   now: number = Date.now(),
-  changes: { endedEarly?: boolean } = {},
+  changes: { endedEarly?: boolean; deleteTurnLog?: boolean } = {},
 ): Promise<void> {
-  await db.transaction('rw', db.matches, db.matchPlayers, async () => {
+  const { deleteTurnLog: dropTurnLog, ...matchChanges } = changes;
+  await db.transaction('rw', db.matches, db.matchPlayers, db.turnLogs, async () => {
     const m = await db.matches.get(matchId);
     if (!m) throw new Error('Game not found');
     await writeResults(db, matchId, results, now);
-    await db.matches.put(touch(m, { ...changes, status: 'finished', endedAt, pausedAt: null }, now));
+    await db.matches.put(touch(m, { ...matchChanges, status: 'finished', endedAt, pausedAt: null }, now));
+    // FR-7 AC-8: in the same transaction, so a finished game never keeps its turn log.
+    if (dropTurnLog) await deleteTurnLog(db, matchId, now);
   });
 }
 
@@ -257,5 +263,14 @@ export async function updateMatchSettings(db: ScoreDb, matchId: string, patch: R
     const m = await db.matches.get(matchId);
     if (!m) return;
     await db.matches.put(touch(m, { settings: { ...m.settings, ...patch } }, now));
+  });
+}
+
+/** Saves part of one seat's details while the game is played, e.g. Ticket to Ride tickets (R-7). */
+export async function updateSeatDetails(db: ScoreDb, matchPlayerId: string, patch: Record<string, unknown>, now: number = Date.now()): Promise<void> {
+  await db.transaction('rw', db.matchPlayers, async () => {
+    const mp = await db.matchPlayers.get(matchPlayerId);
+    if (!mp) return;
+    await db.matchPlayers.put(touch(mp, { details: { ...mp.details, ...patch } }, now));
   });
 }

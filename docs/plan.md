@@ -319,6 +319,8 @@ Also adds the generic `TieScreen` (FR-11 AC-3), used first for a Monopoly net-wo
 
 **Files:** `src/games/ticketToRide/*`, `src/db/repos/turnLogs.ts`, `src/screens/{TtrTurns,TtrEndGame}.tsx`, `src/components/TurnLogSheet.tsx`, `src/domain/winner.ts`.
 
+*Built (M9):* the turn log is one TurnLog record per game, replayed by `ttrState`. End-of-game tickets and the longest path are saved to each seat's `details` as they're entered (held on screen as in M7). Finalize soft-deletes the turn log in the same transaction. The tie decision is the latest `tieDecision` entry, and it is ignored if it no longer matches the tied players.
+
 **Tests:**
 - Vitest:
   - Route points are 1, 2, 4, 7, 10, 15, and each route subtracts its trains.

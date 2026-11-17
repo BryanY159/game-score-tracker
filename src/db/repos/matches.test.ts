@@ -161,3 +161,14 @@ describe('editing a finished game (FR-12 AC-2, M5)', () => {
     await expect(saveFinishedEdit(db, match.id, {}, [])).rejects.toThrow('Only a finished game');
   });
 });
+
+describe('finalizing Ticket to Ride (FR-7 AC-8)', () => {
+  it('deletes the turn log in the same save', async () => {
+    const { appendTurn, getTurnLog } = await import('./turnLogs');
+    const { match } = await twoPlayerGame();
+    await appendTurn(db, match.id, { playerId: 'x', action: 'drawTrains' });
+    await finalizeMatch(db, match.id, [], 9000, 10_000, { deleteTurnLog: true });
+    expect(await getTurnLog(db, match.id)).toBeNull();
+    expect((await db.matches.get(match.id))!.status).toBe('finished');
+  });
+});

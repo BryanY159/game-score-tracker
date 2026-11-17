@@ -122,6 +122,8 @@ export interface TurnLogEntry {
   playerId: string;
   action: 'route' | 'drawTrains' | 'drawTickets';
   routeLength?: number;
+  /** When the turn was taken (game length ends at the last turn). */
+  at?: number;
 }
 
 export interface TurnLog extends BaseRecord {

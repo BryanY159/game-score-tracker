@@ -66,7 +66,11 @@ function ResultsView({ bundle }: { bundle: MatchBundle }) {
 
   async function finalize() {
     setSaving(true);
-    await finalizeMatch(db, match.id, outcome.results, endedAt, undefined, { endedEarly: outcome.endedEarly });
+    // FR-7 AC-8: Ticket to Ride's turn log is deleted with it; the breakdown stays in details.
+    await finalizeMatch(db, match.id, outcome.results, endedAt, undefined, {
+      endedEarly: outcome.endedEarly,
+      deleteTurnLog: match.gameKey === 'ticketToRide',
+    });
     navigate('/', { replace: true });
   }
 
@@ -124,7 +128,11 @@ function ResultsView({ bundle }: { bundle: MatchBundle }) {
         )}
       </main>
       <BottomToolbar>
-        <ToolButton icon={<PencilIcon />} label="Edit scores" onClick={() => navigate(`/play/${match.id}`)} />
+        <ToolButton
+          icon={<PencilIcon />}
+          label="Edit scores"
+          onClick={() => navigate(match.gameKey === 'ticketToRide' ? `/play/${match.id}/final` : `/play/${match.id}`)}
+        />
         <ToolButton icon={<NotesIcon />} label="Notes" onClick={controls.openNotes} />
         <PrimaryToolButton icon={<CheckIcon />} disabled={saving || tied.length > 0} onClick={finalize}>
           Finalize
@@ -134,7 +142,11 @@ function ResultsView({ bundle }: { bundle: MatchBundle }) {
       {tied.length > 0 && tieOpen && (
         <TieScreen
           tied={tied}
-          reason={`are tied on margin past target and on total.${match.gameKey === 'flip7' ? ' The official rule: everyone plays another round.' : ''}`}
+          reason={
+            match.gameKey === 'ticketToRide'
+              ? 'are tied on total, completed tickets and the longest path.'
+              : `are tied on margin past target and on total.${match.gameKey === 'flip7' ? ' The official rule: everyone plays another round.' : ''}`
+          }
           onClose={() => setTieOpen(false)}
           onDecide={decideTie}
           playAnotherRound={

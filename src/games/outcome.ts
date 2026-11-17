@@ -5,6 +5,41 @@ import { formatMoney, monopolyResults, monopolyState } from './monopoly/scoring'
 import { signed } from '../domain/targets';
 import { roundsResult } from './rounds';
 import { flip7Details } from './flip7/stats';
+import { rankTtr, ttrState, ticketsCompleted, type TieDecision as TtrTie, type TtrFinal } from './ticketToRide/scoring';
+
+/** Each player's end-of-game numbers: route points from the turn log while playing, from details once finished. */
+export function ttrFinals(b: MatchBundle): { playerId: string; final: TtrFinal }[] {
+  const st = ttrState(
+    b.seats.map((s) => s.player.id),
+    b.turns,
+  );
+  return b.seats.map((s) => {
+    const d = s.mp.details as Partial<TtrFinal>;
+    const live = st.players.find((p) => p.playerId === s.player.id)!;
+    return {
+      playerId: s.player.id,
+      final: {
+        routePoints: b.turns.length > 0 ? live.routePoints : (d.routePoints ?? 0),
+        tickets: d.tickets ?? [],
+        longestPath: d.longestPath ?? false,
+      },
+    };
+  });
+}
+
+/** "78 + 25 tickets + 10 path". */
+export function breakdownLine(f: TtrFinal): string {
+  const t = f.tickets.reduce((a, x) => a + (x.completed ? x.value : -x.value), 0);
+  return `${f.routePoints} ${t >= 0 ? '+' : '−'} ${Math.abs(t)}${f.longestPath ? ' + 10' : ''} · ${ticketsCompleted(f)}/${f.tickets.length} tickets`;
+}
+
+function latestTieDecision(log: MatchEvent[]): TtrTie | null {
+  for (let i = log.length - 1; i >= 0; i--) {
+    const e = log[i]!;
+    if (e.type === 'tieDecision') return e.decision;
+  }
+  return null;
+}
 import { requireGame } from './registry';
 
 export interface OutcomeRow {
@@ -71,6 +106,45 @@ export function outcomeFor(b: MatchBundle, log: MatchEvent[] = b.match.log, roun
         isWinner: r.isWinner,
         details: flip7?.[r.playerId] ?? {},
       })),
+    };
+  }
+
+  if (b.match.gameKey === 'ticketToRide') {
+    const finals = ttrFinals(b);
+    const st = ttrState(
+      b.seats.map((s) => s.player.id),
+      b.turns,
+    );
+    const complete = b.match.status === 'finished' || st.playComplete;
+    const ranking = rankTtr(
+      finals.map((f) => ({ playerId: f.playerId, final: f.final })),
+      latestTieDecision(log),
+    );
+    const lastAt = b.turns[b.turns.length - 1]?.at ?? null;
+    const lead = ranking.rows.find((r) => r.isWinner) ?? ranking.rows[0];
+    return {
+      complete,
+      endedAt: complete ? (b.match.endedAt ?? lastAt) : null,
+      endedEarly: false,
+      subtitle: lead ? `${lead.total} points` : '',
+      rows: ranking.rows.map((r) => {
+        const f = finals.find((x) => x.playerId === r.playerId)!.final;
+        return { seat: seatOf(r.playerId), place: r.place, isWinner: r.isWinner, value: String(r.total), detail: breakdownLine(f) };
+      }),
+      tie: complete ? ranking.unresolvedTie.map(seatOf) : [],
+      roundCount: 0,
+      results: ranking.rows.map((r) => {
+        const f = finals.find((x) => x.playerId === r.playerId)!.final;
+        return {
+          matchPlayerId: seatOf(r.playerId).mp.id,
+          placement: r.place,
+          finalScore: r.total,
+          marginPastTarget: null,
+          isWinner: r.isWinner,
+          // AC-8: the breakdown is kept after the turn log is deleted.
+          details: { routePoints: f.routePoints, tickets: f.tickets, longestPath: f.longestPath },
+        };
+      }),
     };
   }
 
