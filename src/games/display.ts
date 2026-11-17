@@ -18,6 +18,12 @@ export function seatValue(b: MatchBundle, s: Seat): string {
 /** Extra per-player detail in game detail: margin and handicap target in target games (FR-13 AC-2). */
 export function seatDetail(b: MatchBundle, s: Seat): string | null {
   switch (b.match.gameKey) {
+    case 'ticketToRide': {
+      const d = s.mp.details as { routePoints?: number; tickets?: { value: number; completed: boolean }[]; longestPath?: boolean };
+      const t = d.tickets ?? [];
+      const done = t.filter((x) => x.completed).length;
+      return [`${d.routePoints ?? 0} routes`, `${done}/${t.length} tickets`, d.longestPath ? 'longest path' : null].filter(Boolean).join(' · ');
+    }
     case 'parcheesi': {
       const n = (s.mp.details.tripleDoublets as number | undefined) ?? 0;
       return `${n} triple ${n === 1 ? 'doublet' : 'doublets'}`;

@@ -20,6 +20,7 @@ export function progressLine(b: MatchBundle, now?: number): string {
     ).remaining.length;
     parts.push(`${left} still playing`);
   }
+  if (b.match.gameKey === 'ticketToRide') parts.push(`Turn ${b.turns.length + 1}`);
   if (b.match.gameKey === 'dutchBlitz' || b.match.gameKey === 'flip7') {
     parts.push(`Round ${b.rounds.filter((r) => r.confirmed).length + 1}`);
   }

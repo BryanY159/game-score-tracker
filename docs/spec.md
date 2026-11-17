@@ -85,7 +85,10 @@ Each profile has a name, an emoji, a color from the profile palette, and a hide-
 - AC-5: When a player ends a turn with 2 or fewer trains, a Final Round banner appears. Every player, that player included, gets exactly one more turn, then the app moves to end-of-game scoring.
 - AC-6: End-of-game scoring lists each player's destination tickets. Each ticket has a value and is marked completed (+value) or failed (−value).
 - AC-7: The player with the longest continuous path is selected and gets +10. If players tie for it, each gets +10.
-- AC-8: Finalizing deletes the turn log. The final score breakdown is kept: route points, tickets completed and failed, and the longest-path bonus.
+- AC-8: Finalizing deletes the turn log. The final score breakdown is kept: route points, tickets completed and failed, and the longest-path bonus. The deletion happens in the same save as finalizing.
+- AC-9: Phase 1 supports the US map only: route lengths 1–6. Longer routes (the Europe map's 8-length, 21 points) and Stations aren't included (owner decision).
+- AC-10: Turns go in seat order from the first player. A route longer than the player's trains left is disabled. Editing a logged turn keeps its player and works the totals and the final round out again; only edits that keep every player at 0 trains or more are offered. When every player has had their last turn, the app opens end-of-game scoring (**Final scoring**). There, tickets are added with the keypad and start as completed, and a "Pick all who tie" control sets the longest path.
+- AC-11: Editing a finished game from History changes only the end-of-game breakdown (route points, which can be typed, tickets and the longest path), since the turn log is gone.
 
 ### FR-8 Flip 7 (Rounds template)
 
@@ -197,7 +200,7 @@ Each profile has a name, an emoji, a color from the profile palette, and a hide-
 | Match | gameKey, status (inProgress / finished / cancelled), startedAt, endedAt, pausedDurationMs, pausedAt, settings, notes, endedEarly, log | has many MatchPlayers and Rounds |
 | MatchPlayer | matchId, playerId, seatOrder, color, target, finalScore, placement, marginPastTarget, isWinner, details (JSON) | belongs to Match and Player |
 | Round | matchId, number, dealerPlayerId, entries (per player: score, raw inputs, flags), confirmed | belongs to Match |
-| TurnLog | matchId, entries (player, action, routeLength) | Ticket to Ride only, deleted when the game is finalized |
+| TurnLog | matchId, entries (player, action, routeLength, at) | Ticket to Ride only, deleted when the game is finalized |
 | Settings | statsMinGames, backupReminder, lastBackupAt | single record |
 
 `Match.log` is the per-game entry log for placement games (Parcheesi pawn steps and triple doublets; Monopoly bankruptcies and the end-early entry, which holds each remaining player's net worth, the final order and how a tie for first was settled), oldest first. The current state is replayed from it, so Undo (FR-5 AC-4) drops the last entry. Rounds games use the Round table instead: the round being entered is saved as an unconfirmed Round on every change, and Confirm Round marks it confirmed. Their `Match.log` holds only a tie decision (FR-11 AC-3) or, in Flip 7, an "extra round" entry (FR-11 AC-4), which applies while the number of confirmed rounds is unchanged, so editing the rounds asks again if a tie remains. Ticket to Ride uses TurnLog.

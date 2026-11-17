@@ -37,7 +37,7 @@ export const GAMES: GameDefinition[] = [
     defaultTarget: null,
     pieceColors: ['red', 'blue', 'green', 'gold', 'black'],
     tieBreakers: ['total', 'ticketsCompleted', 'longestPath'],
-    available: false,
+    available: true,
   },
   {
     key: 'parcheesi',

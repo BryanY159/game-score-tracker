@@ -6,6 +6,7 @@ import { NOW } from './fixtures/matches';
 import { MONOPOLY_EIGHT, MONOPOLY_MID, MONOPOLY_SHARED } from './fixtures/monopoly';
 import { BLITZ_DONE, BLITZ_EIGHT, BLITZ_HANDICAP, BLITZ_MID, BLITZ_TIE } from './fixtures/dutchBlitz';
 import { FLIP7_CARDS, FLIP7_DONE, FLIP7_EIGHT, FLIP7_MID, FLIP7_TIE } from './fixtures/flip7';
+import { TTR_END, TTR_FINAL_ROUND, TTR_FIVE, TTR_MID, TTR_TIE } from './fixtures/ticketToRide';
 import { HISTORY, merge, PARCHEESI_DONE, PARCHEESI_MID, PARCHEESI_PAUSED, RECENT } from './fixtures/parcheesi';
 
 /**
@@ -90,6 +91,49 @@ const SCREENS: Screen[] = [
   },
   { name: 'game-picker', hash: '#/new', ready: 'Choose a game' },
   { name: 'history-all', hash: '#/history', ready: 'History', seed: HISTORY },
+  { name: 'ttr-mid', hash: `#/play/${TTR_MID.matches[0]!.id}`, ready: 'Ticket to Ride', seed: TTR_MID },
+  { name: 'ttr-final-round', hash: `#/play/${TTR_FINAL_ROUND.matches[0]!.id}`, ready: 'Ticket to Ride', seed: TTR_FINAL_ROUND },
+  { name: 'ttr-five', hash: `#/play/${TTR_FIVE.matches[0]!.id}`, ready: 'Ticket to Ride', seed: TTR_FIVE },
+  {
+    name: 'ttr-turn-log',
+    hash: `#/play/${TTR_MID.matches[0]!.id}`,
+    ready: 'Ticket to Ride',
+    seed: TTR_MID,
+    act: async (page) => {
+      await page.getByRole('button', { name: 'Turn log' }).click();
+      await page.getByRole('dialog', { name: 'Turn log' }).waitFor();
+    },
+  },
+  {
+    name: 'ttr-turn-edit',
+    hash: `#/play/${TTR_MID.matches[0]!.id}`,
+    ready: 'Ticket to Ride',
+    seed: TTR_MID,
+    act: async (page) => {
+      await page.getByRole('button', { name: 'Turn log' }).click();
+      await page.getByRole('button', { name: /^Turn 3:/ }).click();
+    },
+  },
+  { name: 'ttr-end', hash: `#/play/${TTR_END.matches[0]!.id}/final`, ready: 'Final scoring', seed: TTR_END },
+  {
+    name: 'ttr-add-ticket',
+    hash: `#/play/${TTR_END.matches[0]!.id}/final`,
+    ready: 'Final scoring',
+    seed: TTR_END,
+    act: async (page) => {
+      await page.getByRole('button', { name: 'Add ticket' }).click();
+      await page.getByRole('dialog', { name: 'Add ticket' }).waitFor();
+    },
+  },
+  {
+    name: 'ttr-tie',
+    hash: `#/play/${TTR_TIE.matches[0]!.id}/results`,
+    ready: 'Tied for first',
+    seed: TTR_TIE,
+    act: async (page) => {
+      await page.getByRole('dialog', { name: "It's a tie" }).waitFor();
+    },
+  },
   { name: 'flip7-mid', hash: `#/play/${FLIP7_MID.matches[0]!.id}`, ready: 'Flip 7', seed: FLIP7_MID },
   { name: 'flip7-cards', hash: `#/play/${FLIP7_CARDS.matches[0]!.id}`, ready: 'Flip 7', seed: FLIP7_CARDS },
   {

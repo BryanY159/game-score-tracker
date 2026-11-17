@@ -84,8 +84,9 @@ export function PrimaryToolButton({
   children,
   icon,
   className = '',
+  userText = false,
   ...rest
-}: ButtonHTMLAttributes<HTMLButtonElement> & { icon?: ReactNode }) {
+}: ButtonHTMLAttributes<HTMLButtonElement> & { icon?: ReactNode; /** Holds a player name, so it may truncate. */ userText?: boolean }) {
   return (
     <button
       type="button"
@@ -93,7 +94,7 @@ export function PrimaryToolButton({
       {...rest}
     >
       {icon}
-      <NoWrap>{children}</NoWrap>
+      <NoWrap truncate={userText}>{children}</NoWrap>
     </button>
   );
 }

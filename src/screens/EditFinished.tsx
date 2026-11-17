@@ -21,6 +21,9 @@ import { EndEarly } from '../games/monopoly/EndEarly';
 import { monopolyState } from '../games/monopoly/scoring';
 import { outcomeFor } from '../games/outcome';
 import { requireGame } from '../games/registry';
+import { FinalForm } from '../games/ticketToRide/FinalForm';
+import type { TtrFinal } from '../games/ticketToRide/scoring';
+import { ttrFinals } from '../games/outcome';
 
 /**
  * FR-12 AC-2: edit a finished game in place. Changes are a draft until Save;
@@ -31,6 +34,7 @@ export function EditFinished() {
   const bundle = useLiveQuery(() => getMatchBundle(db, matchId), [matchId]);
   if (bundle === undefined) return null;
   if (bundle === null || bundle.match.status !== 'finished') return <Navigate to="/history" replace />;
+  if (bundle.match.gameKey === 'ticketToRide') return <TtrEdit bundle={bundle} />;
   if (requireGame(bundle.match.gameKey).template === 'rounds') return <RoundsEdit bundle={bundle} />;
   return <PlacementEdit bundle={bundle} />;
 }
@@ -178,6 +182,59 @@ function PlacementEdit({ bundle }: { bundle: MatchBundle }) {
           Save
         </PrimaryToolButton>
       </BottomToolbar>
+    </GameScreen>
+  );
+}
+
+/** A finished Ticket to Ride game: only the end-game breakdown can change (A-11, the turn log is gone). */
+function TtrEdit({ bundle }: { bundle: MatchBundle }) {
+  const { match, seats } = bundle;
+  const navigate = useNavigate();
+  const [finals, setFinals] = useState<Record<string, TtrFinal>>(() => Object.fromEntries(ttrFinals(bundle).map((x) => [x.playerId, x.final])));
+  const [log, setLog] = useState<MatchEvent[]>(match.log);
+  const [playerId, setPlayerId] = useState(seats[0]!.player.id);
+  const [tieOpen, setTieOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const draft: MatchBundle = { ...bundle, seats: seats.map((s) => ({ ...s, mp: { ...s.mp, details: { ...s.mp.details, ...finals[s.player.id] } } })) };
+  const outcome = outcomeFor(draft, log);
+
+  async function save() {
+    if (outcome.tie.length) return setTieOpen(true);
+    setSaving(true);
+    await saveFinishedEdit(db, match.id, { log }, outcome.results);
+    navigate(`/history/${match.id}`, { replace: true });
+  }
+
+  return (
+    <GameScreen>
+      <GameHeader title="Edit Ticket to Ride" sub="Changes save when you tap Save" backTo={`/history/${match.id}`} />
+      <main className="flex-1 px-4 pb-6">
+        <FinalForm seats={seats} finals={finals} playerId={playerId} onSelect={setPlayerId} onChange={(id, f) => setFinals((x) => ({ ...x, [id]: f }))} routePointsEditable />
+      </main>
+      <BottomToolbar>
+        <PrimaryToolButton icon={<CheckIcon />} disabled={saving} onClick={save}>
+          Save
+        </PrimaryToolButton>
+      </BottomToolbar>
+      {tieOpen && (
+        <TieScreen
+          tied={outcome.tie}
+          reason="are tied on total, completed tickets and the longest path."
+          onClose={() => setTieOpen(false)}
+          onDecide={(d) => {
+            setLog((l) => [
+              ...l,
+              {
+                type: 'tieDecision',
+                decision: d.kind === 'shared' ? { kind: 'shared', playerIds: outcome.tie.map((s) => s.player.id) } : d,
+                rounds: 0,
+                at: match.endedAt ?? match.updatedAt,
+              },
+            ]);
+            setTieOpen(false);
+          }}
+        />
+      )}
     </GameScreen>
   );
 }

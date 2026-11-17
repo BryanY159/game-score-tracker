@@ -8,6 +8,7 @@ import { GamePicker } from './screens/GamePicker';
 import { GameSetup } from './screens/GameSetup';
 import { PlayMatch } from './screens/PlacementScoring';
 import { Results } from './screens/Results';
+import { TtrFinalScreen } from './screens/TtrFinal';
 import { Settings } from './screens/Settings';
 import { MatchDetail } from './screens/MatchDetail';
 import { EditFinished } from './screens/EditFinished';
@@ -42,6 +43,7 @@ export function App() {
         <Route path="new/:gameKey" element={<GameSetup />} />
         <Route path="play/:matchId" element={<PlayMatch />} />
         <Route path="play/:matchId/results" element={<Results />} />
+        <Route path="play/:matchId/final" element={<TtrFinalScreen />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </HashRouter>
