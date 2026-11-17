@@ -6,7 +6,7 @@ import { PausedOverlay, PauseButton, useGameControls } from '../components/GameC
 import { MoreIcon, RoundsIcon, UndoIcon } from '../components/Icons';
 import { db } from '../db/schema';
 import type { MatchBundle } from '../db/repos/matches';
-import { confirmDraft, reopenLastRound, saveDraft, updateRound } from '../db/repos/rounds';
+import { confirmDraft, listRounds, reopenLastRound, saveDraft, updateRound } from '../db/repos/rounds';
 import type { Round } from '../domain/types';
 import { BlitzCard } from '../games/dutchBlitz/BlitzCard';
 import { RoundEditSheet, RoundsSheet } from '../games/dutchBlitz/RoundsSheets';
@@ -31,19 +31,12 @@ export function RoundsScoring({ bundle }: { bundle: MatchBundle }) {
     seats.map((s) => s.player.id),
     rounds,
   );
-  const fromDb = (): Record<string, BlitzInput> =>
-    Object.fromEntries(seats.map((s) => [s.player.id, blitzInput(draft?.entries.find((e) => e.playerId === s.player.id))]));
-  // The round being entered lives here and is saved on every change (R-7). Reading it back from the
-  // database between fast taps could overwrite a newer value, so it reloads only when a round is
-  // confirmed or reopened.
-  const [inputs, setInputs] = useState(fromDb);
-  const [loadedAt, setLoadedAt] = useState(confirmedCount);
-  // While a confirm is being saved, an update from just before it can still arrive; don't reload from it.
-  const [confirming, setConfirming] = useState(false);
-  if (loadedAt !== confirmedCount && !confirming) {
-    setLoadedAt(confirmedCount);
-    setInputs(fromDb());
-  }
+  const inputsOf = (r: Round | undefined): Record<string, BlitzInput> =>
+    Object.fromEntries(seats.map((s) => [s.player.id, blitzInput(r?.entries.find((e) => e.playerId === s.player.id))]));
+  // The round being entered lives here and is saved on every change (R-7). It is never reloaded
+  // from database updates, which can arrive late and would overwrite newer taps; only our own
+  // Confirm (start blank) and Undo (load the reopened round) replace it.
+  const [inputs, setInputs] = useState(() => inputsOf(draft));
   const blank = seats.every((s) => inputs[s.player.id]!.dutch === 0 && inputs[s.player.id]!.blitz === 0);
   const change = (playerId: string, i: BlitzInput) => {
     const next = { ...inputs, [playerId]: clampInput(i) };
@@ -64,15 +57,15 @@ export function RoundsScoring({ bundle }: { bundle: MatchBundle }) {
   async function confirm() {
     const entries = seats.map((s) => blitzEntry(s.player.id, inputs[s.player.id]!));
     // Start the next round blank at once, so a fast tap can't land on the old values.
-    setInputs(Object.fromEntries(seats.map((s) => [s.player.id, { dutch: 0, blitz: 0 }])));
-    setLoadedAt(confirmedCount + 1);
-    setConfirming(true);
+    setInputs(inputsOf(undefined));
     justConfirmed.current = true;
-    try {
-      await confirmDraft(db, match.id, entries);
-    } finally {
-      setConfirming(false);
-    }
+    await confirmDraft(db, match.id, entries);
+  }
+
+  async function undo() {
+    await reopenLastRound(db, match.id);
+    const reopened = (await listRounds(db, match.id)).find((r) => !r.confirmed);
+    setInputs(inputsOf(reopened));
   }
 
   return (
@@ -114,7 +107,7 @@ export function RoundsScoring({ bundle }: { bundle: MatchBundle }) {
           icon={<UndoIcon />}
           label="Undo"
           disabled={paused || !blank || confirmedCount === 0}
-          onClick={() => reopenLastRound(db, match.id)}
+          onClick={undo}
         />
         <ToolButton icon={<RoundsIcon />} label="Rounds" onClick={() => setListOpen(true)} />
         {outcome.complete ? (

@@ -270,7 +270,7 @@ Also adds the generic `TieScreen` (FR-11 AC-3), used first for a Monopoly net-wo
 
 **Files:** `src/db/repos/rounds.ts`, `src/domain/rounds.ts`, `src/games/dutchBlitz/*`, `src/screens/{RoundsScoring,RoundsList}.tsx`, `src/screens/GameSetup.tsx`, `src/domain/winner.ts`.
 
-*Built (M7):* the draft round is held on screen and saved on every change; it reloads from the database only when a round is confirmed or reopened, which fixed a race where fast entry could overwrite a newer value. Results waits for a tie decision when one is needed. Finished rounds games are edited round by round from History.
+*Built (M7):* the draft round is held on screen and saved on every change. It never reloads from database updates, which can arrive late and overwrite newer taps; only Confirm (start blank) and Undo (load the reopened round) replace it. This fixed two races found by the tests. Results waits for a tie decision when one is needed. Finished rounds games are edited round by round from History.
 
 **Tests:**
 - Vitest:
