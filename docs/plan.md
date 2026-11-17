@@ -397,6 +397,49 @@ Also adds the Settings "Merge a file" button (moved from M4).
 
 ---
 
+### M13 · Flip 7 entry, colors, stats, Ticket to Ride ticket keypad
+
+**Usable result:** Flip 7 is played on the card selector (mockup `Flip7Cards`), with any score typed from the keypad (`Flip7Keypad`). There are new Flip 7 stats, and tickets can be marked from the keypad.
+
+**Covers:** FR-3 AC-3, FR-8 (AC-1, AC-2, AC-7 to AC-9), FR-7 AC-6, FR-14 AC-5, §6 Flip 7 tokens.
+
+**Order:**
+1. Flip 7 tokens, limited to the Flip 7 entry components.
+2. The card selector (number and modifier cards, Bust, Clear, Next player, the sum line).
+3. The round-score chip on each pill, which opens the keypad, with Back to cards.
+4. Remove the entry-mode setting from setup and play. Old saved games load unchanged.
+5. The past-round editor opens on the keypad.
+6. Per-player Flip 7 rate and bust rate (% of rounds played, minimum-games rule).
+7. Completed and Failed on the ticket keypad.
+
+**Files:** `src/games/flip7/{CardsPad,Flip7Row,Flip7Keypad}.tsx`, `src/screens/{Flip7Scoring,GameSetup}.tsx`, `src/games/RoundEditor.tsx`, `src/styles/index.css` (Flip 7 tokens), `src/domain/stats.ts`, `src/screens/Stats.tsx`, `src/games/ticketToRide/FinalForm.tsx`.
+
+**Tests:**
+- Vitest: the new stats (rates over rounds played, the minimum-games rule); old saved rounds (number and cards raw entries, and an old `entryMode` setting) still score and load.
+- Playwright: the keypad opens from a score chip and Back to cards returns; the card colors match the tokens; the ticket keypad's Completed and Failed set the status; an old saved Flip 7 game loads and plays; NFR-6 and 44 pt at every size.
+
+### M14 · iPad landscape and keyboard shortcuts
+
+**Usable result:** the app works well on the iPad in landscape with a keyboard. Two-pane scoring, side-by-side History and Stats, and FR-20 shortcuts.
+
+**Covers:** NFR-3 (landscape), NFR-7 (1180×820), FR-20.
+
+**Order:**
+1. Add the 1180×820 landscape project to the screenshot matrix.
+2. Two-pane scoring layouts (players and scoreboard left, entry panel right) for Flip 7, Dutch Blitz, Ticket to Ride, Parcheesi and Monopoly.
+3. History and Stats list beside detail.
+4. A shared shortcut layer (a registry where screens register keys; ignored while typing except Enter and Esc).
+5. Each game's keys.
+6. The ? overlay listing the active keys.
+7. Visible focus rings.
+8. Check ⌘Z and Space in the installed app and record any alternatives in the spec.
+
+**Files:** `src/hooks/useShortcuts.ts`, `src/components/ShortcutsOverlay.tsx`, the scoring screens, `src/screens/{History,Stats}.tsx`, `src/styles/index.css`, `playwright.config.ts`.
+
+**Tests:**
+- Playwright: a keyboard test per game covering the main shortcuts, the ? overlay, and that shortcuts don't fire while typing in a text field.
+- The full screenshot matrix, now with landscape.
+
 ## 6. Changes made during batch 1 (M0–M4)
 
 *Batch 2 review (after M7), owner request:* a small PR before M8 adds Parcheesi triple doublets (spec FR-6 AC-6) and hold-to-repeat on every stepper (FR-18 AC-1). M10 adds the matching Parcheesi stat to FR-14 AC-5.
@@ -434,9 +477,14 @@ Also adds the Settings "Merge a file" button (moved from M4).
 | FR-17 | M4 |
 | FR-18 | M2 (stepper), M6 (keypad, native pad), M8 (game keys) |
 | FR-19 | M0 (reduced-motion base), M12 |
+| FR-20 | M14 |
+| FR-3 AC-3, FR-8 AC-7 to AC-9 (card selector, keypad from the score chip) | M13 |
+| FR-7 AC-6 (ticket keypad Completed / Failed) | M13 |
+| FR-14 AC-5 (Flip 7 rate, bust rate) | M13 |
 | NFR-1 | M0, checked offline in each milestone |
 | NFR-2 | M7, M8 (R-1) |
 | NFR-3 | M0, plus a 44 pt check in every milestone |
 | NFR-4 | M0, plus a dark render in every milestone |
 | NFR-5 | M0 (`record.ts`), M11 (relies on it) |
-| NFR-6, NFR-7 | M0 harness, enforced in every milestone, full audit in M12 |
+| NFR-6, NFR-7 | M0 harness, enforced in every milestone, full audit in M12, landscape added in M14 |
+| NFR-3 (iPad landscape) | M14 |

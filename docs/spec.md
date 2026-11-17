@@ -49,7 +49,7 @@ Each profile has a name, an emoji, a color from the profile palette, and a hide-
 
 - AC-1: Each game's player range is enforced: Parcheesi 2–4, Ticket to Ride 2–5, Monopoly 2–8, Dutch Blitz 2–8, Flip 7 2+. An explicit override allows going outside it, but never past the number of colors available: Parcheesi 4, Ticket to Ride 5, all other games 8. In practice the override ("Play anyway") only allows going below the minimum.
 - AC-2: Flip 7 and Dutch Blitz targets default to 200 and 75, and can be edited per player.
-- AC-3: Flip 7 setup includes the entry mode (Number or Cards), which can also be changed mid-game.
+- AC-3: Flip 7 has no entry-mode choice (changed 2026-11-17, mockups `Flip7Cards` and `Flip7Keypad`). Play always uses the card selector, and any player's score can be typed instead from the keypad (FR-8 AC-7).
 - AC-4: Starting a game starts its timer.
 
 ### FR-4 Player colors
@@ -83,7 +83,7 @@ Each profile has a name, an emoji, a color from the profile palette, and a hide-
 - AC-3: A scoreboard shows each player's route points and trains left, starting from 45.
 - AC-4: A turn log can be viewed during the game, and any logged turn can be edited.
 - AC-5: When a player ends a turn with 2 or fewer trains, a Final Round banner appears. Every player, that player included, gets exactly one more turn, then the app moves to end-of-game scoring.
-- AC-6: End-of-game scoring lists each player's destination tickets. Each ticket has a value and is marked completed (+value) or failed (−value).
+- AC-6: End-of-game scoring lists each player's destination tickets. Each ticket has a value and is marked completed (+value) or failed (−value). The ticket keypad has **Completed** and **Failed** buttons that add the ticket with that status. The completed/failed toggle on each ticket row stays, for changing it later.
 - AC-7: The player with the longest continuous path is selected and gets +10. If players tie for it, each gets +10.
 - AC-8: Finalizing deletes the turn log. The final score breakdown is kept: route points, tickets completed and failed, and the longest-path bonus. The deletion happens in the same save as finalizing.
 - AC-9: Phase 1 supports the US map only: route lengths 1–6. Longer routes (the Europe map's 8-length, 21 points) and Stations aren't included (owner decision).
@@ -92,18 +92,21 @@ Each profile has a name, an emoji, a color from the profile palette, and a hide-
 
 ### FR-8 Flip 7 (Rounds template)
 
-- AC-1: Number mode: enter a round score, or tap Bust to score 0. Checking Flip 7! adds 15 points.
-- AC-2: Cards mode works like this:
+- AC-1: Keypad: type a round score, or tap Bust to score 0. Flip 7! adds 15 points.
+- AC-2: The card selector (mockup `Flip7Cards`), used during play, works like this:
   - Number cards 0–12 can each be tapped once. Tapping a duplicate asks "Bust?"
   - Modifiers +2, +4, +6, +8, +10 and ×2 can also be tapped.
   - The score is (number cards, doubled if ×2 is present) + modifiers + 15 if there are 7 unique numbers.
   - A Flip 7 is detected automatically.
+  - **Bust** scores 0 and moves to the next player. **Clear** empties the player's cards for this round.
+  - The panel shows the player's sum, e.g. "(3+5+8+12) + 4 = 32".
 - AC-3: The dealer rotates every round. Confirm Round updates the totals and the round count.
 - AC-4: The game ends after a round in which any player reaches their target.
 - AC-5: The game saves scores, rounds played, and each player's Flip 7 count and busts. It also tracks the fewest rounds to reach 200 for each player count (saved per player as `roundsTo200`, only for players whose target was 200).
 - AC-6: Action cards (Freeze, Flip Three, Second Chance) aren't tracked. The "Bust?" prompt for a duplicate number card offers **Bust** or **Not a bust, remove card**, which covers a Second Chance save.
-- AC-7: Each player's entry comes from the keypad: digits, **Next player**, **Bust** (scores 0 and moves on) and **Flip 7!**. Tapping a player's row selects them. Confirm Round needs an entry for every player (NFR-2: one entry per player plus a confirm).
-- AC-8: Editing a past round uses Number entry (the score before the bonus, plus Bust and Flip 7!), whichever mode the round was entered in.
+- AC-7: Each player's pill has an outlined round-score chip. Tapping the chip opens the custom keypad for that player (mockup `Flip7Keypad`): digits, **Bust**, **Flip 7!**, delete and **Next player**. Its **Back to cards** button returns to the card selector. Tapping the rest of a pill selects that player for the card selector. Confirm Round needs an entry for every player (NFR-2: one entry per player plus a confirm).
+- AC-8: Editing a past round opens the keypad by default (the score before the bonus, plus Bust and Flip 7!), whichever way the round was entered.
+- AC-9: Games and rounds saved before this change (entered in either the old Number or Cards mode) still load, show and edit normally.
 
 ### FR-9 Dutch Blitz (Rounds template)
 
@@ -149,7 +152,7 @@ Each profile has a name, an emoji, a color from the profile palette, and a hide-
 - AC-5: Game-specific stats:
   - Parcheesi: average pawns home; average triple doublets per game, and the most in one game (owner request, M10)
   - Ticket to Ride: ticket completion rate and longest-path wins
-  - Flip 7: Flip 7 count, bust rate, and fewest rounds to 200
+  - Flip 7: Flip 7 count, bust rate, and fewest rounds to 200. Per player, a Flip 7 rate and a bust rate, each as a % of rounds played, shown only for players who've reached the minimum number of games (AC-3)
   - Dutch Blitz: rounds to finish
   - Monopoly: average game length
 - AC-6: How Stats shows them:
@@ -201,15 +204,36 @@ Each profile has a name, an emoji, a color from the profile palette, and a hide-
   - The podium's steps rise from 3rd to 1st, then the crown pops.
   - With Reduce Motion, celebrations still show their message, without any motion.
 
+### FR-20 Keyboard shortcuts
+
+These only apply when a hardware keyboard is used (iPad with a keyboard case). Nothing changes on the iPhone. They're active in Flip 7, Ticket to Ride and Dutch Blitz.
+
+- AC-1: Everywhere: ⌘Z Undo, Space pause or resume, Esc close a sheet or go back, ? show the shortcut list.
+- AC-2: Flip 7:
+  - 0–9 pick that number card, and Shift+1/2/3 pick 10/11/12.
+  - + then 2/4/6/8/0 picks a modifier (+0 means +10). X is ×2.
+  - B is Bust and C is Clear.
+  - K opens the keypad, where digits type and F marks a Flip 7.
+  - Enter goes to the next player, and on the last player it's Confirm round.
+- AC-3: Ticket to Ride:
+  - 1–6 claim a route of that length. T draws train cards, D draws tickets, L opens the turn log.
+  - In end-of-game scoring: digits type a ticket value, C or X marks it completed or failed, Enter adds the next ticket, and P toggles the longest path for the current player.
+- AC-4: Dutch Blitz:
+  - Tab or the arrow keys move between players and between the Dutch and Blitz fields.
+  - Digits type a value, and + or − change it by 1 (holding repeats).
+  - Enter confirms the round.
+- AC-5: Shortcuts don't fire while typing in a text field, except Enter and Esc. Keyboard focus rings must be visible.
+- AC-6: The ? overlay lists the shortcuts active on the current screen.
+
 ## 4. Non-functional requirements
 
 - **NFR-1 Offline-first:** no feature needs a network connection after install.
 - **NFR-2 Speed:** entering a round for 8 players takes no more than one entry per player plus a confirm, and the screen responds instantly. An entry is a single value. Tapping a stepper's value opens the number pad, so a large count doesn't need repeated taps.
-- **NFR-3 Layout:** iPhone is the primary target. iPad uses wider multi-column layouts. Tap targets are at least 44 pt.
+- **NFR-3 Layout:** iPhone is the primary target. iPad uses wider multi-column layouts. Tap targets are at least 44 pt. The iPad is used in landscape with a keyboard case: at 1180×820, scoring screens use two panes (players and scoreboard on the left, the entry panel on the right), and History and Stats show the list and the detail side by side. Portrait and iPhone layouts don't change.
 - **NFR-4 Theme:** supports light and dark modes and follows the device setting.
 - **NFR-5 Sync-ready data:** every record has a UUID `id`, `createdAt`, `updatedAt` and `deletedAt` (for soft deletes).
 - **NFR-6 No wrapped labels:** short UI text never wraps onto a second line at 375 px and 390 px widths. This covers buttons, tile and stat labels, chips, pill names and toolbar labels. If a label doesn't fit, fix it in this order: shorten the wording, change the layout (for example, list rows instead of tiles), or as a last resort truncate it to one line with an ellipsis.
-- **NFR-7 Visual checks:** Playwright screenshot tests render every screen at iPhone (375×667, 390×844) and iPad (820×1180) sizes, in light and dark mode. They're reviewed for wrapping, overflow and clipping before each milestone is merged.
+- **NFR-7 Visual checks:** Playwright screenshot tests render every screen at iPhone (375×667, 390×844) and iPad (820×1180 portrait, 1180×820 landscape) sizes, in light and dark mode. They're reviewed for wrapping, overflow and clipping before each milestone is merged.
 
 ## 5. Data model
 
@@ -271,6 +295,17 @@ What goes in `details` depends on the game:
 | Link | Text color, underlined | Text color, underlined |
 
 **Piece colors:** game pieces use the palette's red, blue, green and gold (gold stands in for yellow). Ticket to Ride also uses Black `#1C1C1E`, which gets a light outline in dark mode.
+
+**Flip 7 tokens** (copied from the mockup). These are an exception to the "tokens only" rule, allowed **only on Flip 7's entry screens** (the card selector and keypad):
+
+| Element | Value |
+| --- | --- |
+| Number card | cream `#F6EEDC`, border `#D9C9A3` |
+| Number card numerals, with a dark `#1F2430` outline, 0 to 12 | `#E8197D`, `#A39384`, `#C5D928`, `#EE4560`, `#2BB5C9`, `#1FA34A`, `#8E44C2`, `#D27F72`, `#8CD15A`, `#F08A1C`, `#E3262B`, `#6A9BE0`, `#8C7E78` |
+| Modifier card | orange `#F5A623`, border `#D98A12`, coral `#E8524A` numerals with the same dark outline |
+| Bust button | `#B91C1C` with white text |
+
+The cards keep these colors in dark mode, like real cards.
 
 ## 7. Screens
 
