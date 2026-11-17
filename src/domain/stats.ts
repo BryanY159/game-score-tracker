@@ -233,3 +233,36 @@ export function winTrend(records: GameRecord[], gameKey: GameKey | null, players
     return point;
   });
 }
+
+/**
+ * FR-14 AC-5 (M13): per player, Flip 7s and busts as a % of rounds played,
+ * only for players who've reached the minimum number of Flip 7 games (AC-3).
+ */
+export function flip7Rates(records: GameRecord[], players: StatPlayer[], minGames: number) {
+  const games = records.filter((r) => r.gameKey === 'flip7');
+  return players
+    .map((p) => {
+      let rounds = 0;
+      let flip7s = 0;
+      let busts = 0;
+      let played = 0;
+      for (const r of games) {
+        const s = r.seats.find((x) => x.playerId === p.id);
+        if (!s) continue;
+        played++;
+        rounds += r.rounds;
+        flip7s += typeof s.details.flip7Count === 'number' ? s.details.flip7Count : 0;
+        busts += typeof s.details.busts === 'number' ? s.details.busts : 0;
+      }
+      return {
+        playerId: p.id,
+        games: played,
+        rounds,
+        eligible: played >= minGames && rounds > 0,
+        flip7Rate: rounds ? flip7s / rounds : 0,
+        bustRate: rounds ? busts / rounds : 0,
+      };
+    })
+    .filter((x) => x.games > 0)
+    .sort((a, b) => Number(b.eligible) - Number(a.eligible) || b.flip7Rate - a.flip7Rate);
+}

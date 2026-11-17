@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { blankRaw, dealerFor, flip7Entry, flip7Score, hasFlip7, isEntered, tapNumber, toggleMod, type Flip7Raw } from './scoring';
+import { blankRaw, dealerFor, flip7Entry, flip7Score, hasFlip7, isEntered, rawOf, tapNumber, toggleMod, type Flip7Raw } from './scoring';
 import { flip7Details } from './stats';
 import { roundsResult } from '../rounds';
 import type { MatchEvent, Round } from '../../domain/types';
@@ -133,5 +133,24 @@ describe('saved Flip 7 details (FR-8 AC-5)', () => {
     expect(d.a).toEqual({ flip7Count: 1, busts: 0, roundsTo200: 3 });
     // Handicap target: not counted for "fewest rounds to 200" (A-4).
     expect(d.b).toEqual({ flip7Count: 1, busts: 1, roundsTo200: null });
+  });
+});
+
+describe('games saved before the card-selector change (FR-8 AC-9, M13)', () => {
+  it('number-mode and cards-mode raw entries still read and score the same', () => {
+    const typed = { playerId: 'a', score: 58, raw: { mode: 'number', value: 43, bust: false, flip7: true }, flags: ['flip7'] };
+    const carded = { playerId: 'b', score: 26, raw: { mode: 'cards', cards: [3, 7, 12], mods: [4], x2: false, bust: false }, flags: [] };
+    // Whatever entry mode the game was set to, each entry keeps its own.
+    for (const mode of ['number', 'cards'] as const) {
+      expect(flip7Score(rawOf(typed, mode))).toBe(58);
+      expect(flip7Score(rawOf(carded, mode))).toBe(26);
+    }
+    expect(flip7Entry('a', rawOf(typed, 'cards'))).toEqual(typed);
+    expect(flip7Entry('b', rawOf(carded, 'number'))).toEqual(carded);
+  });
+
+  it('an entry with no raw (or an unknown one) reads as blank, not as an error', () => {
+    expect(isEntered(rawOf(undefined, 'cards'))).toBe(false);
+    expect(isEntered(rawOf({ playerId: 'x', score: 0, raw: { weird: true }, flags: [] }, 'cards'))).toBe(false);
   });
 });

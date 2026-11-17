@@ -414,6 +414,11 @@ Also adds the Settings "Merge a file" button (moved from M4).
 
 **Files:** `src/games/flip7/{CardsPad,Flip7Row,Flip7Keypad}.tsx`, `src/screens/{Flip7Scoring,GameSetup}.tsx`, `src/games/RoundEditor.tsx`, `src/styles/index.css` (Flip 7 tokens), `src/domain/stats.ts`, `src/screens/Stats.tsx`, `src/games/ticketToRide/FinalForm.tsx`.
 
+*Built (M13):*
+- One `EntryPanel` (card selector plus keypad) is shared by play and the past-round editor.
+- Each round entry keeps the mode it was made with (cards or typed), so saved rounds of either kind load and save unchanged. The old `entryMode` setting is ignored, not deleted. Opening a cards round in the editor shows its score on the keypad, and saving without a change keeps the cards.
+- The Flip 7 tokens live in `games/flip7/tokens.ts`, used only by the entry panel.
+
 **Tests:**
 - Vitest: the new stats (rates over rounds played, the minimum-games rule); old saved rounds (number and cards raw entries, and an old `entryMode` setting) still score and load.
 - Playwright: the keypad opens from a score chip and Back to cards returns; the card colors match the tokens; the ticket keypad's Completed and Failed set the status; an old saved Flip 7 game loads and plays; NFR-6 and 44 pt at every size.

@@ -7,7 +7,8 @@ import type { Seat } from '../db/repos/matches';
 import { COLOR_HEX } from '../domain/colors';
 import type { GameKey, Round, RoundEntry } from '../domain/types';
 import { RoundEditSheet } from './dutchBlitz/RoundsSheets';
-import { FLIP7_BONUS, flip7Entry, flip7Score, type Flip7Raw } from './flip7/scoring';
+import { FLIP7_BONUS, flip7Entry, flip7Score, hasFlip7, rawOf, type Flip7Raw } from './flip7/scoring';
+import { EntryPanel, type Panel } from './flip7/EntryPanel';
 
 /** Edit one past round (FR-5 AC-4), with the right inputs for the game. */
 export function RoundEditor(props: {
@@ -21,24 +22,29 @@ export function RoundEditor(props: {
   return <RoundEditSheet {...props} />;
 }
 
-type NumberRaw = Extract<Flip7Raw, { mode: 'number' }>;
-
 /**
- * A past Flip 7 round is edited as Number entry: the score before the Flip 7 bonus,
- * plus Bust and Flip 7! (spec FR-8 AC-6).
+ * A past Flip 7 round (FR-8 AC-8): pick a player, then the keypad opens for
+ * them by default; Back to cards switches to the card selector.
  */
 function Flip7RoundEdit({ seats, round, onSave, onClose }: { seats: Seat[]; round: Round; onSave: (e: RoundEntry[]) => void; onClose: () => void }) {
-  const [raws, setRaws] = useState<Record<string, NumberRaw>>(() =>
-    Object.fromEntries(
-      seats.map((s) => {
-        const e = round.entries.find((x) => x.playerId === s.player.id);
-        const flip7 = e?.flags.includes('flip7') ?? false;
-        const bust = e?.flags.includes('bust') ?? false;
-        return [s.player.id, { mode: 'number', value: bust ? null : (e?.score ?? 0) - (flip7 ? FLIP7_BONUS : 0), bust, flip7 } satisfies NumberRaw];
-      }),
-    ),
+  const [raws, setRaws] = useState<Record<string, Flip7Raw>>(() =>
+    Object.fromEntries(seats.map((s) => [s.player.id, rawOf(round.entries.find((x) => x.playerId === s.player.id), 'number')])),
   );
-  const upd = (id: string, patch: Partial<NumberRaw>) => setRaws((x) => ({ ...x, [id]: { ...x[id]!, ...patch } }));
+  const [active, setActive] = useState(seats[0]!.player.id);
+  const [panel, setPanel] = useState<Panel>('keypad');
+  const ids = seats.map((s) => s.player.id);
+  const raw = raws[active]!;
+  const set = (r: Flip7Raw) => setRaws((x) => ({ ...x, [active]: r }));
+  const next = () => setActive(ids[(ids.indexOf(active) + 1) % ids.length]!);
+  const shown: Flip7Raw =
+    panel === 'keypad'
+      ? raw.mode === 'number'
+        ? raw
+        : // A cards round opens on the keypad with its score typed in, so it can be corrected.
+          { mode: 'number', value: raw.bust ? null : flip7Score(raw) - (hasFlip7(raw) ? FLIP7_BONUS : 0), bust: raw.bust, flip7: hasFlip7(raw) }
+      : raw.mode === 'cards'
+        ? raw
+        : { mode: 'cards', cards: [], mods: [], x2: false, bust: raw.bust };
   return (
     <Sheet
       title={`Edit round ${round.number}`}
@@ -49,52 +55,40 @@ function Flip7RoundEdit({ seats, round, onSave, onClose }: { seats: Seat[]; roun
         </Button>
       }
     >
-      <ul className="m-0 flex list-none flex-col gap-2.5 p-0">
+      <div className="flex flex-col gap-2">
         {seats.map((s) => {
           const r = raws[s.player.id]!;
+          const on = s.player.id === active;
           return (
-            <li key={s.mp.id} className="flex flex-col gap-1.5 rounded-3xl border-[1.5px] border-border p-1.5">
-              <div className="flex h-11 items-center gap-2 rounded-[20px] pr-3.5 pl-1.5 text-white" style={{ background: COLOR_HEX[s.mp.color] }}>
-                <Avatar emoji={s.player.emoji} size={32} />
-                <NoWrap truncate className="flex-1 text-base font-bold">
-                  {s.player.name}
-                </NoWrap>
-                <NoWrap className="tabular text-[17px] font-extrabold">{flip7Score(r)}</NoWrap>
-              </div>
-              <div className="flex items-center gap-2">
-                <input
-                  aria-label={`${s.player.name} score`}
-                  inputMode="numeric"
-                  pattern="[0-9]*"
-                  disabled={r.bust}
-                  value={r.value ?? ''}
-                  placeholder="0"
-                  onChange={(e) => {
-                    const d = e.target.value.replace(/\D/g, '').slice(0, 3);
-                    upd(s.player.id, { value: d === '' ? null : Number(d) });
-                  }}
-                  className="tabular h-11 w-24 rounded-[14px] border-[1.5px] border-border bg-surface px-3 text-right text-xl font-extrabold text-text outline-none focus:border-text disabled:opacity-40"
-                />
-                <Toggle label="Bust" on={r.bust} onClick={() => upd(s.player.id, { bust: !r.bust, flip7: false })} />
-                <Toggle label="Flip 7!" on={r.flip7} onClick={() => upd(s.player.id, { flip7: !r.flip7, bust: false })} />
-              </div>
-            </li>
+            <button
+              key={s.mp.id}
+              type="button"
+              aria-pressed={on}
+              onClick={() => setActive(s.player.id)}
+              className="flex h-12 items-center gap-2.5 rounded-3xl pr-4 pl-1.5 text-left text-white"
+              style={{ background: COLOR_HEX[s.mp.color], boxShadow: on ? '0 0 0 3px var(--bg), 0 0 0 5px var(--text)' : undefined }}
+            >
+              <Avatar emoji={s.player.emoji} size={36} />
+              <NoWrap truncate className="flex-1 text-base font-bold">
+                {s.player.name}
+              </NoWrap>
+              <NoWrap className="tabular text-[17px] font-extrabold">{r.bust ? 'Bust' : flip7Score(r)}</NoWrap>
+            </button>
           );
         })}
-      </ul>
+        <EntryPanel
+          name={seats.find((s) => s.player.id === active)!.player.name}
+          raw={shown}
+          panel={panel}
+          onPanel={setPanel}
+          onChange={set}
+          onBust={() => {
+            set(panel === 'keypad' ? { mode: 'number', value: null, bust: true, flip7: false } : { ...(shown as Extract<Flip7Raw, { mode: 'cards' }>), bust: true });
+            next();
+          }}
+          onNext={next}
+        />
+      </div>
     </Sheet>
-  );
-}
-
-function Toggle({ label, on, onClick }: { label: string; on: boolean; onClick: () => void }) {
-  return (
-    <button
-      type="button"
-      aria-pressed={on}
-      onClick={onClick}
-      className={`h-11 flex-1 rounded-[14px] border-[1.5px] border-text text-[15px] font-extrabold ${on ? 'bg-text text-bg' : 'text-text'}`}
-    >
-      <NoWrap>{label}</NoWrap>
-    </button>
   );
 }
