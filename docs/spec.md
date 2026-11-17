@@ -2,7 +2,7 @@
 
 - **Source intent:** `intent.md` (accepted 2026-11-16)
 - **Date:** 2026-11-16
-- **Status:** Approved by owner, 2026-11-16
+- **Status:** Approved by owner, 2026-11-16. Amended 2026-11-17 (decisions from `plan.md` §1)
 
 ## 1. Summary
 
@@ -47,7 +47,7 @@ Each profile has a name, an emoji, a color from the profile palette, and a hide-
 5. Adjust that game's settings.
 6. Start the game.
 
-- AC-1: Each game's player range is enforced: Parcheesi 2–4, Ticket to Ride 2–5, Monopoly 2–8, Dutch Blitz 2–8, Flip 7 2+. An explicit override allows going outside it.
+- AC-1: Each game's player range is enforced: Parcheesi 2–4, Ticket to Ride 2–5, Monopoly 2–8, Dutch Blitz 2–8, Flip 7 2+. An explicit override allows going outside it, but never past the number of colors available: Parcheesi 4, Ticket to Ride 5, all other games 8.
 - AC-2: Flip 7 and Dutch Blitz targets default to 200 and 75, and can be edited per player.
 - AC-3: Flip 7 setup includes the entry mode (Number or Cards), which can also be changed mid-game.
 - AC-4: Starting a game starts its timer.
@@ -115,6 +115,7 @@ Each profile has a name, an emoji, a color from the profile palette, and a hide-
 - AC-1: In target games (Flip 7 and Dutch Blitz), the winner is the player with the largest margin past their own target. If margins tie, the higher total wins.
 - AC-2: In Ticket to Ride, a tie on total score goes to the player with the most completed destination tickets, then to the longest-path holder.
 - AC-3: If a tie remains or the game has no official tie-breaker, a tie screen offers two choices: declare a shared win, or pick the winner of an outside tie-breaker.
+- AC-4: In Flip 7, if players are still tied on both margin and total, the tie screen's default option is "Play another round" (per the official FAQ). It continues the game with all players, not just the tied ones. After that round, the winner is decided again under AC-1, and the tie screen comes back if the tie remains, as many times as needed. Shared win and the outside tie-breaker stay available each time.
 
 ### FR-12 Results and Finalize
 
@@ -130,8 +131,12 @@ Each profile has a name, an emoji, a color from the profile palette, and a hide-
 
 - AC-1: Stats are shown per game, plus an overall win comparison across all games.
 - AC-2: Stats are rates and averages, never raw totals: win %, average margin, average placement.
+  - A shared win among k players counts as 1/k of a win for each of them.
+  - The overall win comparison is the mean of a player's per-game win %, using only games where they've reached the minimum.
+  - Average margin: past target in Flip 7 and Dutch Blitz, and the winner's score minus the runner-up's in Ticket to Ride. Parcheesi and Monopoly use average placement only.
+  - Fewest rounds to 200 (Flip 7) counts only players whose target was 200, grouped by player count.
 - AC-3: A player's stats for a game appear only after they've played the minimum number of games of it (default 5, adjustable in Settings).
-- AC-4: Head-to-head records only count games where both players took part.
+- AC-4: Head-to-head records only count games where both players took part. Whoever placed higher wins the matchup, and a shared placement counts as a tie.
 - AC-5: Game-specific stats:
   - Parcheesi: average pawns home
   - Ticket to Ride: ticket completion rate and longest-path wins
@@ -170,7 +175,7 @@ Each profile has a name, an emoji, a color from the profile palette, and a hide-
 ## 4. Non-functional requirements
 
 - **NFR-1 Offline-first:** no feature needs a network connection after install.
-- **NFR-2 Speed:** entering a round for 8 players takes no more than one tap per player plus a confirm, and the screen responds instantly.
+- **NFR-2 Speed:** entering a round for 8 players takes no more than one entry per player plus a confirm, and the screen responds instantly. An entry is a single value. Tapping a stepper's value opens the number pad, so a large count doesn't need repeated taps.
 - **NFR-3 Layout:** iPhone is the primary target. iPad uses wider multi-column layouts. Tap targets are at least 44 pt.
 - **NFR-4 Theme:** supports light and dark modes and follows the device setting.
 - **NFR-5 Sync-ready data:** every record has a UUID `id`, `createdAt`, `updatedAt` and `deletedAt` (for soft deletes).
@@ -221,6 +226,18 @@ What goes in `details` depends on the game:
 | Teal | `#0F766E` |
 | Orange | `#C2410C` |
 
+**Neutral tokens:**
+
+| Token | Light | Dark |
+| --- | --- | --- |
+| Background | `#FFFFFF` | `#0B0B0D` |
+| Surface | `#F2F3F5` | `#1C1C1E` |
+| Border | `#E4E6EA` | `#2C2C2E` |
+| Text | `#1F2430` | `#F2F3F5` |
+| Secondary text | `#5F6470` | `#A1A1AA` |
+| Charcoal button | `#1F2430` | `#3A3A3C` |
+| Link | Text color, underlined | Text color, underlined |
+
 **Piece colors:** game pieces use the palette's red, blue, green and gold (gold stands in for yellow). Ticket to Ride also uses Black `#1C1C1E`, which gets a light outline in dark mode.
 
 ## 7. Screens
@@ -245,12 +262,18 @@ What goes in `details` depends on the game:
 | C-1 | White text on gold has a contrast of about 1.9:1, below accessibility guidelines | Owner accepted it for consistency. Large score numbers partly offset it. |
 | C-2 | iOS can clear website data | Mitigated by installing to the Home Screen, requesting persistent storage, and backups (FR-15 to FR-17) |
 | C-3 | Haptics are very limited in iOS web apps | Use light tap feedback where supported. Don't rely on haptics. |
-| C-4 | The official Flip 7 and Dutch Blitz tie rules haven't been confirmed | Confirm them before building FR-11. Until then, ties go to the tie screen. |
+| C-4 | The official Flip 7 and Dutch Blitz tie rules haven't been confirmed | Resolved 2026-11-17: Dutch Blitz's official rule (highest score wins when several reach 75 in the same hand) matches FR-11 AC-1, Flip 7 uses FR-11 AC-1, and per its official FAQ a remaining tie defaults to everyone playing another round (FR-11 AC-4). Any other exact tie goes to the tie screen. |
 | C-5 | Flip 7 is officially for 3 or more players | Owner allows 2 players under the standard rules |
 | C-6 | Free GitHub Pages hosting needs a public repository on a free GitHub plan | Owner accepted a public repo. User data is never stored in it. |
-| C-7 | The Flip 7 ×2 rule is assumed to double number cards only, not modifiers | Confirm against the rulebook before building FR-8 |
+| C-7 | The Flip 7 ×2 rule is assumed to double number cards only, not modifiers | Resolved 2026-11-17: the publisher's FAQ confirms ×2 doubles number cards only |
 
 ## 9. Resolved questions
 
 1. Stats appear after 5 games of a given game (FR-14 AC-3 default), and the number can be changed in Settings.
 2. A public GitHub repo is acceptable (C-6).
+3. The ×2 card in Flip 7 doubles number cards only, not modifiers (C-7, publisher's FAQ, 2026-11-17).
+4. A shared win among k players counts as 1/k of a win for each of them in win % (2026-11-17).
+5. "Fewest rounds to 200" (FR-8 AC-5, FR-14 AC-5) counts only players whose target was 200, grouped by player count (2026-11-17).
+6. The overall win comparison (FR-14 AC-1) is the average of a player's per-game win %, over games where they've reached the minimum (2026-11-17).
+7. NFR-2 means one entry per player plus a confirm. Tapping a stepper's value opens the number pad (2026-11-17).
+8. The player-range override (FR-3 AC-1) can't exceed the colors available: Parcheesi 4, Ticket to Ride 5, all others 8 (2026-11-17).
