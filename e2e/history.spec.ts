@@ -27,7 +27,7 @@ test('game detail shows players, scores, length and notes (FR-13 AC-2)', async (
   const id = HISTORY.matches[3]!.id;
   await openApp(page, `#/history/${id}`, HISTORY);
   const players = page.getByRole('list', { name: 'Players' }).getByRole('listitem');
-  await expect(players).toHaveText([/Drew1st · Winner · deleted profile4 home/, /Sam2nd2 home/]);
+  await expect(players).toHaveText([/Drew1st · Winner · deleted profile · 0 triple doublets4 home/, /Sam2nd · 0 triple doublets2 home/]);
   await expect(page.getByText('41 min')).toBeVisible();
   await expect(page.getByText('Played on the porch.')).toBeVisible();
 });
@@ -45,7 +45,7 @@ test('edit a finished game: changes it in place and it stays finished', async ({
   // Undo the last entries until Sam (3rd) and Jordan are open again, then swap them.
   for (let i = 0; i < 6; i++) await page.getByRole('button', { name: 'Undo' }).click();
   await expect(save).toBeDisabled(); // order incomplete
-  for (let i = 0; i < 4; i++) await page.getByRole('button', { name: 'Add a pawn home for Jordan' }).click();
+  for (let i = 0; i < 4; i++) await page.getByRole('button', { name: 'More pawns home for Jordan' }).click();
   await save.click();
 
   const players = page.getByRole('list', { name: 'Players' }).getByRole('listitem');

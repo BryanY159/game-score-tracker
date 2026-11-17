@@ -18,6 +18,10 @@ export function seatValue(b: MatchBundle, s: Seat): string {
 /** Extra per-player detail in game detail: margin and handicap target in target games (FR-13 AC-2). */
 export function seatDetail(b: MatchBundle, s: Seat): string | null {
   switch (b.match.gameKey) {
+    case 'parcheesi': {
+      const n = (s.mp.details.tripleDoublets as number | undefined) ?? 0;
+      return `${n} triple ${n === 1 ? 'doublet' : 'doublets'}`;
+    }
     case 'dutchBlitz':
     case 'flip7': {
       const margin = s.mp.marginPastTarget;

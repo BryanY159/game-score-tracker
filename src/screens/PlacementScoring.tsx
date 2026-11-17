@@ -100,7 +100,8 @@ function PlacementScoring({ bundle }: { bundle: MatchBundle }) {
             seats={seats}
             state={parcheesiState(ids, match.log)}
             disabled={paused}
-            onStep={(playerId, delta) => appendEvent(db, match.id, { type: 'pawns', playerId, delta })}
+            onPawns={(playerId, delta) => appendEvent(db, match.id, { type: 'pawns', playerId, delta })}
+            onTripleDoublets={(playerId, delta) => appendEvent(db, match.id, { type: 'tripleDoublets', playerId, delta })}
           />
         )}
         <p className="m-0 rounded-2xl border-[1.5px] border-border px-3.5 py-3 text-[14px] leading-snug text-text-2">

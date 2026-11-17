@@ -13,7 +13,13 @@ const seats = [
 
 /** The mockup's state: Riley placed 1st, Alex 3, Jordan 2, Sam 1. */
 export const PARCHEESI_MID = match('parcheesi', seats, {
-  log: [...pawns(RILEY.id, 4), ...pawns(ALEX.id, 3), ...pawns(JORDAN.id, 2), ...pawns(SAM.id, 1)],
+  log: [
+    ...pawns(RILEY.id, 4),
+    ...pawns(ALEX.id, 3),
+    ...pawns(JORDAN.id, 2),
+    ...pawns(SAM.id, 1),
+    { type: 'tripleDoublets', playerId: SAM.id, delta: 1, at: NOW - 30_000 },
+  ],
 });
 
 /** Finished order: Riley, Jordan, Alex, Sam (placed automatically). */

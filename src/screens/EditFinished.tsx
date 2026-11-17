@@ -157,7 +157,8 @@ function PlacementEdit({ bundle }: { bundle: MatchBundle }) {
           <ParcheesiBoard
             seats={seats}
             state={parcheesiState(ids, log)}
-            onStep={(playerId, delta) => setLog((l) => [...l, { type: 'pawns', playerId, delta, at }])}
+            onPawns={(playerId, delta) => setLog((l) => [...l, { type: 'pawns', playerId, delta, at }])}
+            onTripleDoublets={(playerId, delta) => setLog((l) => [...l, { type: 'tripleDoublets', playerId, delta, at }])}
           />
         )}
         {monopoly && !outcome.complete && monopoly.remaining.length > 1 && (

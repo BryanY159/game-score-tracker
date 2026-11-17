@@ -59,6 +59,8 @@ export interface Match extends BaseRecord {
 
 export type MatchEvent =
   | { type: 'pawns'; playerId: string; delta: 1 | -1; at: number }
+  /** Parcheesi: rolled doubles three times in a row (FR-6 AC-6). Never below 0. */
+  | { type: 'tripleDoublets'; playerId: string; delta: number; at: number }
   | { type: 'bankrupt'; playerId: string; at: number }
   | {
       /** Monopoly ended early (FR-10 AC-3): net worth per remaining player and their final order. */
