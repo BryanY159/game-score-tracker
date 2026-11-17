@@ -193,9 +193,15 @@ const SCREENS: Screen[] = [
     ready: 'Final scoring',
     seed: TTR_END,
     act: async (page) => {
+      // FR-7 AC-6: several tickets entered back to back, the next one being typed.
+      const d = page.getByRole('dialog', { name: 'Add ticket' });
       await page.getByRole('button', { name: 'Add ticket' }).click();
-      await page.getByRole('dialog', { name: 'Add ticket' }).getByRole('button', { name: '1', exact: true }).click();
-      await page.getByRole('dialog', { name: 'Add ticket' }).getByRole('button', { name: '3', exact: true }).click();
+      for (const [v, ok] of [['12', true], ['7', true], ['9', false]] as const) {
+        for (const c of v) await d.getByRole('button', { name: c, exact: true }).click();
+        await d.getByRole('button', { name: ok ? `Completed +${v}` : `Failed −${v}` }).click();
+      }
+      await d.getByRole('button', { name: '1', exact: true }).click();
+      await d.getByRole('button', { name: '3', exact: true }).click();
     },
   },
   {

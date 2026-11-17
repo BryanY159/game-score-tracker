@@ -123,17 +123,34 @@ test('Ticket to Ride by keyboard: 1–6, T, D, L, ⌘Z, then end scoring with di
   await openApp(page, `#/play/${TTR_END.matches[0]!.id}/final`, TTR_END);
   const tickets = page.getByRole('list', { name: 'Tickets' }).getByRole('listitem');
   await expect(tickets).toHaveCount(3);
-  await page.keyboard.press('9'); // opens Add ticket with 9
-  await expect(page.getByRole('dialog', { name: 'Add ticket' })).toBeVisible();
-  await page.keyboard.press('c');
-  await expect(tickets).toHaveCount(4);
-  await expect(page.getByRole('radiogroup', { name: 'Ticket 9' }).getByRole('radio', { name: 'Done +9' })).toHaveAttribute('aria-checked', 'true');
-  await page.keyboard.press('Enter'); // the next ticket
+  // FR-20 AC-3: a digit opens Add ticket; C, X and Enter each add a ticket and keep it open.
+  const dialog = page.getByRole('dialog', { name: 'Add ticket' });
+  const added = dialog.getByRole('region', { name: "Sam's tickets" }).getByRole('listitem');
+  await page.keyboard.press('9');
+  await expect(dialog).toBeVisible();
+  await page.keyboard.press('c'); // +9 completed
+  await expect(dialog).toBeVisible();
+  await expect(dialog.getByLabel('Ticket value value')).toHaveValue(''); // cleared for the next one
   await page.keyboard.press('1');
   await page.keyboard.press('2');
-  await page.keyboard.press('x');
-  await expect(tickets).toHaveCount(5);
+  await page.keyboard.press('x'); // −12 failed
+  await page.keyboard.press('5');
+  await page.keyboard.press('Enter'); // +5, completed by default
+  await expect(dialog).toBeVisible();
+  await expect(added).toHaveCount(6);
+  await expect(added.nth(3)).toHaveText(/\+9\s*Completed/);
+  await expect(added.nth(4)).toHaveText(/−12\s*Failed/);
+  await expect(added.nth(5)).toHaveText(/\+5\s*Completed/);
+  await expect(dialog.getByLabel('Tickets total')).toHaveText('+27'); // 13 + 20 − 8 + 9 − 12 + 5
+  await page.keyboard.press('Enter'); // nothing typed: closes
+  await expect(dialog).toHaveCount(0);
+  await expect(tickets).toHaveCount(6);
   await expect(page.getByRole('radiogroup', { name: 'Ticket 12' }).getByRole('radio', { name: 'Failed −12' })).toHaveAttribute('aria-checked', 'true');
+  // Esc also closes it.
+  await page.keyboard.press('Enter');
+  await expect(dialog).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(dialog).toHaveCount(0);
   // P toggles the longest path for Sam (on in the fixture).
   const lp = page.getByRole('button', { name: 'Longest path: Sam' });
   await expect(lp).toHaveAttribute('aria-pressed', 'true');

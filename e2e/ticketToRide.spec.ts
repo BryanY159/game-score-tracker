@@ -1,7 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { openApp } from './helpers/app';
 import { FOUR } from './fixtures/players';
-import { TTR_TIE, TTR_TIEBREAK } from './fixtures/ticketToRide';
+import { TTR_END, TTR_TIE, TTR_TIEBREAK } from './fixtures/ticketToRide';
 
 const points = (page: Page, name: string) => page.getByLabel(`${name} route points`);
 const trains = (page: Page, name: string) => page.getByLabel(`${name} trains left`);
@@ -43,6 +43,7 @@ test('a full game: routes, the final round, an edited turn, end-of-game scoring 
     await page.getByRole('button', { name: 'Add ticket' }).click();
     for (const d of value) await page.getByRole('dialog').getByRole('button', { name: d, exact: true }).click();
     await page.getByRole('dialog').getByRole('button', { name: completed ? `Completed +${value}` : `Failed −${value}` }).click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Done' }).click();
   };
   await addTicket('13');
   await addTicket('8', false); // Failed from the keypad (FR-7 AC-6)
@@ -96,6 +97,7 @@ test('a tie on total goes to the most completed tickets (FR-11 AC-2)', async ({ 
     await page.getByRole('button', { name: 'Add ticket' }).click();
     for (const d of value) await page.getByRole('dialog').getByRole('button', { name: d, exact: true }).click();
     await page.getByRole('dialog').getByRole('button', { name: completed ? `Completed +${value}` : `Failed −${value}` }).click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Done' }).click();
   };
   await addTicket('10'); // Sam: one 10
   await page.getByRole('button', { name: 'Next: Alex' }).click();
@@ -113,4 +115,43 @@ test('a tie that remains opens the tie screen (FR-11 AC-3)', async ({ page }) =>
   await tie.getByRole('button', { name: 'Pick the tie-breaker winner' }).click();
   await tie.getByRole('button', { name: 'Sam' }).click();
   await expect(page.getByRole('heading', { name: 'Sam wins' })).toBeVisible();
+});
+
+test('Add ticket stays open for back-to-back entry, lists the tickets with a total, and only Done closes it (FR-7 AC-6)', async ({ page }) => {
+  await openApp(page, `#/play/${TTR_END.matches[0]!.id}/final`, TTR_END);
+  await page.getByRole('tab', { name: 'Alex' }).click();
+  await page.getByRole('button', { name: 'Add ticket' }).click();
+  const dialog = page.getByRole('dialog', { name: 'Add ticket' });
+  const list = dialog.getByRole('region', { name: "Alex's tickets" }).getByRole('listitem');
+  await expect(dialog.getByText('No tickets yet.')).toBeVisible();
+  const enter = async (value: string, completed: boolean) => {
+    for (const d of value) await dialog.getByRole('button', { name: d, exact: true }).click();
+    await dialog.getByRole('button', { name: completed ? `Completed +${value}` : `Failed −${value}` }).click();
+    await expect(dialog).toBeVisible(); // stays open
+    await expect(dialog.getByLabel('Ticket value value')).toHaveValue(''); // cleared
+  };
+  await enter('12', true);
+  await enter('7', true);
+  await enter('9', false);
+  await expect(list).toHaveCount(3);
+  await expect(list.nth(0)).toHaveText(/\+12\s*Completed/);
+  await expect(list.nth(1)).toHaveText(/\+7\s*Completed/);
+  await expect(list.nth(2)).toHaveText(/−9\s*Failed/);
+  await expect(dialog.getByLabel('Tickets total')).toHaveText('+10');
+
+  // A mistake can be removed from the list.
+  await enter('4', true);
+  await dialog.getByRole('button', { name: 'Remove completed ticket 4' }).click();
+  await expect(list).toHaveCount(3);
+  await expect(dialog.getByLabel('Tickets total')).toHaveText('+10');
+
+  await dialog.getByRole('button', { name: 'Done' }).click();
+  await expect(dialog).toHaveCount(0);
+  const rows = page.getByRole('list', { name: 'Tickets' }).getByRole('listitem');
+  await expect(rows).toHaveCount(3);
+  await expect(page.getByRole('radiogroup', { name: 'Ticket 9' }).getByRole('radio', { name: 'Failed −9' })).toHaveAttribute('aria-checked', 'true');
+  // Tapping outside closes it too.
+  await page.getByRole('button', { name: 'Add ticket' }).click();
+  await page.mouse.click(10, 10);
+  await expect(dialog).toHaveCount(0);
 });
