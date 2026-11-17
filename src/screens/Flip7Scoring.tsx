@@ -1,20 +1,17 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BottomToolbar } from '../components/BottomToolbar';
-import { Button } from '../components/Button';
 import { GameBody, GameHeader, GameScreen, PrimaryToolButton, TimerChip, ToolButton } from '../components/GameChrome';
 import { PausedOverlay, PauseButton, useGameControls } from '../components/GameControls';
 import { MoreIcon, RoundsIcon, UndoIcon } from '../components/Icons';
-import { Keypad } from '../components/Keypad';
 import { NoWrap } from '../components/NoWrap';
-import { Segmented } from '../components/Segmented';
 import { db } from '../db/schema';
-import { updateMatchSettings, type MatchBundle } from '../db/repos/matches';
+import type { MatchBundle } from '../db/repos/matches';
 import { confirmDraft, listRounds, reopenLastRound, saveDraft, updateRound } from '../db/repos/rounds';
 import type { Round } from '../domain/types';
-import { CardsPad } from '../games/flip7/CardsPad';
+import { EntryPanel, type Panel } from '../games/flip7/EntryPanel';
 import { Flip7Row } from '../games/flip7/Flip7Row';
-import { blankRaw, dealerFor, flip7Entry, flip7Score, hasFlip7, isEntered, rawOf, tapNumber, type EntryMode, type Flip7Raw } from '../games/flip7/scoring';
+import { blankRaw, dealerFor, flip7Entry, hasFlip7, isEntered, rawOf, type EntryMode, type Flip7Raw } from '../games/flip7/scoring';
 import { useCelebrate } from '../components/Celebration';
 import { useStandings } from '../hooks/useStandings';
 import { useFlip } from '../hooks/useFlip';
@@ -32,7 +29,8 @@ export function Flip7Scoring({ bundle }: { bundle: MatchBundle }) {
   const controls = useGameControls(match, { notesInMenu: true });
   const paused = match.pausedAt !== null;
   const outcome = outcomeFor(bundle);
-  const mode = (match.settings.entryMode as EntryMode | undefined) ?? 'number';
+  // Saved games may carry an old `entryMode` setting; it's ignored now (FR-8 AC-9).
+  const mode: EntryMode = 'cards';
   const ids = seats.map((s) => s.player.id);
   const confirmedCount = rounds.filter((r) => r.confirmed).length;
   const roundNumber = confirmedCount + 1;
@@ -47,7 +45,7 @@ export function Flip7Scoring({ bundle }: { bundle: MatchBundle }) {
   // database updates (see M7). Only Confirm and Undo replace it.
   const [raws, setRaws] = useState<Record<string, Flip7Raw>>(() => rawsOf(draft));
   const [active, setActive] = useState<string>(() => ids.find((id) => !isEntered(rawsOf(draft)[id]!)) ?? ids[0]!);
-  const [bustAsk, setBustAsk] = useState<number | null>(null);
+  const [panel, setPanel] = useState<Panel>('cards');
   const [listOpen, setListOpen] = useState(false);
   const [editing, setEditing] = useState<Round | null>(null);
   const allEntered = ids.every((id) => isEntered(raws[id]!));
@@ -104,21 +102,20 @@ export function Flip7Scoring({ bundle }: { bundle: MatchBundle }) {
   }
 
   const raw = raws[active]!;
-  const modeSwitch = (
-    <div className="w-[150px] shrink-0">
-      <Segmented
-        label="Entry mode"
-        value={mode}
-        onChange={(m) => updateMatchSettings(db, match.id, { entryMode: m })}
-        options={[
-          { value: 'number', label: 'Number' },
-          { value: 'cards', label: 'Cards' },
-        ]}
-      />
-    </div>
-  );
   const activeName = seats.find((s) => s.player.id === active)!.player.name;
-  const padRaw = raw.mode === mode ? raw : blankRaw(mode);
+  const bustNow = () => {
+    set(active, raw.mode === 'number' || panel === 'keypad' ? { mode: 'number', value: null, bust: true, flip7: false } : { ...raw, bust: true });
+    nextPlayer();
+  };
+  // Each panel shows the entry made with it; switching panels starts that way of entering afresh.
+  const shown: Flip7Raw =
+    panel === 'keypad'
+      ? raw.mode === 'number'
+        ? raw
+        : { ...blankRaw('number'), bust: raw.bust } as Flip7Raw
+      : raw.mode === 'cards'
+        ? raw
+        : { ...blankRaw('cards'), bust: raw.bust } as Flip7Raw;
 
   return (
     <GameScreen>
@@ -145,15 +142,15 @@ export function Flip7Scoring({ bundle }: { bundle: MatchBundle }) {
           </p>
         )}
         <div className="flex justify-between px-2 text-[13px] text-text-2">
-          <NoWrap>Player{handicap ? ' · target' : ''}</NoWrap>
-          <NoWrap>This round · Total</NoWrap>
+          <NoWrap>Tap a round score to type it</NoWrap>
+          <NoWrap>Round · Total</NoWrap>
         </div>
         <div ref={listRef} className="grid grid-cols-1 gap-2 md:grid-cols-2">
           {standing.order.map((id) => {
             const i = ids.indexOf(id);
             const s = seats[i]!;
             return (
-            <div key={s.mp.id} id={`flip7-row-${s.player.id}`} data-flip-key={s.player.id}>
+            <div key={s.mp.id} id={`flip7-row-${s.player.id}`} data-flip-key={s.player.id} className="scroll-mt-24 scroll-mb-[400px]">
               <Flip7Row
                 leader={standing.leaders.includes(s.player.id)}
                 crownPop={standing.popFor === s.player.id}
@@ -164,9 +161,17 @@ export function Flip7Scoring({ bundle }: { bundle: MatchBundle }) {
                 showTarget={handicap}
                 dealer={s.player.id === dealerId}
                 active={!over && s.player.id === active}
+                typing={!over && s.player.id === active && panel === 'keypad'}
+                onType={() => {
+                  setActive(s.player.id);
+                  setPanel('keypad');
+                }}
                 compact={seats.length > 5}
                 disabled={paused || over}
-                onSelect={() => setActive(s.player.id)}
+                onSelect={() => {
+                  setActive(s.player.id);
+                  setPanel('cards');
+                }}
               />
             </div>
             );
@@ -176,43 +181,18 @@ export function Flip7Scoring({ bundle }: { bundle: MatchBundle }) {
 
       <div className="pb-safe sticky bottom-0 z-10 bg-bg">
         {!over && !paused && (
-          <div className="border-t border-border px-3 pt-1.5 pb-1">
-            <div className="mx-auto flex max-w-lg flex-col gap-1.5">
-              {padRaw.mode === 'number' ? (
-                <Keypad
-                  label={activeName}
-                  value={padRaw.value}
-                  maxDigits={3}
-                  onChange={(v) => set(active, { ...padRaw, value: v, bust: false })}
-                  sideKeys={[
-                    { label: 'Bust', pressed: padRaw.bust, onPress: () => (set(active, { mode: 'number', value: null, bust: true, flip7: false }), nextPlayer()) },
-                    { label: 'Flip 7!', pressed: padRaw.flip7, onPress: () => set(active, { ...padRaw, flip7: !padRaw.flip7, bust: false }) },
-                  ]}
-                  next={{ label: 'Next player', onPress: nextPlayer }}
-                  bare
-                  headerExtra={modeSwitch}
-                />
-              ) : (
-                <>
-                <div className="flex items-center gap-2">
-                  <NoWrap truncate className="min-w-0 flex-1 text-[15px] font-bold">
-                    {activeName} · {flip7Score(padRaw)}
-                  </NoWrap>
-                  {modeSwitch}
-                </div>
-                <CardsPad
-                  raw={padRaw}
-                  onChange={(r) => set(active, r)}
-                  onNumber={(n) => {
-                    const t = tapNumber(padRaw, n);
-                    if (t.kind === 'added') set(active, t.raw);
-                    else if (t.kind === 'duplicate') setBustAsk(n);
-                  }}
-                  onBust={() => set(active, { ...padRaw, bust: !padRaw.bust })}
-                  next={{ label: 'Next player', onPress: nextPlayer }}
-                />
-                </>
-              )}
+          <div className="border-t border-border px-3 pt-2 pb-1">
+            <div className="mx-auto max-w-lg">
+              <EntryPanel
+                name={activeName}
+                raw={shown}
+                note={raw.mode === 'number' && raw.value !== null ? `Typed ${raw.value}${raw.flip7 ? ' + 15' : ''}` : undefined}
+                panel={panel}
+                onPanel={setPanel}
+                onChange={(r) => set(active, r)}
+                onBust={bustNow}
+                onNext={nextPlayer}
+              />
             </div>
           </div>
         )}
@@ -233,28 +213,6 @@ export function Flip7Scoring({ bundle }: { bundle: MatchBundle }) {
       </div>
 
       {controls.element}
-      {bustAsk !== null && padRaw.mode === 'cards' && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-6" onClick={() => setBustAsk(null)}>
-          <div role="alertdialog" aria-modal="true" aria-label="Bust?" className="flex w-full max-w-sm flex-col gap-3 rounded-[24px] bg-bg p-5 ring-1 ring-border" onClick={(e) => e.stopPropagation()}>
-            <h2 className="m-0 text-xl font-extrabold">Bust?</h2>
-            <p className="m-0 text-[15px] leading-snug text-text-2">
-              {activeName} already has a {bustAsk}. A second one is a bust, unless a Second Chance card saved it.
-            </p>
-            <Button
-              onClick={() => {
-                set(active, { ...padRaw, bust: true });
-                setBustAsk(null);
-                nextPlayer();
-              }}
-            >
-              Bust
-            </Button>
-            <Button variant="outline" onClick={() => setBustAsk(null)}>
-              Not a bust, remove card
-            </Button>
-          </div>
-        </div>
-      )}
       {listOpen && !editing && <RoundsSheet seats={seats} rounds={rounds} onClose={() => setListOpen(false)} onOpen={(r) => setEditing(r)} />}
       {editing && (
         <RoundEditor

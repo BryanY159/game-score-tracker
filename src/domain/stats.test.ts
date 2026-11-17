@@ -159,3 +159,20 @@ describe('head to head default', () => {
     expect(busiestPair(recs, P, 'flip7')).toEqual(['alex', 'jo']);
   });
 });
+
+describe('Flip 7 rate and bust rate (FR-14 AC-5, M13)', () => {
+  it('are % of rounds played, and follow the minimum-games rule', async () => {
+    const { flip7Rates } = await import('./stats');
+    const recs = [
+      game('flip7', [seat('alex', 1, { details: { flip7Count: 2, busts: 1 } }), seat('sam', 2, { details: { flip7Count: 0, busts: 3 } })], { rounds: 10 }),
+      game('flip7', [seat('alex', 2, { details: { flip7Count: 1, busts: 2 } }), seat('jo', 1, { details: { flip7Count: 1, busts: 0 } })], { rounds: 5 }),
+    ];
+    const r = flip7Rates(recs, P, 2);
+    expect(r.map((x) => [x.playerId, x.games, x.rounds, x.eligible, x.flip7Rate, x.bustRate])).toEqual([
+      ['alex', 2, 15, true, 3 / 15, 3 / 15],
+      ['jo', 1, 5, false, 1 / 5, 0],
+      ['sam', 1, 10, false, 0, 3 / 10],
+    ]);
+    expect(flip7Rates(recs, P, 1).every((x) => x.eligible)).toBe(true);
+  });
+});

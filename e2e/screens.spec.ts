@@ -194,7 +194,8 @@ const SCREENS: Screen[] = [
     seed: TTR_END,
     act: async (page) => {
       await page.getByRole('button', { name: 'Add ticket' }).click();
-      await page.getByRole('dialog', { name: 'Add ticket' }).waitFor();
+      await page.getByRole('dialog', { name: 'Add ticket' }).getByRole('button', { name: '1', exact: true }).click();
+      await page.getByRole('dialog', { name: 'Add ticket' }).getByRole('button', { name: '3', exact: true }).click();
     },
   },
   {
@@ -220,6 +221,15 @@ const SCREENS: Screen[] = [
     },
   },
   { name: 'flip7-eight', hash: `#/play/${FLIP7_EIGHT.matches[0]!.id}`, ready: 'Flip 7', seed: FLIP7_EIGHT },
+  {
+    name: 'flip7-keypad',
+    hash: `#/play/${FLIP7_MID.matches[0]!.id}`,
+    ready: 'Flip 7',
+    seed: FLIP7_MID,
+    act: async (page) => {
+      await page.getByRole('button', { name: "Type Riley's round score" }).click();
+    },
+  },
   {
     name: 'flip7-round-edit',
     hash: `#/play/${FLIP7_MID.matches[0]!.id}`,

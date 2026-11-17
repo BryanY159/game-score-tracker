@@ -39,13 +39,16 @@ test('a full game: routes, the final round, an edited turn, end-of-game scoring 
 
   // End-of-game scoring (AC-6, AC-7).
   await expect(page.getByRole('heading', { name: 'Final scoring' })).toBeVisible();
-  const addTicket = async (value: string) => {
+  const addTicket = async (value: string, completed = true) => {
     await page.getByRole('button', { name: 'Add ticket' }).click();
     for (const d of value) await page.getByRole('dialog').getByRole('button', { name: d, exact: true }).click();
-    await page.getByRole('dialog').getByRole('button', { name: 'Add' }).click();
+    await page.getByRole('dialog').getByRole('button', { name: completed ? `Completed +${value}` : `Failed −${value}` }).click();
   };
   await addTicket('13');
-  await addTicket('8');
+  await addTicket('8', false); // Failed from the keypad (FR-7 AC-6)
+  await expect(page.getByRole('radio', { name: 'Failed −8' })).toHaveAttribute('aria-checked', 'true');
+  // The row toggle still changes it later.
+  await page.getByRole('radio', { name: 'Done +8' }).click();
   await page.getByRole('radio', { name: 'Failed −8' }).click();
   await page.getByRole('button', { name: 'Longest path: Alex' }).click();
   await expect(page.getByLabel('Alex final total')).toHaveText(String(106 + 13 - 8 + 10));
@@ -89,10 +92,10 @@ test('a full game: routes, the final round, an edited turn, end-of-game scoring 
 
 test('a tie on total goes to the most completed tickets (FR-11 AC-2)', async ({ page }) => {
   await openApp(page, `#/play/${TTR_TIEBREAK.matches[0]!.id}/final`, TTR_TIEBREAK);
-  const addTicket = async (value: string) => {
+  const addTicket = async (value: string, completed = true) => {
     await page.getByRole('button', { name: 'Add ticket' }).click();
     for (const d of value) await page.getByRole('dialog').getByRole('button', { name: d, exact: true }).click();
-    await page.getByRole('dialog').getByRole('button', { name: 'Add' }).click();
+    await page.getByRole('dialog').getByRole('button', { name: completed ? `Completed +${value}` : `Failed −${value}` }).click();
   };
   await addTicket('10'); // Sam: one 10
   await page.getByRole('button', { name: 'Next: Alex' }).click();

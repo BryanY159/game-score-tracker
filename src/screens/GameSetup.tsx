@@ -19,7 +19,6 @@ import { GameHeader } from '../components/GameChrome';
 import { GripIcon, PlayIcon, PlusIcon, ShuffleIcon } from '../components/Icons';
 import { NoWrap } from '../components/NoWrap';
 import { Toggle } from '../components/Pickers';
-import { Segmented } from '../components/Segmented';
 import { Avatar, PlayerPill } from '../components/PlayerPill';
 import { Sheet } from '../components/Sheet';
 import { db } from '../db/schema';
@@ -58,7 +57,6 @@ function Setup({ game }: { game: GameDefinition }) {
   const [options, setOptions] = useState<string | null>(null);
   const [guestOpen, setGuestOpen] = useState(false);
   const [starting, setStarting] = useState(false);
-  const [entryMode, setEntryMode] = useState<'number' | 'cards'>('number');
 
   const limits = playerLimits(game, override);
   const normal = playerLimits(game, false);
@@ -118,7 +116,6 @@ function Setup({ game }: { game: GameDefinition }) {
         color: p.color,
         target: p.target ?? game.defaultTarget,
       })),
-      game.key === 'flip7' ? { entryMode } : {},
     );
     navigate(`/play/${match.id}`, { replace: true });
   }
@@ -186,22 +183,6 @@ function Setup({ game }: { game: GameDefinition }) {
           )}
           {full && <p className="m-0 text-[14px] text-text-2">{game.name} has room for {limits.max} players.</p>}
         </section>
-
-        {game.key === 'flip7' && (
-          <section className="flex flex-col gap-2">
-            <h2 className="m-0 text-[17px] font-extrabold">Score entry</h2>
-            <Segmented
-              label="Score entry"
-              value={entryMode}
-              onChange={setEntryMode}
-              options={[
-                { value: 'number', label: 'Type the score' },
-                { value: 'cards', label: 'Tap the cards' },
-              ]}
-            />
-            <p className="m-0 text-[13px] text-text-2">You can switch at any time during the game.</p>
-          </section>
-        )}
 
         {lineup.length > 0 && lineup.length < normal.min && (
           <section className="flex items-center gap-3 rounded-2xl border-[1.5px] border-border px-3.5 py-2">

@@ -7,8 +7,9 @@ import { PARCHEESI_MID } from './fixtures/parcheesi';
 
 const running = (page: Page) => page.evaluate(() => document.getAnimations().filter((a) => a.playState === 'running').length);
 const celebration = (page: Page) => page.locator('[data-celebration]');
+const keypad = (page: Page) => page.getByRole('group', { name: /score keypad$/ });
 const digits = async (page: Page, v: string) => {
-  for (const d of v) await page.getByRole('group', { name: 'Number pad' }).getByRole('button', { name: d, exact: true }).click();
+  for (const d of v) await keypad(page).getByRole('button', { name: d, exact: true }).click();
 };
 
 /** Each FR-19 moment, run with motion on and with Reduce Motion on. */
@@ -27,10 +28,11 @@ for (const motion of ['no-preference', 'reduce'] as const) {
       await expect(rows.first()).toContainText('Alex'); // Alex leads after round 1
       await expect(page.getByRole('img', { name: 'Leader' })).toHaveCount(1);
 
-      // Alex busts; Sam ticks Flip 7!
-      await page.getByRole('button', { name: 'Bust' }).click();
+      // Alex busts; Sam's score is typed with Flip 7!
+      await page.getByRole('group', { name: "Alex's cards" }).getByRole('button', { name: 'Bust' }).click();
+      await page.getByRole('button', { name: "Type Sam's round score" }).click();
       await digits(page, '35');
-      await page.getByRole('button', { name: 'Flip 7!' }).click();
+      await keypad(page).getByRole('button', { name: 'Flip 7!' }).click();
       await expect(celebration(page)).toHaveAttribute('data-celebration', 'flip7');
       await expect(celebration(page)).toContainText('Flip 7! Sam +15');
       await expectMotion(page);

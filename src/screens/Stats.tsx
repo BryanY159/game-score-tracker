@@ -7,7 +7,7 @@ import { Sheet } from '../components/Sheet';
 import { db } from '../db/schema';
 import { loadStats } from '../db/repos/stats';
 import { COLOR_HEX } from '../domain/colors';
-import { busiestPair, gameSpecific, headToHead, overall, perGame, winTrend, type GameRecord } from '../domain/stats';
+import { busiestPair, flip7Rates, gameSpecific, headToHead, overall, perGame, winTrend, type GameRecord } from '../domain/stats';
 import type { GameKey, Player } from '../domain/types';
 import { GAMES, requireGame } from '../games/registry';
 
@@ -44,6 +44,7 @@ export function Stats() {
             <Leaderboard records={records} players={players} minGames={minGames} tab={tab} profile={profile} />
             <div className="flex flex-col gap-5">
               <HeadToHead records={records} players={players} tab={tab} profile={profile} />
+              {tab === 'flip7' && <Flip7Rates records={records} players={players} minGames={minGames} profile={profile} />}
               {tab && <GameRecords records={records} tab={tab} eligible={new Set(perGame(records, tab, players, minGames).filter((s) => s.eligible).map((s) => s.playerId))} profile={profile} />}
             </div>
           </div>
@@ -274,5 +275,54 @@ function Chip({ on, onClick, children }: { on: boolean; onClick: () => void; chi
     >
       <NoWrap>{children}</NoWrap>
     </button>
+  );
+}
+
+/** FR-14 AC-5 (M13): Flip 7 rate and bust rate per player, as % of rounds played. */
+function Flip7Rates({ records, players, minGames, profile }: { records: GameRecord[]; players: { id: string; name: string }[]; minGames: number; profile: (id: string) => Player }) {
+  const rows = flip7Rates(records, players, minGames);
+  if (!rows.length) return null;
+  return (
+    <section className="flex flex-col gap-2">
+      <div className="flex items-baseline justify-between">
+        <h2 className="m-0 text-[17px] font-extrabold">Flip 7 and bust rates</h2>
+        <NoWrap className="text-[13px] text-text-2">% of rounds</NoWrap>
+      </div>
+      <ul className="m-0 flex list-none flex-col p-0" aria-label="Flip 7 and bust rates">
+        {rows.map((r) => {
+          const p = profile(r.playerId);
+          return (
+            <li key={r.playerId} className="flex min-h-12 items-center gap-3 border-b border-border py-1 last:border-b-0">
+              <span className="rounded-full" style={{ background: COLOR_HEX[p.color] }}>
+                <Avatar emoji={p.emoji} size={36} />
+              </span>
+              <NoWrap truncate className="min-w-0 flex-1 text-base font-bold">
+                {p.name}
+              </NoWrap>
+              {r.eligible ? (
+                <div className="flex shrink-0 gap-3 text-right">
+                  <span className="flex flex-col leading-tight">
+                    <NoWrap className="text-[12px] text-text-2">Flip 7</NoWrap>
+                    <NoWrap className="tabular text-base font-extrabold" aria-label={`${p.name} Flip 7 rate`}>
+                      {pct(r.flip7Rate)}
+                    </NoWrap>
+                  </span>
+                  <span className="flex flex-col leading-tight">
+                    <NoWrap className="text-[12px] text-text-2">Bust</NoWrap>
+                    <NoWrap className="tabular text-base font-extrabold" aria-label={`${p.name} bust rate`}>
+                      {pct(r.bustRate)}
+                    </NoWrap>
+                  </span>
+                </div>
+              ) : (
+                <NoWrap className="text-[13px] text-text-2">
+                  {r.games} of {minGames} games played
+                </NoWrap>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+    </section>
   );
 }

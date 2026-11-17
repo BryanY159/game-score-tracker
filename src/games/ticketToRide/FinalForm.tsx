@@ -150,20 +150,31 @@ export function FinalForm({
         </NoWrap>
       </div>
 
-      {adding && <AddTicket onClose={() => setAdding(false)} onAdd={(value) => onChange(playerId, { ...f, tickets: [...f.tickets, { value, completed: true }] })} />}
+      {adding && <AddTicket onClose={() => setAdding(false)} onAdd={(value, completed) => onChange(playerId, { ...f, tickets: [...f.tickets, { value, completed }] })} />}
     </div>
   );
 }
 
-function AddTicket({ onAdd, onClose }: { onAdd: (v: number) => void; onClose: () => void }) {
+/** FR-7 AC-6 (M13): type the value, then Completed or Failed adds the ticket with that status. */
+function AddTicket({ onAdd, onClose }: { onAdd: (v: number, completed: boolean) => void; onClose: () => void }) {
   const [value, setValue] = useState<number | null>(null);
-  const add = () => {
-    if (value) onAdd(value);
+  const add = (completed: boolean) => {
+    if (value) onAdd(value, completed);
     onClose();
   };
   return (
     <Sheet title="Add ticket" onClose={onClose}>
-      <Keypad label="Ticket value" value={value} maxDigits={2} onChange={setValue} next={{ label: 'Add', onPress: add, disabled: !value }} bare />
+      <div className="flex flex-col gap-2">
+        <Keypad label="Ticket value" value={value} maxDigits={2} onChange={setValue} bare />
+        <div className="grid grid-cols-2 gap-2">
+          <Button disabled={!value} onClick={() => add(true)}>
+            {value ? `Completed +${value}` : 'Completed'}
+          </Button>
+          <Button variant="outline" disabled={!value} onClick={() => add(false)}>
+            {value ? `Failed −${value}` : 'Failed'}
+          </Button>
+        </div>
+      </div>
     </Sheet>
   );
 }
