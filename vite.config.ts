@@ -2,12 +2,18 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { VitePWA } from 'vite-plugin-pwa';
+import { readFileSync } from 'node:fs';
+
+const pkg = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8')) as { version: string };
+// Shown in Settings so an update can be confirmed on the phone (plan R-4).
+const VERSION = `${pkg.version} (${process.env.GITHUB_SHA?.slice(0, 7) ?? 'local'})`;
 
 // GitHub Pages serves the app from /<repo>/ (plan R-8).
 const BASE = '/game-score-tracker/';
 
 export default defineConfig({
   base: BASE,
+  define: { __APP_VERSION__: JSON.stringify(VERSION) },
   plugins: [
     react(),
     tailwindcss(),

@@ -1,7 +1,8 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/Button';
-import { PlusIcon } from '../components/Icons';
+import { PlusIcon, SettingsIcon } from '../components/Icons';
+import { IconButton } from '../components/Button';
 import { NoWrap } from '../components/NoWrap';
 import { Avatar } from '../components/PlayerPill';
 import { EmptyState, ScreenHeader } from '../components/Screen';
@@ -12,6 +13,8 @@ import { relativeDay } from '../domain/dates';
 import { resultLine } from '../domain/summary';
 import { progressLine } from '../games/progress';
 import { requireGame } from '../games/registry';
+import { readSettings } from '../db/repos/settings';
+import { backupStatus } from '../domain/backup/reminder';
 
 export function Home() {
   const navigate = useNavigate();
@@ -21,10 +24,18 @@ export function Home() {
     return bundles.filter((b): b is MatchBundle => b !== null);
   }, []);
   const recent = useLiveQuery(() => listRecentFinished(db, 3), []);
+  const backup = useLiveQuery(async () => backupStatus(await readSettings(db), await db.matches.toArray()), []);
 
   return (
     <>
-      <ScreenHeader title="Game night" />
+      <ScreenHeader
+        title="Game night"
+        trailing={
+          <IconButton label="Settings" onClick={() => navigate('/settings')}>
+            <SettingsIcon />
+          </IconButton>
+        }
+      />
       <div className="flex flex-col gap-3.5 px-4">
         <Button size="lg" icon={<PlusIcon />} onClick={() => navigate('/new')}>
           New game
@@ -63,6 +74,22 @@ export function Home() {
               ))}
             </div>
           </section>
+        )}
+
+        {backup?.due && (
+          <div className="flex items-center gap-3 rounded-2xl bg-surface py-1.5 pr-1.5 pl-3.5">
+            <span className="flex-1 text-[14px] leading-snug">
+              {backup.gamesSince} {backup.gamesSince === 1 ? 'game' : 'games'}{' '}
+              {backup.neverBackedUp ? 'not backed up yet' : 'since your last backup'}
+            </span>
+            <button
+              type="button"
+              onClick={() => navigate('/settings')}
+              className="h-11 shrink-0 px-2.5 text-[15px] font-extrabold text-text underline"
+            >
+              <NoWrap>Back up</NoWrap>
+            </button>
+          </div>
         )}
 
         {recent && recent.length > 0 && (

@@ -2,6 +2,7 @@ import { test } from '@playwright/test';
 import { expectLayoutClean } from './helpers/noWrap';
 import { openApp } from './helpers/app';
 import { CASEY, EIGHT, FOUR, MORGAN } from './fixtures/players';
+import { NOW } from './fixtures/matches';
 import { merge, PARCHEESI_DONE, PARCHEESI_MID, PARCHEESI_PAUSED, RECENT } from './fixtures/parcheesi';
 
 /**
@@ -85,6 +86,35 @@ const SCREENS: Screen[] = [
     },
   },
   { name: 'game-picker', hash: '#/new', ready: 'Choose a game' },
+  { name: 'settings-new', hash: '#/settings', ready: 'Settings' },
+  {
+    name: 'settings-backed-up',
+    hash: '#/settings',
+    ready: 'Settings',
+    seed: {
+      ...merge(...RECENT),
+      settings: [
+        {
+          id: 'settings', createdAt: NOW, updatedAt: NOW, deletedAt: null, statsMinGames: 5,
+          backupReminder: { enabled: true, mode: 'games', everyGames: 10 }, lastBackupAt: NOW - 10 * 24 * 3600_000,
+        },
+      ],
+    },
+  },
+  {
+    name: 'home-backup-banner',
+    hash: '#/',
+    ready: 'Game night',
+    seed: {
+      ...merge(...RECENT),
+      settings: [
+        {
+          id: 'settings', createdAt: NOW, updatedAt: NOW, deletedAt: null, statsMinGames: 5,
+          backupReminder: { enabled: true, mode: 'games', everyGames: 2 }, lastBackupAt: null,
+        },
+      ],
+    },
+  },
   {
     name: 'setup-parcheesi',
     hash: '#/new/parcheesi',
