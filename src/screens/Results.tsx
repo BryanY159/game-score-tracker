@@ -14,7 +14,7 @@ import { COLOR_HEX } from '../domain/colors';
 import { ordinal } from '../domain/placement';
 import { elapsedMs, formatLength } from '../domain/timer';
 import { requireGame } from '../games/registry';
-import { completedAt, parcheesiState } from '../games/parcheesi/scoring';
+import { completedAt, parcheesiResults, parcheesiState } from '../games/parcheesi/scoring';
 import { Gone } from './PlacementScoring';
 
 export function Results() {
@@ -56,14 +56,10 @@ function ParcheesiResults({ bundle }: { bundle: MatchBundle }) {
 
   async function finalize() {
     setSaving(true);
-    const results: SeatResult[] = ranked.map((r) => ({
-      matchPlayerId: r.mp.id,
-      placement: r.st.placement,
-      finalScore: null,
-      marginPastTarget: null,
-      isWinner: r.st.placement === 1,
-      details: { pawnsHome: r.st.pawnsHome },
-    }));
+    const results: SeatResult[] = parcheesiResults(
+      seats.map((s) => ({ matchPlayerId: s.mp.id, playerId: s.player.id })),
+      match.log,
+    );
     await finalizeMatch(db, match.id, results, endedAt);
     navigate('/', { replace: true });
   }

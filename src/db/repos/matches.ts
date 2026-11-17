@@ -153,25 +153,48 @@ export async function finalizeMatch(
   await db.transaction('rw', db.matches, db.matchPlayers, async () => {
     const m = await db.matches.get(matchId);
     if (!m) throw new Error('Game not found');
-    for (const r of results) {
-      const mp = await db.matchPlayers.get(r.matchPlayerId);
-      if (!mp || mp.matchId !== matchId) throw new Error('Seat not in this game');
-      await db.matchPlayers.put(
-        touch(
-          mp,
-          {
-            placement: r.placement,
-            finalScore: r.finalScore,
-            marginPastTarget: r.marginPastTarget,
-            isWinner: r.isWinner,
-            details: r.details,
-          },
-          now,
-        ),
-      );
-    }
+    await writeResults(db, matchId, results, now);
     await db.matches.put(touch(m, { status: 'finished', endedAt, pausedAt: null }, now));
   });
+}
+
+/**
+ * FR-12 AC-2 / FR-13: edit a finished game in place. It stays finished and
+ * keeps its length; the entries and the outcome are replaced.
+ */
+export async function saveFinishedEdit(
+  db: ScoreDb,
+  matchId: string,
+  changes: { log?: MatchEvent[]; endedEarly?: boolean },
+  results: SeatResult[],
+  now: number = Date.now(),
+): Promise<void> {
+  await db.transaction('rw', db.matches, db.matchPlayers, async () => {
+    const m = await db.matches.get(matchId);
+    if (!m || m.status !== 'finished') throw new Error('Only a finished game can be edited here');
+    await writeResults(db, matchId, results, now);
+    await db.matches.put(touch(m, changes, now));
+  });
+}
+
+async function writeResults(db: ScoreDb, matchId: string, results: SeatResult[], now: number) {
+  for (const r of results) {
+    const mp = await db.matchPlayers.get(r.matchPlayerId);
+    if (!mp || mp.matchId !== matchId) throw new Error('Seat not in this game');
+    await db.matchPlayers.put(
+      touch(
+        mp,
+        {
+          placement: r.placement,
+          finalScore: r.finalScore,
+          marginPastTarget: r.marginPastTarget,
+          isWinner: r.isWinner,
+          details: r.details,
+        },
+        now,
+      ),
+    );
+  }
 }
 
 /** Games waiting under In Progress on Home (FR-5 AC-2). */
@@ -208,8 +231,8 @@ export async function setNotes(db: ScoreDb, matchId: string, notes: string, now:
   });
 }
 
-/** Most recently finished games, newest first. */
-export async function listRecentFinished(db: ScoreDb, limit: number): Promise<MatchBundle[]> {
+/** Most recently finished games, newest first (FR-13 AC-1). */
+export async function listRecentFinished(db: ScoreDb, limit = Infinity): Promise<MatchBundle[]> {
   const finished = (await db.matches.where('status').equals('finished').toArray())
     .filter((m) => m.deletedAt === null)
     .sort((a, b) => (b.endedAt ?? 0) - (a.endedAt ?? 0))

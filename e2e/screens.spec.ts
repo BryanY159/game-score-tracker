@@ -3,7 +3,7 @@ import { expectLayoutClean } from './helpers/noWrap';
 import { openApp } from './helpers/app';
 import { CASEY, EIGHT, FOUR, MORGAN } from './fixtures/players';
 import { NOW } from './fixtures/matches';
-import { merge, PARCHEESI_DONE, PARCHEESI_MID, PARCHEESI_PAUSED, RECENT } from './fixtures/parcheesi';
+import { HISTORY, merge, PARCHEESI_DONE, PARCHEESI_MID, PARCHEESI_PAUSED, RECENT } from './fixtures/parcheesi';
 
 /**
  * Every screen × every NFR-7 project. Screenshots land in screenshots/<project>/
@@ -86,6 +86,39 @@ const SCREENS: Screen[] = [
     },
   },
   { name: 'game-picker', hash: '#/new', ready: 'Choose a game' },
+  { name: 'history-all', hash: '#/history', ready: 'History', seed: HISTORY },
+  {
+    name: 'history-player-filter',
+    hash: '#/history',
+    ready: 'History',
+    seed: HISTORY,
+    act: async (page) => {
+      await page.getByRole('button', { name: 'All players' }).click();
+      await page.getByRole('dialog', { name: 'Filter by player' }).waitFor();
+    },
+  },
+  {
+    name: 'history-filtered',
+    hash: '#/history',
+    ready: 'History',
+    seed: HISTORY,
+    act: async (page) => {
+      await page.getByRole('button', { name: 'All players' }).click();
+      await page.getByRole('dialog').getByRole('button', { name: 'Riley' }).click();
+    },
+  },
+  {
+    name: 'match-detail',
+    hash: `#/history/${HISTORY.matches[3]!.id}`,
+    ready: 'Parcheesi',
+    seed: HISTORY,
+  },
+  {
+    name: 'match-edit',
+    hash: `#/history/${RECENT[0]!.matches[0]!.id}/edit`,
+    ready: 'Edit Parcheesi',
+    seed: HISTORY,
+  },
   { name: 'settings-new', hash: '#/settings', ready: 'Settings' },
   {
     name: 'settings-backed-up',

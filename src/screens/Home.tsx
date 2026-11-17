@@ -94,12 +94,26 @@ export function Home() {
 
         {recent && recent.length > 0 && (
           <section className="flex flex-col gap-1">
-            <h2 className="m-0 text-[17px] font-extrabold">Recent games</h2>
+            <div className="flex items-center justify-between">
+              <h2 className="m-0 text-[17px] font-extrabold">Recent games</h2>
+              <button
+                type="button"
+                onClick={() => navigate('/history')}
+                className="-mr-2 h-11 px-2 text-[14px] font-bold text-text underline"
+              >
+                <NoWrap>See all</NoWrap>
+              </button>
+            </div>
             <ul className="m-0 list-none p-0">
               {recent.map((b) => {
                 const winner = b.seats.find((s) => s.mp.isWinner) ?? b.seats[0];
                 return (
-                  <li key={b.match.id} className="flex h-[60px] items-center gap-3 border-b border-border last:border-b-0">
+                  <li key={b.match.id} className="border-b border-border last:border-b-0">
+                    <button
+                      type="button"
+                      onClick={() => navigate(`/history/${b.match.id}`)}
+                      className="flex h-[60px] w-full items-center gap-3 text-left text-text"
+                    >
                     {winner && (
                       <span className="rounded-full" style={{ background: COLOR_HEX[winner.mp.color] }}>
                         <Avatar emoji={winner.player.emoji} size={36} />
@@ -114,6 +128,7 @@ export function Home() {
                       </NoWrap>
                     </div>
                     <NoWrap className="text-[13px] text-text-2">{relativeDay(b.match.endedAt ?? b.match.updatedAt)}</NoWrap>
+                    </button>
                   </li>
                 );
               })}
