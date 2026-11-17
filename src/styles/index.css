@@ -1,0 +1,103 @@
+@import 'tailwindcss';
+
+/*
+ * Design tokens: spec §6 only. Do not add colors or fonts outside this file.
+ * Tailwind's default palette is cleared so only these tokens exist as utilities.
+ */
+:root {
+  --bg: #ffffff;
+  --surface: #f2f3f5;
+  --border: #e4e6ea;
+  --text: #1f2430;
+  --text-2: #5f6470;
+  --btn: #1f2430;
+  --btn-text: #ffffff;
+  --black-outline: transparent;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0b0b0d;
+    --surface: #1c1c1e;
+    --border: #2c2c2e;
+    --text: #f2f3f5;
+    --text-2: #a1a1aa;
+    --btn: #3a3a3c;
+    --btn-text: #f2f3f5;
+    /* Ticket to Ride black gets a light outline in dark mode (§6). */
+    --black-outline: #a1a1aa;
+  }
+}
+
+@theme {
+  --color-*: initial;
+  --color-white: #ffffff;
+  --color-transparent: transparent;
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-border: var(--border);
+  --color-text: var(--text);
+  --color-text-2: var(--text-2);
+  --color-btn: var(--btn);
+  --color-btn-text: var(--btn-text);
+  /* Profile palette (§6) */
+  --color-red: #c0392b;
+  --color-blue: #1d4ed8;
+  --color-green: #15803d;
+  --color-gold: #eab308;
+  --color-purple: #6d28d9;
+  --color-pink: #be185d;
+  --color-teal: #0f766e;
+  --color-orange: #c2410c;
+  /* Piece color (§6) */
+  --color-black: #1c1c1e;
+
+  --font-*: initial;
+  --font-sans: ui-rounded, 'SF Pro Rounded', system-ui, sans-serif;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    overscroll-behavior: none;
+  }
+  button {
+    cursor: pointer;
+  }
+  /* Links: Text color, underlined (§6). */
+  a {
+    color: var(--text);
+    text-decoration: underline;
+  }
+}
+
+@utility tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+@utility pt-safe {
+  padding-top: env(safe-area-inset-top);
+}
+
+@utility pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* FR-19 AC-3: no animation when Reduce Motion is on. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

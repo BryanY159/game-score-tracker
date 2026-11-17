@@ -1,0 +1,12 @@
+node_modules/
+dist/
+dist-test/
+dev-dist/
+test-results/
+playwright-report/
+screenshots/
+*.local
+.DS_Store
+# Never commit user data (repo is public, spec C-6)
+*.backup.json
+exports/
