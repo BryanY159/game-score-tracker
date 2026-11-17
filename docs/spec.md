@@ -108,14 +108,14 @@ Each profile has a name, an emoji, a color from the profile palette, and a hide-
 
 - AC-1: Each player has a Bankrupt button. Tapping it records their elimination order and the time.
 - AC-2: When only one player is left, that player wins and the game moves to Results.
-- AC-3: End Game (ending early) asks for each remaining player's net worth, as a single number. The app ranks remaining players by net worth, above the bankrupt players, and the order can be adjusted by dragging before finalizing.
+- AC-3: End Game (ending early) asks for each remaining player's net worth, as a single number. The app ranks remaining players by net worth, above the bankrupt players, and the order can be adjusted by dragging before finalizing. Net worth is a whole number shown without a currency sign. If players tie for the top net worth, the tie screen opens (FR-11 AC-3). A shared win puts every tied player in 1st, and the next player takes the place after them (1st, 1st, 3rd). Ties lower down keep the order shown on the ranking screen.
 - AC-4: The game saves placements, net worth (if the game ended early), start and end times, and game length without pauses.
 
 ### FR-11 Winners and tie-breakers
 
 - AC-1: In target games (Flip 7 and Dutch Blitz), the winner is the player with the largest margin past their own target. If margins tie, the higher total wins.
 - AC-2: In Ticket to Ride, a tie on total score goes to the player with the most completed destination tickets, then to the longest-path holder.
-- AC-3: If a tie remains or the game has no official tie-breaker, a tie screen offers two choices: declare a shared win, or pick the winner of an outside tie-breaker.
+- AC-3: If a tie remains or the game has no official tie-breaker, a tie screen offers two choices: declare a shared win, or pick the winner of an outside tie-breaker. With a shared win, Results says "Shared win" with the winners' names on the line below.
 - AC-4: In Flip 7, if players are still tied on both margin and total, the tie screen's default option is "Play another round" (per the official FAQ). It continues the game with all players, not just the tied ones. After that round, the winner is decided again under AC-1, and the tie screen comes back if the tie remains, as many times as needed. Shared win and the outside tie-breaker stay available each time.
 
 ### FR-12 Results and Finalize
@@ -195,7 +195,7 @@ Each profile has a name, an emoji, a color from the profile palette, and a hide-
 | TurnLog | matchId, entries (player, action, routeLength) | Ticket to Ride only, deleted when the game is finalized |
 | Settings | statsMinGames, backupReminder, lastBackupAt | single record |
 
-`Match.log` is the per-game entry log for placement games (Parcheesi pawn steps, Monopoly bankruptcies), oldest first. The current state is replayed from it, so Undo (FR-5 AC-4) drops the last entry. Rounds games use the Round table instead, and Ticket to Ride uses TurnLog.
+`Match.log` is the per-game entry log for placement games (Parcheesi pawn steps; Monopoly bankruptcies and the end-early entry, which holds each remaining player's net worth, the final order and how a tie for first was settled), oldest first. The current state is replayed from it, so Undo (FR-5 AC-4) drops the last entry. Rounds games use the Round table instead, and Ticket to Ride uses TurnLog.
 
 What goes in `details` depends on the game:
 

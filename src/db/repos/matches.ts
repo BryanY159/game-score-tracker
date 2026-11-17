@@ -149,12 +149,13 @@ export async function finalizeMatch(
   results: SeatResult[],
   endedAt: number,
   now: number = Date.now(),
+  changes: { endedEarly?: boolean } = {},
 ): Promise<void> {
   await db.transaction('rw', db.matches, db.matchPlayers, async () => {
     const m = await db.matches.get(matchId);
     if (!m) throw new Error('Game not found');
     await writeResults(db, matchId, results, now);
-    await db.matches.put(touch(m, { status: 'finished', endedAt, pausedAt: null }, now));
+    await db.matches.put(touch(m, { ...changes, status: 'finished', endedAt, pausedAt: null }, now));
   });
 }
 

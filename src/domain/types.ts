@@ -59,7 +59,17 @@ export interface Match extends BaseRecord {
 
 export type MatchEvent =
   | { type: 'pawns'; playerId: string; delta: 1 | -1; at: number }
-  | { type: 'bankrupt'; playerId: string; at: number };
+  | { type: 'bankrupt'; playerId: string; at: number }
+  | {
+      /** Monopoly ended early (FR-10 AC-3): net worth per remaining player and their final order. */
+      type: 'endEarly';
+      netWorth: Record<string, number>;
+      /** Remaining players, best first, after any drag and tie decision. */
+      order: string[];
+      /** How a tie for first was settled (FR-11 AC-3); null when there was none. */
+      tie: null | { kind: 'shared'; playerIds: string[] } | { kind: 'picked'; winnerId: string };
+      at: number;
+    };
 
 export interface MatchPlayer extends BaseRecord {
   matchId: string;
