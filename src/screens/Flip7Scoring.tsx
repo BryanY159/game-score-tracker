@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BottomToolbar } from '../components/BottomToolbar';
-import { GameBody, GameHeader, GameScreen, PrimaryToolButton, TimerChip, ToolButton } from '../components/GameChrome';
-import { PausedOverlay, PauseButton, useGameControls } from '../components/GameControls';
+import { GameBody, GameHeader, GameScreen, PrimaryToolButton, TimerChip, ToolButton, TwoPaneGame } from '../components/GameChrome';
+import { useLandscape } from '../hooks/useLandscape';
+import { PausedOverlay, PauseButton, useGameControls, useGameShortcuts } from '../components/GameControls';
 import { MoreIcon, RoundsIcon, UndoIcon } from '../components/Icons';
 import { NoWrap } from '../components/NoWrap';
 import { db } from '../db/schema';
@@ -101,6 +102,8 @@ export function Flip7Scoring({ bundle }: { bundle: MatchBundle }) {
     setRaws(rawsOf(reopened));
   }
 
+  useGameShortcuts(game.name, match, { back: controls.exitToHome, undo: { run: undo, enabled: blank && confirmedCount > 0 } });
+
   const raw = raws[active]!;
   const activeName = seats.find((s) => s.player.id === active)!.player.name;
   const bustNow = () => {
@@ -117,101 +120,102 @@ export function Flip7Scoring({ bundle }: { bundle: MatchBundle }) {
         ? raw
         : { ...blankRaw('cards'), bust: raw.bust } as Flip7Raw;
 
-  return (
-    <GameScreen>
-      <GameHeader
-        title={game.name}
-        sub={`Round ${over ? confirmedCount : roundNumber} · Dealer: ${seats.find((s) => s.player.id === dealerId)!.player.name}`}
-        onBack={controls.exitToHome}
-        trailing={
-          <TimerChip match={match}>
-            <PauseButton match={match} />
-          </TimerChip>
-        }
-      />
-      <GameBody className="gap-2 px-4 pt-1 pb-3">
-        <PausedOverlay match={match} />
-        {outcome.extraRound && (
-          <p className="m-0 rounded-2xl bg-surface px-3.5 py-3 text-[15px] leading-snug font-bold" role="status">
-            Tie-break round: everyone plays one more round.
-          </p>
-        )}
-        {over && (
-          <p className="m-0 rounded-2xl bg-surface px-3.5 py-3 text-[15px] leading-snug" role="status">
-            Game over: a player reached their target. Edit a round or Undo to keep playing.
-          </p>
-        )}
-        <div className="flex justify-between px-2 text-[13px] text-text-2">
-          <NoWrap>Tap a round score to type it</NoWrap>
-          <NoWrap>Round · Total</NoWrap>
-        </div>
-        <div ref={listRef} className="grid grid-cols-1 gap-2 md:grid-cols-2">
-          {standing.order.map((id) => {
-            const i = ids.indexOf(id);
-            const s = seats[i]!;
-            return (
-            <div key={s.mp.id} id={`flip7-row-${s.player.id}`} data-flip-key={s.player.id} className="scroll-mt-24 scroll-mb-[400px]">
-              <Flip7Row
-                leader={standing.leaders.includes(s.player.id)}
-                crownPop={standing.popFor === s.player.id}
-                seat={s}
-                raw={raws[s.player.id]!}
-                total={totals[s.player.id] ?? 0}
-                target={targets[i]!}
-                showTarget={handicap}
-                dealer={s.player.id === dealerId}
-                active={!over && s.player.id === active}
-                typing={!over && s.player.id === active && panel === 'keypad'}
-                onType={() => {
-                  setActive(s.player.id);
-                  setPanel('keypad');
-                }}
-                compact={seats.length > 5}
-                disabled={paused || over}
-                onSelect={() => {
-                  setActive(s.player.id);
-                  setPanel('cards');
-                }}
-              />
-            </div>
-            );
-          })}
-        </div>
-      </GameBody>
-
-      <div className="pb-safe sticky bottom-0 z-10 bg-bg">
-        {!over && !paused && (
-          <div className="border-t border-border px-3 pt-2 pb-1">
-            <div className="mx-auto max-w-lg">
-              <EntryPanel
-                name={activeName}
-                raw={shown}
-                note={raw.mode === 'number' && raw.value !== null ? `Typed ${raw.value}${raw.flip7 ? ' + 15' : ''}` : undefined}
-                panel={panel}
-                onPanel={setPanel}
-                onChange={(r) => set(active, r)}
-                onBust={bustNow}
-                onNext={nextPlayer}
-              />
-            </div>
-          </div>
-        )}
-        <BottomToolbar>
-          <ToolButton icon={<UndoIcon />} label="Undo" disabled={paused || !blank || confirmedCount === 0} onClick={undo} />
-          <ToolButton icon={<RoundsIcon />} label="Rounds" onClick={() => setListOpen(true)} />
-          {over ? (
-            <PrimaryToolButton disabled={paused} onClick={() => navigate(`/play/${match.id}/results`)}>
-              See results
-            </PrimaryToolButton>
-          ) : (
-            <PrimaryToolButton disabled={paused || !allEntered} onClick={confirm}>
-              Confirm round
-            </PrimaryToolButton>
-          )}
-          <ToolButton icon={<MoreIcon />} label="More" onClick={controls.openMore} />
-        </BottomToolbar>
+  const land = useLandscape();
+  const header = (
+    <GameHeader
+      title={game.name}
+      sub={`Round ${over ? confirmedCount : roundNumber} · Dealer: ${seats.find((s) => s.player.id === dealerId)!.player.name}`}
+      onBack={controls.exitToHome}
+      trailing={
+        <TimerChip match={match}>
+          <PauseButton match={match} />
+        </TimerChip>
+      }
+    />
+  );
+  const banners = (
+    <>
+      {outcome.extraRound && (
+        <p className="m-0 rounded-2xl bg-surface px-3.5 py-3 text-[15px] leading-snug font-bold" role="status">
+          Tie-break round: everyone plays one more round.
+        </p>
+      )}
+      {over && (
+        <p className="m-0 rounded-2xl bg-surface px-3.5 py-3 text-[15px] leading-snug" role="status">
+          Game over: a player reached their target. Edit a round or Undo to keep playing.
+        </p>
+      )}
+      <div className="flex justify-between px-2 text-[13px] text-text-2">
+        <NoWrap>Tap a round score to type it</NoWrap>
+        <NoWrap>Round · Total</NoWrap>
       </div>
-
+    </>
+  );
+  const rows = (
+    <div ref={listRef} className={`grid grid-cols-1 gap-2 ${land ? '' : 'md:grid-cols-2'}`}>
+      {standing.order.map((id) => {
+        const i = ids.indexOf(id);
+        const s = seats[i]!;
+        return (
+          <div key={s.mp.id} id={`flip7-row-${s.player.id}`} data-flip-key={s.player.id} className={land ? '' : 'scroll-mt-24 scroll-mb-[400px]'}>
+            <Flip7Row
+              leader={standing.leaders.includes(s.player.id)}
+              crownPop={standing.popFor === s.player.id}
+              seat={s}
+              raw={raws[s.player.id]!}
+              total={totals[s.player.id] ?? 0}
+              target={targets[i]!}
+              showTarget={handicap}
+              dealer={s.player.id === dealerId}
+              active={!over && s.player.id === active}
+              typing={!over && s.player.id === active && panel === 'keypad'}
+              onType={() => {
+                setActive(s.player.id);
+                setPanel('keypad');
+              }}
+              compact={seats.length > 5}
+              disabled={paused || over}
+              onSelect={() => {
+                setActive(s.player.id);
+                setPanel('cards');
+              }}
+            />
+          </div>
+        );
+      })}
+    </div>
+  );
+  const entry = !over && !paused && (
+    <EntryPanel
+      name={activeName}
+      raw={shown}
+      note={raw.mode === 'number' && raw.value !== null ? `Typed ${raw.value}${raw.flip7 ? ' + 15' : ''}` : undefined}
+      panel={panel}
+      onPanel={setPanel}
+      onChange={(r) => set(active, r)}
+      onBust={bustNow}
+      onNext={nextPlayer}
+      onEnter={() => (allEntered ? void confirm() : nextPlayer())}
+    />
+  );
+  const toolbar = (
+    <BottomToolbar>
+      <ToolButton icon={<UndoIcon />} label="Undo" disabled={paused || !blank || confirmedCount === 0} onClick={undo} />
+      <ToolButton icon={<RoundsIcon />} label="Rounds" onClick={() => setListOpen(true)} />
+      {over ? (
+        <PrimaryToolButton disabled={paused} onClick={() => navigate(`/play/${match.id}/results`)}>
+          See results
+        </PrimaryToolButton>
+      ) : (
+        <PrimaryToolButton disabled={paused || !allEntered} onClick={confirm}>
+          Confirm round
+        </PrimaryToolButton>
+      )}
+      <ToolButton icon={<MoreIcon />} label="More" onClick={controls.openMore} />
+    </BottomToolbar>
+  );
+  const sheets = (
+    <>
       {controls.element}
       {listOpen && !editing && <RoundsSheet seats={seats} rounds={rounds} onClose={() => setListOpen(false)} onOpen={(r) => setEditing(r)} />}
       {editing && (
@@ -226,6 +230,45 @@ export function Flip7Scoring({ bundle }: { bundle: MatchBundle }) {
           }}
         />
       )}
+    </>
+  );
+
+  if (land) {
+    return (
+      <TwoPaneGame
+        header={header}
+        overlay={<PausedOverlay match={match} />}
+        left={
+          <>
+            {banners}
+            {rows}
+          </>
+        }
+        right={entry}
+        toolbar={toolbar}
+        after={sheets}
+      />
+    );
+  }
+
+  return (
+    <GameScreen>
+      {header}
+      <GameBody className="gap-2 px-4 pt-1 pb-3">
+        <PausedOverlay match={match} />
+        {banners}
+        {rows}
+      </GameBody>
+
+      <div className="pb-safe sticky bottom-0 z-10 bg-bg">
+        {entry && (
+          <div className="border-t border-border px-3 pt-2 pb-1">
+            <div className="mx-auto max-w-lg">{entry}</div>
+          </div>
+        )}
+        {toolbar}
+      </div>
+      {sheets}
     </GameScreen>
   );
 }

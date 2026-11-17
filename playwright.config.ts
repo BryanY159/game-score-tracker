@@ -1,8 +1,8 @@
 import { defineConfig, type Project } from '@playwright/test';
 
 /**
- * NFR-7 matrix: iPhone SE (375×667), iPhone 14 (390×844), iPad (820×1180),
- * light and dark. CI runs WebKit (closest to iOS Safari) and Chromium.
+ * NFR-7 matrix: iPhone SE (375×667), iPhone 14 (390×844), iPad portrait
+ * (820×1180) and landscape (1180×820), light and dark. CI runs WebKit (closest to iOS Safari) and Chromium.
  * Locally, set PW_BROWSERS=chromium if WebKit isn't installed.
  */
 const BROWSERS = (process.env.PW_BROWSERS ?? 'webkit,chromium').split(',') as ('webkit' | 'chromium')[];
@@ -10,6 +10,7 @@ const VIEWPORTS = {
   'iphone-375': { width: 375, height: 667 },
   'iphone-390': { width: 390, height: 844 },
   'ipad-820': { width: 820, height: 1180 },
+  'ipad-1180': { width: 1180, height: 820 },
 } as const;
 const SCHEMES = ['light', 'dark'] as const;
 
@@ -44,6 +45,12 @@ export default defineConfig({
       testMatch: /(pwa|helpers|players|parcheesi|lifecycle|backup|history|monopoly|dutchBlitz|quick|flip7|ticketToRide|stats|merge|motion)\.spec\.ts/,
       use: { browserName: 'chromium', viewport: VIEWPORTS['iphone-390'] },
     },
+    // FR-20: the iPad in landscape with a keyboard case.
+    ...BROWSERS.map((browserName) => ({
+      name: `${browserName}-keyboard`,
+      testMatch: /keyboard\.spec\.ts/,
+      use: { browserName, viewport: VIEWPORTS['ipad-1180'] },
+    })),
   ],
   webServer: {
     command: 'npm run build:test && npx vite preview --outDir dist-test --port 4173 --strictPort',

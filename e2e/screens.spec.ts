@@ -231,6 +231,17 @@ const SCREENS: Screen[] = [
     },
   },
   {
+    // FR-20 AC-6: the ? overlay.
+    name: 'shortcuts-overlay',
+    hash: `#/play/${FLIP7_MID.matches[0]!.id}`,
+    ready: 'Flip 7',
+    seed: FLIP7_MID,
+    act: async (page) => {
+      await page.keyboard.press('?');
+      await page.getByRole('dialog', { name: 'Keyboard shortcuts' }).waitFor();
+    },
+  },
+  {
     name: 'flip7-round-edit',
     hash: `#/play/${FLIP7_MID.matches[0]!.id}`,
     ready: 'Flip 7',

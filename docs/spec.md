@@ -224,6 +224,15 @@ These only apply when a hardware keyboard is used (iPad with a keyboard case). N
   - Enter confirms the round.
 - AC-5: Shortcuts don't fire while typing in a text field, except Enter and Esc. Keyboard focus rings must be visible.
 - AC-6: The ? overlay lists the shortcuts active on the current screen.
+- AC-7 (M14 decisions):
+  - Safari and ⌘Z or Space: the app takes both keys (it cancels the browser's own action, such as Space scrolling the page), so they aren't lost to Safari outside a text field. In a text field, ⌘Z stays Safari's text undo. Ctrl+Z also works, as a fallback if iPadOS keeps ⌘Z on a device. This was checked in the WebKit engine; the on-device check is on the iPad checklist.
+  - Esc: ⌘. also works, because the Magic Keyboard for iPad has no Esc key. Esc in a text field leaves the field first; on a game screen it goes back (and pauses, as the back arrow does); in a sheet or dialog it closes it.
+  - Space and Enter press a button that has a visible keyboard focus ring, as usual, instead of running the shortcut.
+  - The game-wide keys (⌘Z, Space, Esc and ?) also work in Parcheesi and Monopoly.
+  - Flip 7: K switches between the cards and the keypad. In the keypad, Delete removes a digit. In the Bust? question, B or Enter is Bust and Esc is "Not a bust, remove card". After +, any other key cancels the modifier.
+  - Ticket to Ride: Enter on the turn screen opens final scoring once play is over. In end-of-game scoring, a digit opens Add ticket starting with that digit, C or X adds it as completed or failed, Enter opens Add ticket for the next one, the left and right arrows move between players, and Esc goes back to the game.
+  - Dutch Blitz: Tab skips the − and + buttons, since + and − (or =) do their job. The first arrow press goes to the first field. Holding + or − repeats through the keyboard's own key repeat.
+  - On the iPad, Tab may only move between text fields unless keyboard navigation is on in Settings. Nothing in FR-20 needs Tab to reach a button.
 
 ## 4. Non-functional requirements
 

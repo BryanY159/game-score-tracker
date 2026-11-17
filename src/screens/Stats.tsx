@@ -10,6 +10,7 @@ import { COLOR_HEX } from '../domain/colors';
 import { busiestPair, flip7Rates, gameSpecific, headToHead, overall, perGame, winTrend, type GameRecord } from '../domain/stats';
 import type { GameKey, Player } from '../domain/types';
 import { GAMES, requireGame } from '../games/registry';
+import { useLandscape } from '../hooks/useLandscape';
 
 const WinTrend = lazy(() => import('../components/charts/WinTrend'));
 const pct = (x: number) => `${Math.round(x * 100)}%`;
@@ -18,28 +19,14 @@ const pct = (x: number) => `${Math.round(x * 100)}%`;
 export function Stats() {
   const data = useLiveQuery(async () => ({ ...(await loadStats(db)), profiles: await db.players.toArray() }), []);
   const [tab, setTab] = useState<GameKey | null>(null);
+  // NFR-3 landscape: the list of games beside the selected game's stats.
+  const land = useLandscape();
   if (!data) return <ScreenHeader title="Stats" />;
   const { records, players, minGames, profiles } = data;
   const profile = (id: string) => profiles.find((p) => p.id === id)!;
   const played = GAMES.filter((g) => records.some((r) => r.gameKey === g.key));
-
-  return (
+  const details = (
     <>
-      <ScreenHeader title="Stats" />
-      {records.length === 0 || players.length === 0 ? (
-        <EmptyState title="No stats yet" body="Win rates and records appear once players have played a few games." />
-      ) : (
-        <div className="flex flex-col gap-5 pb-4">
-          <div className="flex flex-wrap gap-2 px-4" role="tablist" aria-label="Games">
-            <Chip on={tab === null} onClick={() => setTab(null)}>
-              All games
-            </Chip>
-            {played.map((g) => (
-              <Chip key={g.key} on={tab === g.key} onClick={() => setTab(g.key)}>
-                {g.name}
-              </Chip>
-            ))}
-          </div>
           <div className="grid grid-cols-1 gap-5 px-4 md:grid-cols-2">
             <Leaderboard records={records} players={players} minGames={minGames} tab={tab} profile={profile} />
             <div className="flex flex-col gap-5">
@@ -59,6 +46,41 @@ export function Stats() {
               />
             </Suspense>
           </section>
+    </>
+  );
+
+  return (
+    <>
+      <ScreenHeader title="Stats" />
+      {records.length === 0 || players.length === 0 ? (
+        <EmptyState title="No stats yet" body="Win rates and records appear once players have played a few games." />
+      ) : (
+        <div className="flex flex-col gap-5 pb-4">
+          {land ? (
+            <div className="grid grid-cols-[260px_minmax(0,1fr)] gap-6 px-4">
+              <div className="sticky top-2 flex flex-col gap-1 self-start" role="tablist" aria-label="Games" aria-orientation="vertical">
+                <ListTab on={tab === null} onClick={() => setTab(null)} label="All games" count={records.length} />
+                {played.map((g) => (
+                  <ListTab key={g.key} on={tab === g.key} onClick={() => setTab(g.key)} label={g.name} count={records.filter((r) => r.gameKey === g.key).length} />
+                ))}
+              </div>
+              <div className="flex min-w-0 flex-col gap-5 [&>*]:px-0">{details}</div>
+            </div>
+          ) : (
+            <>
+          <div className="flex flex-wrap gap-2 px-4" role="tablist" aria-label="Games">
+              <Chip on={tab === null} onClick={() => setTab(null)}>
+                All games
+              </Chip>
+              {played.map((g) => (
+                <Chip key={g.key} on={tab === g.key} onClick={() => setTab(g.key)}>
+                  {g.name}
+                </Chip>
+              ))}
+            </div>
+              {details}
+            </>
+          )}
         </div>
       )}
     </>
@@ -261,6 +283,24 @@ function GameRecords({ records, tab, eligible, profile }: { records: GameRecord[
         ))}
       </ul>
     </section>
+  );
+}
+
+/** A row in the landscape list of games (NFR-3). */
+function ListTab({ on, onClick, label, count }: { on: boolean; onClick: () => void; label: string; count: number }) {
+  return (
+    <button
+      type="button"
+      role="tab"
+      aria-selected={on}
+      onClick={onClick}
+      className={`flex h-12 items-center gap-2 rounded-2xl px-3.5 text-left text-[16px] font-bold ${on ? 'bg-btn text-btn-text' : 'text-text'}`}
+    >
+      <NoWrap truncate className="flex-1">
+        {label}
+      </NoWrap>
+      <NoWrap className={`tabular text-[14px] ${on ? '' : 'text-text-2'}`}>{count}</NoWrap>
+    </button>
   );
 }
 

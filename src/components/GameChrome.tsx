@@ -108,3 +108,80 @@ export function GameScreen({ children }: { children: ReactNode }) {
 export function GameBody({ children, className = '' }: { children: ReactNode; className?: string }) {
   return <main className={`relative flex flex-1 flex-col ${className}`}>{children}</main>;
 }
+
+/**
+ * NFR-3 landscape (iPad with a keyboard): header across the top, players and
+ * scoreboard on the left, the entry panel and toolbar on the right. Each pane
+ * scrolls on its own; the paused overlay covers both.
+ */
+export function TwoPaneGame({
+  header,
+  left,
+  right,
+  toolbar,
+  overlay,
+  rightWidth = 460,
+  after,
+}: {
+  header: ReactNode;
+  left: ReactNode;
+  right: ReactNode;
+  toolbar: ReactNode;
+  overlay?: ReactNode;
+  /** The right pane's width in px; the left pane takes the rest. */
+  rightWidth?: number;
+  /** Sheets and dialogs. */
+  after?: ReactNode;
+}) {
+  return (
+    <div className="flex h-dvh flex-col overflow-hidden" data-layout="two-pane">
+      {header}
+      <div className="relative grid min-h-0 flex-1 gap-5 px-5" style={{ gridTemplateColumns: `minmax(0, 1fr) ${rightWidth}px` }}>
+        {overlay}
+        <main className="flex min-h-0 flex-col gap-2.5 overflow-y-auto pt-1 pb-5" aria-label="Scoreboard">
+          {left}
+        </main>
+        <aside className="flex min-h-0 flex-col" aria-label="Entry">
+          <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto pt-1 pb-3">{right}</div>
+          {toolbar}
+        </aside>
+      </div>
+      {after}
+    </div>
+  );
+}
+
+/** A compact standings row for the landscape left pane. */
+export function ScoreRow({
+  color,
+  avatar,
+  name,
+  detail,
+  value,
+  valueLabel,
+  now = false,
+  dim = false,
+}: {
+  color: string;
+  avatar: ReactNode;
+  name: string;
+  detail?: string;
+  value: ReactNode;
+  valueLabel: string;
+  now?: boolean;
+  dim?: boolean;
+}) {
+  return (
+    <li className={`flex h-12 items-center gap-2.5 rounded-3xl pr-4 pl-1.5 text-white ${dim ? 'opacity-55' : ''}`} style={{ background: color }}>
+      {avatar}
+      <NoWrap truncate className="flex-1 text-base font-bold">
+        {name}
+      </NoWrap>
+      {now && <NoWrap className="rounded-lg bg-white/22 px-2 text-[12px] font-bold">now</NoWrap>}
+      {detail && <NoWrap className="text-[14px]">{detail}</NoWrap>}
+      <NoWrap className="tabular min-w-10 text-right text-[20px] font-extrabold" aria-label={valueLabel}>
+        {value}
+      </NoWrap>
+    </li>
+  );
+}

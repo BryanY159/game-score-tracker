@@ -445,6 +445,14 @@ Also adds the Settings "Merge a file" button (moved from M4).
 - Playwright: a keyboard test per game covering the main shortcuts, the ? overlay, and that shortcuts don't fire while typing in a text field.
 - The full screenshot matrix, now with landscape.
 
+**Built (M14):**
+- `useLandscape()` (`(min-width: 1024px) and (orientation: landscape)`) switches each scoring screen to a separate two-pane tree (`TwoPaneGame`), so portrait and iPhone layouts are untouched. Flip 7 shows the player rows left and the entry panel right. Dutch Blitz, Parcheesi and Monopoly show a compact standings list left and the per-player entry cards right. Ticket to Ride shows the current turn, scoreboard and last turns left, and the route and draw buttons right.
+- History selects a game in place and shows its detail beside the list (`MatchDetailPanel`). Stats lists the games down the left, with game counts, and shows the selected game's stats on the right.
+- The shortcut layer is `src/hooks/useShortcuts.ts` (layers pushed by screens, panels and sheets; a sheet or dialog is a modal layer that hides the ones below it) and `src/components/ShortcutsOverlay.tsx` (the one key listener and the ? overlay). The overlay lists what's live when it opens.
+- Focus rings: a 3 px outline in the Text color on keyboard focus (`:focus-visible`), for buttons and tabs. Text fields keep their own focus look.
+- Playwright: `ipad-1180` joins the screenshot matrix (light and dark, both browsers), plus a `shortcuts-overlay` screen. `keyboard.spec.ts` runs in a `<browser>-keyboard` project at 1180×820. Vitest covers the registry.
+- Decisions are in spec FR-20 AC-7.
+
 ## 6. Changes made during batch 1 (M0–M4)
 
 *Batch 2 review (after M7), owner request:* a small PR before M8 adds Parcheesi triple doublets (spec FR-6 AC-6) and hold-to-repeat on every stepper (FR-18 AC-1). M10 adds the matching Parcheesi stat to FR-14 AC-5.

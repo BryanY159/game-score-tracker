@@ -1,5 +1,6 @@
 import { useEffect, useRef, type ReactNode } from 'react';
 import { NoWrap } from './NoWrap';
+import { isEscape, useShortcuts } from '../hooks/useShortcuts';
 
 /** Bottom sheet modal. Closes on backdrop tap or Escape. */
 export function Sheet({
@@ -18,10 +19,9 @@ export function Sheet({
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
     ref.current?.focus();
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [onClose]);
+  }, []);
+  // A modal layer: Esc closes, and the screen's shortcuts wait underneath (FR-20).
+  useShortcuts(title, [{ keys: 'Esc', label: 'Close', match: isEscape, run: onClose, whileTyping: true }], { modal: true });
 
   return (
     <div className="fixed inset-0 z-40 flex items-end justify-center bg-black/40 md:items-center" onClick={onClose}>

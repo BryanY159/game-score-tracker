@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BottomToolbar } from '../components/BottomToolbar';
-import { GameBody, GameHeader, GameScreen, PrimaryToolButton, TimerChip, ToolButton } from '../components/GameChrome';
-import { PausedOverlay, PauseButton, useGameControls } from '../components/GameControls';
+import { GameBody, GameHeader, GameScreen, PrimaryToolButton, TimerChip, ToolButton, TwoPaneGame } from '../components/GameChrome';
+import { useLandscape } from '../hooks/useLandscape';
+import { PausedOverlay, PauseButton, useGameControls, useGameShortcuts } from '../components/GameControls';
 import { MoreIcon, RoundsIcon, UndoIcon } from '../components/Icons';
 import { NoWrap } from '../components/NoWrap';
 import { Avatar } from '../components/PlayerPill';
@@ -15,6 +16,7 @@ import { describeTurn, TurnLogSheet } from '../games/ticketToRide/TurnLogSheet';
 import { requireGame } from '../games/registry';
 import { useCelebrate } from '../components/Celebration';
 import { CountUp } from '../components/CountUp';
+import { digitOf, key } from '../hooks/useShortcuts';
 
 /** FR-7 AC-1 to AC-5: the turn tracker. */
 export function TtrTurns({ bundle }: { bundle: MatchBundle }) {
@@ -49,9 +51,26 @@ export function TtrTurns({ bundle }: { bundle: MatchBundle }) {
   const act = (action: 'route' | 'drawTrains' | 'drawTickets', routeLength?: number) =>
     appendTurn(db, match.id, { playerId: st.current, action, routeLength });
   const disabled = paused || st.playComplete;
+  // FR-20 AC-3.
+  useGameShortcuts(game.name, match, {
+    back: controls.exitToHome,
+    undo: { run: () => void undoTurn(db, match.id), enabled: turns.length > 0 },
+    keys: [
+      {
+        keys: '1–6',
+        label: 'Claim a route of that length',
+        match: (e) => { const d = digitOf(e); return d !== null && d >= 1 && d <= 6; },
+        run: (e) => { const len = digitOf(e)!; if (!disabled && canClaim(st, st.current, len)) void act('route', len); },
+      },
+      { keys: 'T', label: 'Draw train cards', match: key('t'), run: () => void act('drawTrains'), enabled: !disabled },
+      { keys: 'D', label: 'Draw tickets', match: key('d'), run: () => void act('drawTickets'), enabled: !disabled },
+      { keys: 'L', label: 'Turn log', match: key('l'), run: () => setLogOpen(true) },
+      { keys: 'Enter', label: 'Final scoring', match: key('Enter'), run: () => navigate(`/play/${match.id}/final`), enabled: st.playComplete && !paused },
+    ],
+  });
 
-  return (
-    <GameScreen>
+  const land = useLandscape();
+  const header = (
       <GameHeader
         title={game.name}
         sub={`Turn ${st.turn + 1}`}
@@ -62,14 +81,18 @@ export function TtrTurns({ bundle }: { bundle: MatchBundle }) {
           </TimerChip>
         }
       />
-      <GameBody className="gap-3 px-4 pt-1 pb-4">
-        <PausedOverlay match={match} />
+  );
+  const finalBanner = (
+    <>
         {st.finalRound && !st.playComplete && (
           <p className="m-0 rounded-2xl bg-btn px-3.5 py-3 text-[15px] leading-snug font-bold text-btn-text" role="status">
             Final round: {seatOf(st.finalRound.triggeredBy).player.name} is down to {FINAL(st)} trains. {st.finalRound.turnsLeft}{' '}
             {st.finalRound.turnsLeft === 1 ? 'turn' : 'turns'} left.
           </p>
         )}
+    </>
+  );
+  const current = (
         <div
           className="flex items-center gap-3 rounded-[28px] px-4 py-3.5 text-white"
           style={{ background: COLOR_HEX[cur.mp.color], boxShadow: cur.mp.color === 'black' ? 'inset 0 0 0 1.5px var(--black-outline)' : undefined }}
@@ -89,9 +112,11 @@ export function TtrTurns({ bundle }: { bundle: MatchBundle }) {
           </div>
         </div>
 
+  );
+  const claim = (
         <section className="flex flex-col gap-2">
           <h2 className="m-0 text-[15px] font-bold text-text-2">Claim a route</h2>
-          <div className="grid grid-cols-3 gap-2 md:grid-cols-6">
+          <div className={`grid grid-cols-3 gap-2 ${land ? '' : 'md:grid-cols-6'}`}>
             {ROUTE_LENGTHS.map((len) => (
               <button
                 key={len}
@@ -118,6 +143,8 @@ export function TtrTurns({ bundle }: { bundle: MatchBundle }) {
           </div>
         </section>
 
+  );
+  const board = (
         <section className="flex flex-col gap-1.5">
           <div className="flex justify-between px-1 text-[13px] text-text-2">
             <NoWrap>Turn order</NoWrap>
@@ -151,6 +178,9 @@ export function TtrTurns({ bundle }: { bundle: MatchBundle }) {
           </ul>
         </section>
 
+  );
+  const lastTurns = (
+    <>
         {turns.length > 0 && (
           <section className="flex flex-col gap-1">
             <h2 className="m-0 text-[15px] font-bold text-text-2">Last turns</h2>
@@ -168,7 +198,9 @@ export function TtrTurns({ bundle }: { bundle: MatchBundle }) {
               })}
           </section>
         )}
-      </GameBody>
+    </>
+  );
+  const toolbar = (
       <BottomToolbar>
         <ToolButton icon={<UndoIcon />} label="Undo" disabled={paused || turns.length === 0} onClick={() => undoTurn(db, match.id)} />
         <ToolButton icon={<RoundsIcon />} label="Turn log" onClick={() => setLogOpen(true)} />
@@ -177,6 +209,9 @@ export function TtrTurns({ bundle }: { bundle: MatchBundle }) {
         </PrimaryToolButton>
         <ToolButton icon={<MoreIcon />} label="More" onClick={controls.openMore} />
       </BottomToolbar>
+  );
+  const sheets = (
+    <>
       {controls.element}
       {logOpen && (
         <TurnLogSheet
@@ -186,6 +221,42 @@ export function TtrTurns({ bundle }: { bundle: MatchBundle }) {
           onEdit={(index, change) => editTurn(db, match.id, index, change)}
         />
       )}
+    </>
+  );
+
+  if (land) {
+    return (
+      <TwoPaneGame
+        header={header}
+        overlay={<PausedOverlay match={match} />}
+        left={
+          <>
+            {finalBanner}
+            {current}
+            {board}
+            {lastTurns}
+          </>
+        }
+        right={claim}
+        toolbar={toolbar}
+        after={sheets}
+      />
+    );
+  }
+
+  return (
+    <GameScreen>
+      {header}
+      <GameBody className="gap-3 px-4 pt-1 pb-4">
+        <PausedOverlay match={match} />
+        {finalBanner}
+        {current}
+        {claim}
+        {board}
+        {lastTurns}
+      </GameBody>
+      {toolbar}
+      {sheets}
     </GameScreen>
   );
 }

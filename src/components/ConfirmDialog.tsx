@@ -1,4 +1,5 @@
 import { Button } from './Button';
+import { isEscape, useShortcuts } from '../hooks/useShortcuts';
 
 /** Centered confirmation, used for destructive actions (delete, cancel game). */
 export function ConfirmDialog({
@@ -14,6 +15,7 @@ export function ConfirmDialog({
   onConfirm: () => void;
   onCancel: () => void;
 }) {
+  useShortcuts(title, [{ keys: 'Esc', label: 'Keep', match: isEscape, run: onCancel, whileTyping: true }], { modal: true });
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-6" onClick={onCancel}>
       <div

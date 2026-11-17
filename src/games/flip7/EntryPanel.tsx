@@ -3,6 +3,7 @@ import { Button } from '../../components/Button';
 import { NoWrap } from '../../components/NoWrap';
 import { FLIP7_BONUS, FLIP7_UNIQUE, MODIFIERS, NUMBER_CARDS, flip7Score, hasFlip7, tapNumber, toggleMod, type Flip7Raw } from './scoring';
 import { FLIP7 } from './tokens';
+import { digitOf, isEscape, isPlus, key, shiftDigitOf, useShortcuts, type Shortcut } from '../../hooks/useShortcuts';
 
 type Cards = Extract<Flip7Raw, { mode: 'cards' }>;
 type Typed = Extract<Flip7Raw, { mode: 'number' }>;
@@ -37,7 +38,10 @@ export function EntryPanel({
   onNext,
   nextLabel = 'Next player',
   note,
+  onEnter,
 }: {
+  /** Enter (FR-20 AC-2); defaults to onNext. Play makes it Confirm round once everyone is in. */
+  onEnter?: () => void;
   /** Shown instead of "No cards yet", e.g. "Typed 31" when the score came from the keypad. */
   note?: string;
   name: string;
@@ -54,12 +58,60 @@ export function EntryPanel({
   const cards = raw.mode === 'cards' ? raw : blankCards;
   const typed = raw.mode === 'number' ? raw : blankTyped;
   const input = useRef<HTMLInputElement>(null);
+  // "+" waits for 2/4/6/8/0 to pick a modifier (FR-20 AC-2).
+  const [plus, setPlus] = useState(false);
+  const text = typed.value === null ? '' : String(typed.value);
+  const setValue = (v: number | null) => onChange({ ...typed, value: v, bust: false });
+  const tapCard = (n: number) => {
+    if (cards.bust || (new Set(cards.cards).size >= FLIP7_UNIQUE && !cards.cards.includes(n))) return;
+    const t = tapNumber(cards, n);
+    if (t.kind === 'added') onChange(t.raw);
+    else if (t.kind === 'duplicate') setBustAsk(n);
+  };
+  const typeDigit = (d: number) => {
+    if (text.length < 3) setValue(Number((text === '0' ? '' : text) + d));
+  };
+  const enter = onEnter ?? onNext;
+  const common: Shortcut[] = [
+    { keys: 'B', label: 'Bust', match: key('b'), run: onBust },
+    { keys: 'Enter', label: 'Next player, or Confirm round when everyone is in', match: key('Enter'), run: enter, whileTyping: true },
+  ];
+  const keys: Shortcut[] =
+    panel === 'keypad'
+      ? [
+          { keys: '0–9', label: 'Type the score', match: (e) => digitOf(e) !== null, run: (e) => typeDigit(digitOf(e)!) },
+          { keys: 'Delete', label: 'Delete a digit', match: key('Backspace'), run: () => setValue(text.length > 1 ? Number(text.slice(0, -1)) : null) },
+          { keys: 'F', label: 'Flip 7!', match: key('f'), run: () => onChange({ ...typed, flip7: !typed.flip7, bust: false }) },
+          { keys: 'K', label: 'Back to cards', match: key('k'), run: () => onPanel('cards') },
+          ...common,
+        ]
+      : [
+          {
+            keys: '0–9',
+            label: 'Number card',
+            match: (e) => digitOf(e) !== null,
+            run: (e) => {
+              const d = digitOf(e)!;
+              setPlus(false);
+              if (!plus) tapCard(d);
+              else if (cards.bust) return;
+              else if ([2, 4, 6, 8, 0].includes(d)) onChange(toggleMod(cards, d === 0 ? 10 : d));
+            },
+          },
+          { keys: '⇧1 ⇧2 ⇧3', label: 'Cards 10, 11 and 12', match: (e) => [1, 2, 3].includes(shiftDigitOf(e) ?? -1), run: (e) => tapCard(9 + shiftDigitOf(e)!) },
+          { keys: '+ then 2/4/6/8/0', label: 'Modifier (+0 is +10)', match: isPlus, run: () => setPlus((p) => !p) },
+          { keys: 'X', label: '×2', match: key('x'), run: () => !cards.bust && onChange({ ...cards, x2: !cards.x2 }) },
+          { keys: 'C', label: 'Clear', match: key('c'), run: () => onChange(blankCards) },
+          { keys: 'K', label: 'Open the keypad', match: key('k'), run: () => onPanel('keypad') },
+          ...common,
+          // A stray key cancels a waiting "+".
+          { keys: '', label: '', listed: false, enabled: plus, match: (e) => isEscape(e) || e.key.length === 1, run: () => setPlus(false) },
+        ];
+  useShortcuts(`Flip 7: ${name}`, keys);
 
   if (panel === 'keypad') {
-    const text = typed.value === null ? '' : String(typed.value);
-    const setValue = (v: number | null) => onChange({ ...typed, value: v, bust: false });
     const digit = (d: string) => (
-      <button key={d} type="button" onClick={() => (text.length < 3 ? setValue(Number((text === '0' ? '' : text) + d)) : undefined)} className="tabular h-12 rounded-[14px] bg-bg text-[22px] font-bold text-text">
+      <button key={d} type="button" onClick={() => typeDigit(Number(d))} className="tabular h-12 rounded-[14px] bg-bg text-[22px] font-bold text-text">
         {d}
       </button>
     );
@@ -88,7 +140,13 @@ export function EntryPanel({
             const d = e.target.value.replace(/\D/g, '').slice(0, 3);
             setValue(d === '' ? null : Number(d));
           }}
-          onKeyDown={(e) => e.key === 'Enter' && onNext()}
+          onKeyDown={(e) => {
+            // F marks a Flip 7 even while the field has focus (FR-20 AC-2).
+            if (e.key.toLowerCase() === 'f' && !e.metaKey && !e.ctrlKey) {
+              e.preventDefault();
+              onChange({ ...typed, flip7: !typed.flip7, bust: false });
+            }
+          }}
           className="tabular h-12 w-full bg-transparent text-center text-[40px] leading-none font-extrabold text-text outline-none placeholder:text-text-2"
         />
         <div className="grid grid-cols-4 gap-1.5">
@@ -128,6 +186,7 @@ export function EntryPanel({
           {name}'s cards
         </NoWrap>
         <NoWrap className="text-[14px] text-text-2" aria-label="Round sum">
+          {plus && <b className="mr-1.5 text-text" aria-label="Modifier: press 2, 4, 6, 8 or 0">+…</b>}
           {note && raw.mode === 'cards' && !raw.cards.length && !raw.mods.length && !raw.bust ? note : sumLine(raw)}
           {!raw.bust && (raw.mode === 'cards' ? cards.cards.length + cards.mods.length > 0 : false) && (
             <b className="tabular ml-1 text-xl text-text">{flip7Score(raw)}</b>
@@ -144,11 +203,7 @@ export function EntryPanel({
               aria-label={`Card ${n}`}
               aria-pressed={on}
               disabled={cards.bust || (full && !on)}
-              onClick={() => {
-                const t = tapNumber(cards, n);
-                if (t.kind === 'added') onChange(t.raw);
-                else if (t.kind === 'duplicate') setBustAsk(n);
-              }}
+              onClick={() => tapCard(n)}
               className="tabular relative h-[52px] rounded-[10px] border-[1.5px] text-[28px] font-black disabled:opacity-40"
               style={{ background: FLIP7.numberCard, borderColor: FLIP7.numberCardBorder, color: FLIP7.numerals[n], boxShadow: on ? ring : undefined, ...outlined(1.5) }}
             >
@@ -190,25 +245,15 @@ export function EntryPanel({
       </div>
 
       {bustAsk !== null && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-6" onClick={() => setBustAsk(null)}>
-          <div role="alertdialog" aria-modal="true" aria-label="Bust?" className="flex w-full max-w-sm flex-col gap-3 rounded-[24px] bg-bg p-5 ring-1 ring-border" onClick={(e) => e.stopPropagation()}>
-            <h2 className="m-0 text-xl font-extrabold">Bust?</h2>
-            <p className="m-0 text-[15px] leading-snug text-text-2">
-              {name} already has a {bustAsk}. A second one is a bust, unless a Second Chance card saved it.
-            </p>
-            <Button
-              onClick={() => {
-                setBustAsk(null);
-                onBust();
-              }}
-            >
-              Bust
-            </Button>
-            <Button variant="outline" onClick={() => setBustAsk(null)}>
-              Not a bust, remove card
-            </Button>
-          </div>
-        </div>
+        <BustAsk
+          name={name}
+          card={bustAsk}
+          onBust={() => {
+            setBustAsk(null);
+            onBust();
+          }}
+          onKeep={() => setBustAsk(null)}
+        />
       )}
     </div>
   );
@@ -222,5 +267,31 @@ function NextButton({ label, onClick }: { label: string; onClick: () => void }) 
         <path d="M9 6l6 6-6 6" />
       </svg>
     </button>
+  );
+}
+
+/** A second copy of a number card: bust, or a Second Chance saved it (FR-8 AC-2). */
+function BustAsk({ name, card, onBust, onKeep }: { name: string; card: number; onBust: () => void; onKeep: () => void }) {
+  useShortcuts(
+    'Bust?',
+    [
+      { keys: 'B or Enter', label: 'Bust', match: (e) => key('b')(e) || key('Enter')(e), run: onBust },
+      { keys: 'Esc', label: 'Not a bust, remove card', match: isEscape, run: onKeep },
+    ],
+    { modal: true },
+  );
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-6" onClick={onKeep}>
+      <div role="alertdialog" aria-modal="true" aria-label="Bust?" className="flex w-full max-w-sm flex-col gap-3 rounded-[24px] bg-bg p-5 ring-1 ring-border" onClick={(e) => e.stopPropagation()}>
+        <h2 className="m-0 text-xl font-extrabold">Bust?</h2>
+        <p className="m-0 text-[15px] leading-snug text-text-2">
+          {name} already has a {card}. A second one is a bust, unless a Second Chance card saved it.
+        </p>
+        <Button onClick={onBust}>Bust</Button>
+        <Button variant="outline" onClick={onKeep}>
+          Not a bust, remove card
+        </Button>
+      </div>
+    </div>
   );
 }

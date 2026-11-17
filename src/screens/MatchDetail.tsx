@@ -9,7 +9,7 @@ import { NotesIcon, PencilIcon } from '../components/Icons';
 import { NoWrap } from '../components/NoWrap';
 import { Avatar } from '../components/PlayerPill';
 import { db } from '../db/schema';
-import { getMatchBundle } from '../db/repos/matches';
+import { getMatchBundle, type MatchBundle } from '../db/repos/matches';
 import { COLOR_HEX } from '../domain/colors';
 import { endTime } from '../domain/history';
 import { ordinal } from '../domain/placement';
@@ -43,6 +43,25 @@ export function MatchDetail() {
     <GameScreen>
       <GameHeader title={game.name} sub={date} backTo="/history" />
       <main className="flex flex-1 flex-col gap-4 px-4 pb-6">
+        <DetailContent bundle={bundle} />
+      </main>
+      <BottomToolbar>
+        <ToolButton icon={<NotesIcon />} label="Notes" onClick={() => setNotes(true)} />
+        <PrimaryToolButton icon={<PencilIcon />} onClick={() => navigate(`/history/${match.id}/edit`)}>
+          Edit scores
+        </PrimaryToolButton>
+      </BottomToolbar>
+      {notes && <NotesSheet match={match} onClose={() => setNotes(false)} />}
+    </GameScreen>
+  );
+}
+
+/** The players, tiles and notes of a finished game: the page above, and History's side pane in landscape. */
+function DetailContent({ bundle }: { bundle: MatchBundle }) {
+  const { match } = bundle;
+  const game = requireGame(match.gameKey);
+  return (
+    <>
         <ul className="m-0 flex list-none flex-col gap-2 p-0" aria-label="Players">
           {rankedSeats(bundle).map((s) => (
             <li
@@ -90,14 +109,39 @@ export function MatchDetail() {
             {match.notes || <span className="text-text-2">No notes.</span>}
           </p>
         </section>
-      </main>
-      <BottomToolbar>
-        <ToolButton icon={<NotesIcon />} label="Notes" onClick={() => setNotes(true)} />
-        <PrimaryToolButton icon={<PencilIcon />} onClick={() => navigate(`/history/${match.id}/edit`)}>
+    </>
+  );
+}
+
+/** NFR-3 landscape: the detail beside the History list. */
+export function MatchDetailPanel({ matchId }: { matchId: string }) {
+  const navigate = useNavigate();
+  const bundle = useLiveQuery(() => getMatchBundle(db, matchId), [matchId]);
+  const [notes, setNotes] = useState(false);
+  if (!bundle || bundle.match.status !== 'finished') return null;
+  const { match } = bundle;
+  const game = requireGame(match.gameKey);
+  const date = new Date(endTime(bundle)).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+  return (
+    <section className="flex flex-col gap-4" aria-label="Game detail">
+      <div className="flex items-center gap-3">
+        <div className="flex min-w-0 flex-1 flex-col">
+          <NoWrap as="h2" truncate className="m-0 text-[22px] leading-tight font-extrabold">
+            {game.name}
+          </NoWrap>
+          <NoWrap truncate className="text-[14px] text-text-2">
+            {date}
+          </NoWrap>
+        </div>
+        <Button variant="secondary" icon={<NotesIcon />} onClick={() => setNotes(true)}>
+          Notes
+        </Button>
+        <Button icon={<PencilIcon />} onClick={() => navigate(`/history/${match.id}/edit`)}>
           Edit scores
-        </PrimaryToolButton>
-      </BottomToolbar>
+        </Button>
+      </div>
+      <DetailContent bundle={bundle} />
       {notes && <NotesSheet match={match} onClose={() => setNotes(false)} />}
-    </GameScreen>
+    </section>
   );
 }

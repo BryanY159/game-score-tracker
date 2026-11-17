@@ -3,8 +3,13 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { useNavigate, useParams } from 'react-router-dom';
 import { BottomToolbar } from '../components/BottomToolbar';
 import { Button } from '../components/Button';
-import { GameBody, GameHeader, GameScreen, PrimaryToolButton, TimerChip, ToolButton } from '../components/GameChrome';
-import { PausedOverlay, PauseButton, useGameControls } from '../components/GameControls';
+import { GameBody, GameHeader, GameScreen, PrimaryToolButton, ScoreRow, TimerChip, ToolButton, TwoPaneGame } from '../components/GameChrome';
+import { useLandscape } from '../hooks/useLandscape';
+import { Avatar } from '../components/PlayerPill';
+import { COLOR_HEX } from '../domain/colors';
+import { ordinal } from '../domain/placement';
+import { NoWrap } from '../components/NoWrap';
+import { PausedOverlay, PauseButton, useGameControls, useGameShortcuts } from '../components/GameControls';
 import { MoreIcon, NotesIcon, UndoIcon } from '../components/Icons';
 import { db } from '../db/schema';
 import { appendEvent, getMatchBundle, undoLastEvent, type MatchBundle } from '../db/repos/matches';
@@ -66,6 +71,13 @@ function PlacementScoring({ bundle }: { bundle: MatchBundle }) {
     wasComplete.current = outcome.complete;
   }, [outcome.complete, match.id, navigate]);
 
+  useGameShortcuts(game.name, match, {
+    back: () => (ending ? setEnding(false) : void controls.exitToHome()),
+    undo: { run: () => void undoLastEvent(db, match.id), enabled: match.log.length > 0 && !ending },
+  });
+
+  const land = useLandscape();
+
   if (ending && monopoly) {
     return (
       <EndEarly
@@ -80,8 +92,8 @@ function PlacementScoring({ bundle }: { bundle: MatchBundle }) {
     );
   }
 
-  return (
-    <GameScreen>
+  const pState = monopoly ? null : parcheesiState(ids, match.log);
+  const header = (
       <GameHeader
         title={game.name}
         sub={monopoly ? `${monopoly.remaining.length} still playing` : 'Pawns home'}
@@ -92,8 +104,9 @@ function PlacementScoring({ bundle }: { bundle: MatchBundle }) {
           </TimerChip>
         }
       />
-      <GameBody className="gap-3 px-4 pt-2 pb-4">
-        <PausedOverlay match={match} />
+  );
+  const board = (
+    <>
         {monopoly ? (
           <MonopolyBoard
             seats={seats}
@@ -117,12 +130,16 @@ function PlacementScoring({ bundle }: { bundle: MatchBundle }) {
             onTripleDoublets={(playerId, delta) => appendEvent(db, match.id, { type: 'tripleDoublets', playerId, delta })}
           />
         )}
+    </>
+  );
+  const note = (
         <p className="m-0 rounded-2xl border-[1.5px] border-border px-3.5 py-3 text-[14px] leading-snug text-text-2">
           {monopoly
             ? 'Tap Bankrupt when a player is out. The last player left wins. End game ranks everyone left by net worth.'
             : 'When a 4th pawn gets home, that player gets the next place. The last player left is placed automatically.'}
         </p>
-      </GameBody>
+  );
+  const toolbar = (
       <BottomToolbar>
         <ToolButton icon={<UndoIcon />} label="Undo" disabled={match.log.length === 0 || paused} onClick={() => undoLastEvent(db, match.id)} />
         <ToolButton icon={<NotesIcon />} label="Notes" onClick={controls.openNotes} />
@@ -137,7 +154,68 @@ function PlacementScoring({ bundle }: { bundle: MatchBundle }) {
         )}
         <ToolButton icon={<MoreIcon />} label="More" onClick={controls.openMore} />
       </BottomToolbar>
+  );
+  const sheets = (
+    <>
       {controls.element}
+    </>
+  );
+
+  if (land) {
+    // Left: who's placed and who's still playing. Right: the per-player controls.
+    const rows = seats
+      .map((s) => {
+        const m = monopoly?.players.find((p) => p.playerId === s.player.id);
+        const p = pState?.players.find((x) => x.playerId === s.player.id);
+        const place = m?.placement ?? p?.placement ?? null;
+        return { s, place, value: monopoly ? (place ? ordinal(place) : 'In') : place ? ordinal(place) : `${p!.pawnsHome}/4`, detail: monopoly ? (m!.bankruptAt !== null ? 'Bankrupt' : 'Playing') : undefined };
+      })
+      .sort((a, b) => (a.place ?? 99) - (b.place ?? 99));
+    return (
+      <TwoPaneGame
+        header={header}
+        overlay={<PausedOverlay match={match} />}
+        rightWidth={720}
+        left={
+          <>
+            <div className="flex justify-between px-2 text-[13px] text-text-2">
+              <NoWrap>Standings</NoWrap>
+              <NoWrap>{monopoly ? 'Place' : 'Pawns · Place'}</NoWrap>
+            </div>
+            <ul className="m-0 flex list-none flex-col gap-2 p-0">
+              {rows.map((r) => (
+                <ScoreRow
+                  key={r.s.mp.id}
+                  color={COLOR_HEX[r.s.mp.color]}
+                  avatar={<Avatar emoji={r.s.player.emoji} size={36} />}
+                  name={r.s.player.name}
+                  detail={r.detail}
+                  value={r.value}
+                  valueLabel={`${r.s.player.name} standing`}
+                  dim={r.detail === 'Bankrupt'}
+                />
+              ))}
+            </ul>
+            {note}
+          </>
+        }
+        right={board}
+        toolbar={toolbar}
+        after={sheets}
+      />
+    );
+  }
+
+  return (
+    <GameScreen>
+      {header}
+      <GameBody className="gap-3 px-4 pt-2 pb-4">
+        <PausedOverlay match={match} />
+        {board}
+        {note}
+      </GameBody>
+      {toolbar}
+      {sheets}
     </GameScreen>
   );
 }

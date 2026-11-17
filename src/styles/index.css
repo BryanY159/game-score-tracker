@@ -142,3 +142,13 @@
 .fade-up {
   animation: fade-up 0.4s ease-out both;
 }
+
+/*
+ * FR-20 AC-5: a visible focus ring for keyboard focus. Unlayered, so it wins
+ * over `outline-none` utilities. Text fields keep their own focus look, and
+ * containers focused by code (sheets) get none.
+ */
+:where(button, a[href], summary, [role='button'], [role='tab'], [role='switch'], [tabindex]:not([tabindex='-1'])):focus-visible {
+  outline: 3px solid var(--text);
+  outline-offset: 2px;
+}
