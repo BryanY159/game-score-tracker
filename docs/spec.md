@@ -248,9 +248,15 @@ What goes in `details` depends on the game:
 | C-4 | The official Flip 7 and Dutch Blitz tie rules haven't been confirmed | Confirm them before building FR-11. Until then, ties go to the tie screen. |
 | C-5 | Flip 7 is officially for 3 or more players | Owner allows 2 players under the standard rules |
 | C-6 | Free GitHub Pages hosting needs a public repository on a free GitHub plan | Owner accepted a public repo. User data is never stored in it. |
-| C-7 | The Flip 7 ×2 rule is assumed to double number cards only, not modifiers | Confirm against the rulebook before building FR-8 |
+| C-7 | The Flip 7 ×2 rule is assumed to double number cards only, not modifiers | Confirmed by owner 2026-11-17: ×2 doubles number cards only |
 
 ## 9. Resolved questions
 
 1. Stats appear after 5 games of a given game (FR-14 AC-3 default), and the number can be changed in Settings.
 2. A public GitHub repo is acceptable (C-6).
+3. The ×2 card in Flip 7 doubles number cards only, not modifiers (C-7, confirmed 2026-11-17).
+4. A shared win among k players counts as 1/k of a win for each of them in win % (2026-11-17).
+5. "Fewest rounds to 200" (FR-8 AC-5, FR-14 AC-5) counts only players whose target was 200, grouped by player count (2026-11-17).
+6. The overall win comparison (FR-14 AC-1) is the average of a player's per-game win %, over games where they've reached the minimum (2026-11-17).
+7. NFR-2 means one entry per player plus a confirm. Tapping a stepper's value opens the number pad (2026-11-17).
+8. The player-range override (FR-3 AC-1) can't exceed the colors available: Parcheesi 4, Ticket to Ride 5, all others 8 (2026-11-17).

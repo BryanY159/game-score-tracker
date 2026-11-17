@@ -2,13 +2,13 @@
 
 - **Source:** `docs/spec.md` (approved 2026-11-16), `docs/intent.md`, `docs/mockup/*.dc.html`
 - **Date:** 2026-11-17
-- **Status:** Draft for owner review
+- **Status:** Reviewed by owner 2026-11-17. Decisions A-1, A-2, A-4, A-5, A-6, A-12 and R-1 settled (marked ✅).
 
 ## 0. How to read this plan
 
 - There are 13 milestones (M0 to M12). Each one is a single branch and a single PR, and each leaves the app **installable and usable on an iPhone** before the next one starts.
 - Every milestone lists the files it creates or changes, the order of work, the FRs and NFRs it covers, and the tests that prove it.
-- Every PR has to pass the **Definition of done** in §4. Items in §1 marked **⚠ Decision needed** must be settled before the milestone that depends on them.
+- Every PR has to pass the **Definition of done** in §4. Items in §1 marked ✅ were settled by the owner. The remaining proposed defaults stand unless the owner overrules them.
 
 ---
 
@@ -20,18 +20,18 @@ Each issue has a proposed default. I'll build to the default unless the owner ov
 
 | ID | Issue | Proposed default | Blocks |
 | --- | --- | --- | --- |
-| A-1 ⚠ | **The neutral and dark-mode tokens are missing from §6.** CLAUDE.md says "tokens from spec §6 only", but §6 only says "white / near-black" and "neutral charcoal". The mockups use `#1F2430` (charcoal text and buttons), `#5F6470` (secondary text), `#E4E6EA` (borders), `#F2F3F5` (surfaces) and `#1E3A8A` (link hover). The mockups are light-only, so no dark values are given. | Add a neutral token table to §6 using the mockup values, plus dark equivalents (bg `#0B0B0D`, surface `#1C1C1E`, border `#2C2C2E`, text `#F2F3F5`, secondary `#A1A1AA`, charcoal button `#3A3A3C`). Get owner approval in the M0 PR. | M0 |
-| A-2 ⚠ | **The ×2 card in Flip 7 (C-7)** is still unconfirmed. | Build it as a scoring constant `X2_DOUBLES_MODIFIERS = false` with tests for both readings. Confirm before M8 merges. | M8 |
-| A-3 ⚠ | **Official tie rules for Flip 7 and Dutch Blitz (C-4)** are unconfirmed, yet FR-11 AC-1 already defines margin → total. | Use FR-11 AC-1 as written, then send any remaining tie to the tie screen (AC-3). Treat C-4 as resolved by FR-11 unless the rulebook adds something. | M7 |
-| A-4 | **"Fewest rounds to reach 200" (FR-8 AC-5, FR-14)** is unclear under handicap targets. Does it mean a total of 200, or the player's own target? | Count it only for players whose target was exactly 200, grouped by player count. Use the round in which their total first reached 200 or more. | M8, M10 |
-| A-5 | **"Overall win comparison across all games" (FR-14 AC-1)** has no formula. Pooled win % lets the most-played game dominate, which goes against the intent ("fair, weighted by games played"). | Use the mean of the player's per-game win %, counting only games where they've reached the minimum. Also show a "wins vs expected" figure (actual win rate ÷ the average of 1/N over the games they played) so 2-player and 6-player games compare fairly. | M10 |
-| A-6 | **How shared wins count in stats** isn't defined. | A shared win among k players counts as 1/k of a win for each of them in win %. History shows "Shared win". | M2, M10 |
+| A-1 ✅ | **The neutral and dark-mode tokens are missing from §6.** CLAUDE.md says "tokens from spec §6 only", but §6 only says "white / near-black" and "neutral charcoal". The mockups use `#1F2430` (charcoal text and buttons), `#5F6470` (secondary text), `#E4E6EA` (borders), `#F2F3F5` (surfaces) and `#1E3A8A` (link hover). The mockups are light-only, so no dark values are given. | Add a neutral token table to §6 using the mockup values, plus dark equivalents (bg `#0B0B0D`, surface `#1C1C1E`, border `#2C2C2E`, text `#F2F3F5`, secondary `#A1A1AA`, charcoal button `#3A3A3C`). **Approved.** The table is added to the spec in the M0 PR. | M0 |
+| A-2 ✅ | **The ×2 card in Flip 7 (C-7).** | **Confirmed:** ×2 doubles the number cards only, not the modifiers. | M8 |
+| A-3 | **Official tie rules for Flip 7 and Dutch Blitz (C-4)** are unconfirmed, yet FR-11 AC-1 already defines margin → total. | Use FR-11 AC-1 as written, then send any remaining tie to the tie screen (AC-3). Treat C-4 as resolved by FR-11 unless the rulebook adds something. | M7 |
+| A-4 ✅ | **"Fewest rounds to reach 200" (FR-8 AC-5, FR-14)** is unclear under handicap targets. Does it mean a total of 200, or the player's own target? | Count it only for players whose target was exactly 200, grouped by player count. Use the round in which their total first reached 200 or more. **Approved.** | M8, M10 |
+| A-5 ✅ | **"Overall win comparison across all games" (FR-14 AC-1)** has no formula. Pooled win % lets the most-played game dominate, which goes against the intent ("fair, weighted by games played"). | **Approved:** the mean of the player's per-game win %, counting only games where they've reached the minimum. No "wins vs expected" figure in Phase 1. | M10 |
+| A-6 ✅ | **How shared wins count in stats** isn't defined. | A shared win among k players counts as 1/k of a win for each of them in win %. History shows "Shared win". **Approved.** | M2, M10 |
 | A-7 | **"Average margin" for the placement games** (Parcheesi, Monopoly) is undefined, since they have no scores. Margin is also undefined for Ticket to Ride. | Placement games: average placement only, no margin. Ticket to Ride: winner's score minus runner-up's. Target games: margin past target. | M10 |
 | A-8 | **Head-to-head (FR-14 AC-4)**: it isn't said who "beats" whom in a game with several players. | In any game both played, whoever placed higher gets the H2H win. A shared placement counts as a tie. | M10 |
 | A-9 | **FR-18 AC-3** ("Tapping a number directly opens the iOS number pad") reads as if it conflicts with the custom keypad in AC-2. | Use the custom keypad by default. Tapping the displayed value field focuses a hidden `<input inputmode="numeric">`, which brings up the iOS pad. Both routes write to the same value. | M6 |
 | A-10 | **The Ticket to Ride final round after an edit.** If someone edits a logged turn so the trigger player's trains go back above 2, should the Final Round banner go away? Route buttons longer than the trains left aren't mentioned either. | Work out the final-round state again from the log after every edit. Disable any route length greater than the trains left. | M9 |
 | A-11 | **Editing a finished Ticket to Ride game.** FR-12 AC-2 allows edits from History, but FR-7 AC-8 deletes the turn log. | A finished Ticket to Ride game can only edit the end-game breakdown: route points total, tickets, longest path. | M9 |
-| A-12 | **Player range override against colors.** Ticket to Ride has 5 train colors and Parcheesi has 4 pawn colors, so an override past those limits breaks FR-4 AC-3. The palette also has only 8 colors, but Flip 7 is "2+". | The override can't go past the number of colors available: Parcheesi 4, Ticket to Ride 5, the rest 8. Flip 7's practical maximum is therefore 8. | M2 |
+| A-12 ✅ | **Player range override against colors.** Ticket to Ride has 5 train colors and Parcheesi has 4 pawn colors, so an override past those limits breaks FR-4 AC-3. The palette also has only 8 colors, but Flip 7 is "2+". | The override can't go past the number of colors available: Parcheesi 4, Ticket to Ride 5, the rest 8. Flip 7's practical maximum is therefore 8. **Approved.** | M2 |
 | A-13 | **Screens with no mockup:** tie screen, rounds list and round edit, More menu, pause state, notes sheet, cancel confirm, game detail, profile editor, player merge tool, Monopoly bankrupt and net worth, merge preview, and the 8-player Flip 7 layout. | Design these from existing mockup patterns (pills, charcoal bottom toolbar, sheets), then review them in each PR's screenshots. | various |
 | A-14 | **Recharts has no chart in the mockups.** The Stats mockup uses only bars built from divs. | Use Recharts only for trend charts that come from FR-14 (for example, win % over time per game). Load it lazily on the Stats route so the main bundle stays small. | M10 |
 | A-15 | **Guests' storage.** The model has `Player.isGuest`. | Guests are `Player` rows with `isGuest: true`. They're hidden from the Players screen and pickers, are exported, and are never counted in stats. | M2 |
@@ -41,7 +41,7 @@ Each issue has a proposed default. I'll build to the default unless the owner ov
 
 | ID | Risk | Mitigation |
 | --- | --- | --- |
-| R-1 | **NFR-2 can't be met literally.** Dutch Blitz steppers need one tap per card (for example 12 taps for a Dutch pile of 12), and Flip 7 Number mode needs several digit taps. | Read NFR-2 as "one *entry* per player plus a confirm". Tapping a stepper's value opens the number pad (FR-18 AC-3), so 12 takes 2 taps. ⚠ The owner should confirm this reading. |
+| R-1 | **NFR-2 can't be met literally.** Dutch Blitz steppers need one tap per card (for example 12 taps for a Dutch pile of 12), and Flip 7 Number mode needs several digit taps. | Read NFR-2 as "one *entry* per player plus a confirm". Tapping a stepper's value opens the number pad (FR-18 AC-3), so 12 takes 2 taps. ✅ **Approved by the owner.** |
 | R-2 | **8 players plus a keypad on a 375×667 screen.** Eight 56 px pills is about 500 px, and the Flip 7 keypad takes another ~300 px. | Rounds screen at 8 players: compact pills (still ≥44 pt), a scrolling list, and the keypad as a bottom sheet over the toolbar. The active player auto-scrolls into view. Screenshot it at 375×667 with 8 players. |
 | R-3 | **Fonts in screenshot tests.** SF Pro Rounded isn't on Linux runners, so wrapping in CI won't match the iPhone exactly. | (1) Run Playwright in **WebKit** with a fallback font stack that's at least as wide as SF Rounded. (2) Add an automated `[data-nowrap]` check (§3) on top of the visual review. (3) Spot-check on a real iPhone in each milestone's manual check. |
 | R-4 | **iOS PWA update behavior (FR-1 AC-2).** iOS standalone apps can keep an old service worker running. | `registerType: 'autoUpdate'`, an update check on `visibilitychange`, and a `skipWaiting` reload only when no game screen is active (game state is in IndexedDB anyway). Show the version in Settings so updates can be verified. |
@@ -272,8 +272,6 @@ Pulled early because real data now exists (C-2, R-5).
 
 ### M8 · Flip 7
 
-**Gate:** A-2 (×2 rule) is confirmed before merge.
-
 **Usable result:** play a full Flip 7 game in either entry mode.
 
 **Covers:** FR-8 (AC-1 to AC-5), FR-3 AC-3 (entry mode, changeable mid-game), FR-5 AC-5 (dealer rotation), FR-18 AC-2 (Next player, Bust and Flip 7! keys), A-4, R-2.
@@ -285,7 +283,7 @@ Pulled early because real data now exists (C-2, R-5).
 **Tests:**
 - Vitest:
   - Number mode: score, Bust gives 0, the Flip 7! box adds +15.
-  - Cards mode: sum of numbers, ×2 (both readings behind the constant), modifiers, 7 unique numbers gives +15 and auto-detection, a duplicate tap asks to bust.
+  - Cards mode: sum of numbers, ×2 doubles number cards only, never modifiers (A-2), modifiers, 7 unique numbers gives +15 and auto-detection, a duplicate tap asks to bust.
   - Switching mode mid-game keeps earlier rounds.
   - Dealer rotates every round.
   - flip7Count. Fewest rounds to 200, grouped by player count (A-4).
@@ -335,7 +333,7 @@ Pulled early because real data now exists (C-2, R-5).
   - Hidden players and guests are excluded. Deleted players are kept in history but not in leaderboards.
   - H2H counts only games both played.
   - Each game-specific stat: Parcheesi pawns, Ticket to Ride completion rate and longest-path wins, Flip 7 count, bust rate and fewest rounds, Dutch Blitz rounds, Monopoly length.
-  - The overall formula (A-5).
+  - The overall figure is the mean of per-game win % over eligible games only (A-5).
 - Playwright: Stats for every game, Stats empty or under the minimum, H2H, Players with stats.
 
 ### M11 · Merge import and player merge
