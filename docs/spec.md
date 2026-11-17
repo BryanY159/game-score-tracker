@@ -100,9 +100,10 @@ Each profile has a name, an emoji, a color from the profile palette, and a hide-
 
 ### FR-9 Dutch Blitz (Rounds template)
 
-- AC-1: Each round, every player has two steppers: Dutch pile cards (+1 each) and Blitz pile cards left (−2 each).
+- AC-1: Each round, every player has two steppers: Dutch pile cards (+1 each, 0–40) and Blitz pile cards left (−2 each, 0–10). Tapping a stepper's number opens the number pad. A player with Dutch cards and an empty Blitz pile is marked "Blitz!".
 - AC-2: The round score is shown before confirming. Confirm Round updates the totals.
-- AC-3: The game ends after a round in which any player reaches their target.
+- AC-3: The game ends after a round in which any player reaches their target. Confirming that round opens Results. If editing a past round ends the game, the screen shows a Game over banner instead of leaving.
+- AC-4: Undo reopens the last confirmed round for correction. It's available while the new round is still blank.
 
 ### FR-10 Monopoly (Placement template)
 
@@ -191,11 +192,11 @@ Each profile has a name, an emoji, a color from the profile palette, and a hide-
 | GameDefinition | key, name, template, minPlayers, maxPlayers, defaultTarget, pieceColors, tieBreakers | defined in code |
 | Match | gameKey, status (inProgress / finished / cancelled), startedAt, endedAt, pausedDurationMs, pausedAt, settings, notes, endedEarly, log | has many MatchPlayers and Rounds |
 | MatchPlayer | matchId, playerId, seatOrder, color, target, finalScore, placement, marginPastTarget, isWinner, details (JSON) | belongs to Match and Player |
-| Round | matchId, number, dealerPlayerId, entries (per player: score, raw inputs, flags) | belongs to Match |
+| Round | matchId, number, dealerPlayerId, entries (per player: score, raw inputs, flags), confirmed | belongs to Match |
 | TurnLog | matchId, entries (player, action, routeLength) | Ticket to Ride only, deleted when the game is finalized |
 | Settings | statsMinGames, backupReminder, lastBackupAt | single record |
 
-`Match.log` is the per-game entry log for placement games (Parcheesi pawn steps; Monopoly bankruptcies and the end-early entry, which holds each remaining player's net worth, the final order and how a tie for first was settled), oldest first. The current state is replayed from it, so Undo (FR-5 AC-4) drops the last entry. Rounds games use the Round table instead, and Ticket to Ride uses TurnLog.
+`Match.log` is the per-game entry log for placement games (Parcheesi pawn steps; Monopoly bankruptcies and the end-early entry, which holds each remaining player's net worth, the final order and how a tie for first was settled), oldest first. The current state is replayed from it, so Undo (FR-5 AC-4) drops the last entry. Rounds games use the Round table instead: the round being entered is saved as an unconfirmed Round on every change, and Confirm Round marks it confirmed. Their `Match.log` holds only a tie decision (FR-11 AC-3), which applies while the number of confirmed rounds is unchanged, so editing the rounds asks again if a tie remains. Ticket to Ride uses TurnLog.
 
 What goes in `details` depends on the game:
 

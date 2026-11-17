@@ -15,6 +15,7 @@ import { EndEarly } from '../games/monopoly/EndEarly';
 import { monopolyState } from '../games/monopoly/scoring';
 import { outcomeFor } from '../games/outcome';
 import { requireGame } from '../games/registry';
+import { RoundsScoring } from './RoundsScoring';
 
 /** Loads a game and routes to the right scoring screen. */
 export function PlayMatch() {
@@ -23,6 +24,7 @@ export function PlayMatch() {
   if (bundle === undefined) return null;
   if (bundle === null) return <Gone />;
   if (bundle.match.status !== 'inProgress') return <Gone />;
+  if (requireGame(bundle.match.gameKey).template === 'rounds') return <RoundsScoring bundle={bundle} />;
   return <PlacementScoring bundle={bundle} />;
 }
 

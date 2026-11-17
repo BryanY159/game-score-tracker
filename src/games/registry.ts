@@ -25,7 +25,7 @@ export const GAMES: GameDefinition[] = [
     defaultTarget: 75,
     pieceColors: PALETTE,
     tieBreakers: ['marginPastTarget', 'total'],
-    available: false,
+    available: true,
   },
   {
     key: 'ticketToRide',

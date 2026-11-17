@@ -2,6 +2,9 @@ import type { MatchBundle, Seat, SeatResult } from '../db/repos/matches';
 import type { MatchEvent } from '../domain/types';
 import { completedAt, parcheesiResults, parcheesiState } from './parcheesi/scoring';
 import { formatMoney, monopolyResults, monopolyState } from './monopoly/scoring';
+import { reachedTarget, totals } from './dutchBlitz/scoring';
+import { rankTargetGame, signed, type TieDecision } from '../domain/targets';
+import { requireGame } from './registry';
 
 export interface OutcomeRow {
   seat: Seat;
@@ -9,6 +12,8 @@ export interface OutcomeRow {
   isWinner: boolean;
   /** Main per-player value, e.g. "4 home", "3,400". */
   value: string;
+  /** Second line in target games, e.g. "+12 · to 250". */
+  detail?: string;
 }
 
 /** A game's result, computed from its entries: shared by Results, editing and history. */
@@ -20,11 +25,66 @@ export interface Outcome {
   /** Line under "X wins". */
   subtitle: string;
   results: SeatResult[];
+  /** Players still tied for first with no decision yet (FR-11 AC-3); Finalize waits for one. */
+  tie: Seat[];
+  /** Confirmed rounds (rounds games). */
+  roundCount: number;
 }
 
-export function outcomeFor(b: MatchBundle, log: MatchEvent[] = b.match.log): Outcome {
+/** The tie decision that still applies: made after the same number of confirmed rounds. */
+export function currentTieDecision(log: MatchEvent[], rounds: number): TieDecision | null {
+  for (let i = log.length - 1; i >= 0; i--) {
+    const e = log[i]!;
+    if (e.type === 'tieDecision') return e.rounds === rounds ? e.decision : null;
+  }
+  return null;
+}
+
+export function outcomeFor(b: MatchBundle, log: MatchEvent[] = b.match.log, rounds = b.rounds): Outcome {
   const ids = b.seats.map((s) => ({ matchPlayerId: s.mp.id, playerId: s.player.id }));
   const seatOf = (playerId: string) => b.seats.find((s) => s.player.id === playerId)!;
+
+  if (requireGame(b.match.gameKey).template === 'rounds') {
+    const game = requireGame(b.match.gameKey);
+    const confirmed = rounds.filter((r) => r.confirmed);
+    const tot = totals(
+      b.seats.map((s) => s.player.id),
+      confirmed,
+    );
+    const targets = Object.fromEntries(b.seats.map((s) => [s.player.id, s.mp.target ?? game.defaultTarget ?? 0]));
+    const over = confirmed.length > 0 && reachedTarget(tot, targets);
+    const ranking = rankTargetGame(
+      b.seats.map((s) => ({ playerId: s.player.id, total: tot[s.player.id] ?? 0, target: targets[s.player.id]! })),
+      currentTieDecision(log, confirmed.length),
+    );
+    const rows = ranking.rows.map((r) => ({
+      seat: seatOf(r.playerId),
+      place: r.place,
+      isWinner: r.isWinner,
+      value: String(r.total),
+      detail: `${signed(r.margin)} · to ${r.target}`,
+    }));
+    const winners = ranking.rows.filter((r) => r.isWinner);
+    const lead = winners[0] ?? ranking.rows[0];
+    const last = confirmed[confirmed.length - 1];
+    return {
+      complete: over,
+      endedAt: over && last ? last.updatedAt : null,
+      endedEarly: false,
+      subtitle: lead ? `${signed(lead.margin)} past target · ${lead.total} points` : '',
+      rows,
+      tie: over ? ranking.unresolvedTie.map(seatOf) : [],
+      roundCount: confirmed.length,
+      results: ranking.rows.map((r) => ({
+        matchPlayerId: seatOf(r.playerId).mp.id,
+        placement: r.place,
+        finalScore: r.total,
+        marginPastTarget: r.margin,
+        isWinner: r.isWinner,
+        details: {},
+      })),
+    };
+  }
 
   if (b.match.gameKey === 'monopoly') {
     const st = monopolyState(
@@ -45,6 +105,8 @@ export function outcomeFor(b: MatchBundle, log: MatchEvent[] = b.match.log): Out
         })),
       ),
       results: monopolyResults(ids, log),
+      tie: [],
+      roundCount: 0,
     };
   }
 
@@ -66,6 +128,8 @@ export function outcomeFor(b: MatchBundle, log: MatchEvent[] = b.match.log): Out
       })),
     ),
     results: parcheesiResults(ids, log),
+    tie: [],
+    roundCount: 0,
   };
 }
 

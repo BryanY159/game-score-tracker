@@ -93,7 +93,7 @@ export function PrimaryToolButton({
       {...rest}
     >
       {icon}
-      <NoWrap truncate>{children}</NoWrap>
+      <NoWrap>{children}</NoWrap>
     </button>
   );
 }

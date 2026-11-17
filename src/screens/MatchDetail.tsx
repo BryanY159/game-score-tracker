@@ -14,7 +14,7 @@ import { COLOR_HEX } from '../domain/colors';
 import { endTime } from '../domain/history';
 import { ordinal } from '../domain/placement';
 import { elapsedMs, formatLength } from '../domain/timer';
-import { rankedSeats, seatValue } from '../games/display';
+import { rankedSeats, seatDetail, seatValue } from '../games/display';
 import { requireGame } from '../games/registry';
 import { Tile } from './Results';
 
@@ -64,6 +64,7 @@ export function MatchDetail() {
                     s.mp.isWinner ? 'Winner' : null,
                     s.player.deletedAt !== null ? 'deleted profile' : null,
                     s.player.isGuest ? 'guest' : null,
+                    seatDetail(bundle, s),
                   ]
                     .filter(Boolean)
                     .join(' · ')}
@@ -76,7 +77,11 @@ export function MatchDetail() {
 
         <div className="grid grid-cols-2 gap-2">
           <Tile label="Length" value={formatLength(elapsedMs(match))} />
-          <Tile label="Players" value={String(bundle.seats.length)} />
+          {game.template === 'rounds' ? (
+            <Tile label="Rounds" value={String(bundle.rounds.filter((r) => r.confirmed).length)} />
+          ) : (
+            <Tile label="Players" value={String(bundle.seats.length)} />
+          )}
         </div>
 
         <section className="flex flex-col gap-1.5">
