@@ -8,6 +8,10 @@ import {
   finalizeMatch,
   getMatchBundle,
   listInProgress,
+  listRecentFinished,
+  pauseMatch,
+  resumeMatch,
+  setNotes,
   undoLastEvent,
 } from './matches';
 
@@ -99,5 +103,38 @@ describe('matches repo', () => {
       [2, false, { pawnsHome: 1 }],
     ]);
     expect(await listInProgress(db)).toEqual([]);
+  });
+});
+
+describe('game lifecycle (FR-5)', () => {
+  it('pause stops the clock and the paused time is left out (AC-1)', async () => {
+    const { match } = await twoPlayerGame(); // started at 5000
+    await pauseMatch(db, match.id, 65_000);
+    await pauseMatch(db, match.id, 70_000); // already paused: no change
+    await resumeMatch(db, match.id, 125_000);
+    await pauseMatch(db, match.id, 185_000);
+    await resumeMatch(db, match.id, 205_000);
+    const m = (await db.matches.get(match.id))!;
+    expect(m.pausedAt).toBeNull();
+    expect(m.pausedDurationMs).toBe(80_000);
+    const { elapsedMs } = await import('../../domain/timer');
+    expect(elapsedMs(m, 305_000)).toBe(300_000 - 80_000);
+  });
+
+  it('keeps notes (AC-6)', async () => {
+    const { match } = await twoPlayerGame();
+    await setNotes(db, match.id, 'Doubles roll again');
+    expect((await db.matches.get(match.id))!.notes).toBe('Doubles roll again');
+  });
+
+  it('lists recent finished games, newest first, skipping cancelled', async () => {
+    const a = (await twoPlayerGame()).match;
+    const b = await createMatch(db, 'parcheesi', [{ playerId: null, emoji: '🙂', color: 'red' }], {}, 6000);
+    const c = await createMatch(db, 'parcheesi', [{ playerId: null, emoji: '🙂', color: 'red' }], {}, 7000);
+    await finalizeMatch(db, a.id, [], 10_000);
+    await finalizeMatch(db, b.id, [], 20_000);
+    await cancelMatch(db, c.id);
+    expect((await listRecentFinished(db, 5)).map((x) => x.match.id)).toEqual([b.id, a.id]);
+    expect(await listRecentFinished(db, 1)).toHaveLength(1);
   });
 });

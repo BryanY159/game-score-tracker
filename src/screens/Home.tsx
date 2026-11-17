@@ -3,19 +3,24 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/Button';
 import { PlusIcon } from '../components/Icons';
 import { NoWrap } from '../components/NoWrap';
+import { Avatar } from '../components/PlayerPill';
 import { EmptyState, ScreenHeader } from '../components/Screen';
 import { db } from '../db/schema';
-import { getMatchBundle, listInProgress } from '../db/repos/matches';
+import { getMatchBundle, listInProgress, listRecentFinished, type MatchBundle } from '../db/repos/matches';
 import { COLOR_HEX } from '../domain/colors';
-import { elapsedMs, formatLength } from '../domain/timer';
+import { relativeDay } from '../domain/dates';
+import { resultLine } from '../domain/summary';
+import { progressLine } from '../games/progress';
 import { requireGame } from '../games/registry';
 
 export function Home() {
   const navigate = useNavigate();
   const inProgress = useLiveQuery(async () => {
     const matches = await listInProgress(db);
-    return Promise.all(matches.map((m) => getMatchBundle(db, m.id)));
+    const bundles = await Promise.all(matches.map((m) => getMatchBundle(db, m.id)));
+    return bundles.filter((b): b is MatchBundle => b !== null);
   }, []);
+  const recent = useLiveQuery(() => listRecentFinished(db, 3), []);
 
   return (
     <>
@@ -28,15 +33,15 @@ export function Home() {
         {inProgress && inProgress.length > 0 && (
           <section className="flex flex-col gap-2">
             <h2 className="m-0 text-[17px] font-extrabold">In progress</h2>
-            {inProgress.map((b) =>
-              b ? (
+            <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+              {inProgress.map((b) => (
                 <div key={b.match.id} className="flex items-center gap-3 rounded-[20px] border-[1.5px] border-border p-3.5">
                   <div className="flex min-w-0 flex-1 flex-col gap-1.5">
                     <NoWrap truncate className="text-[17px] font-extrabold">
                       {requireGame(b.match.gameKey).name}
                     </NoWrap>
                     <NoWrap truncate className="text-[14px] text-text-2">
-                      {formatLength(elapsedMs(b.match))}
+                      {progressLine(b)}
                     </NoWrap>
                     <div className="flex gap-1" aria-label="Players">
                       {b.seats.map((s) => (
@@ -55,13 +60,42 @@ export function Home() {
                     Resume
                   </Button>
                 </div>
-              ) : null,
-            )}
+              ))}
+            </div>
+          </section>
+        )}
+
+        {recent && recent.length > 0 && (
+          <section className="flex flex-col gap-1">
+            <h2 className="m-0 text-[17px] font-extrabold">Recent games</h2>
+            <ul className="m-0 list-none p-0">
+              {recent.map((b) => {
+                const winner = b.seats.find((s) => s.mp.isWinner) ?? b.seats[0];
+                return (
+                  <li key={b.match.id} className="flex h-[60px] items-center gap-3 border-b border-border last:border-b-0">
+                    {winner && (
+                      <span className="rounded-full" style={{ background: COLOR_HEX[winner.mp.color] }}>
+                        <Avatar emoji={winner.player.emoji} size={36} />
+                      </span>
+                    )}
+                    <div className="flex min-w-0 flex-1 flex-col">
+                      <NoWrap truncate className="text-base font-bold">
+                        {requireGame(b.match.gameKey).name}
+                      </NoWrap>
+                      <NoWrap truncate className="text-[13px] text-text-2">
+                        {resultLine(b)}
+                      </NoWrap>
+                    </div>
+                    <NoWrap className="text-[13px] text-text-2">{relativeDay(b.match.endedAt ?? b.match.updatedAt)}</NoWrap>
+                  </li>
+                );
+              })}
+            </ul>
           </section>
         )}
       </div>
-      {inProgress?.length === 0 && (
-        <EmptyState title="Ready when you are" body="Start a new game. Finished games show up in History." />
+      {inProgress?.length === 0 && recent?.length === 0 && (
+        <EmptyState title="Ready when you are" body="Start a new game. Finished games show up here and in History." />
       )}
     </>
   );

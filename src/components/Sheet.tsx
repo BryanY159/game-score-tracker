@@ -7,7 +7,9 @@ export function Sheet({
   onClose,
   children,
   footer,
+  closeLabel = 'Cancel',
 }: {
+  closeLabel?: string;
   title: string;
   onClose: () => void;
   children: ReactNode;
@@ -41,7 +43,7 @@ export function Sheet({
             onClick={onClose}
             className="h-11 shrink-0 rounded-[22px] bg-surface px-4 text-[15px] font-extrabold text-text"
           >
-            <NoWrap>Cancel</NoWrap>
+            <NoWrap>{closeLabel}</NoWrap>
           </button>
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-4">{children}</div>

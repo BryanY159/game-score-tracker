@@ -3,7 +3,8 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { BottomToolbar } from '../components/BottomToolbar';
 import { GameScreen, PrimaryToolButton, ToolButton } from '../components/GameChrome';
-import { CheckIcon, PencilIcon } from '../components/Icons';
+import { CheckIcon, NotesIcon, PencilIcon } from '../components/Icons';
+import { useGameControls } from '../components/GameControls';
 import { NoWrap } from '../components/NoWrap';
 import { Avatar } from '../components/PlayerPill';
 import { Podium, type PodiumEntry } from '../components/Podium';
@@ -30,6 +31,7 @@ function ParcheesiResults({ bundle }: { bundle: MatchBundle }) {
   const navigate = useNavigate();
   const game = requireGame(match.gameKey);
   const [saving, setSaving] = useState(false);
+  const controls = useGameControls(match);
   const state = parcheesiState(
     seats.map((s) => s.player.id),
     match.log,
@@ -99,10 +101,12 @@ function ParcheesiResults({ bundle }: { bundle: MatchBundle }) {
       </main>
       <BottomToolbar>
         <ToolButton icon={<PencilIcon />} label="Edit scores" onClick={() => navigate(`/play/${match.id}`)} />
+        <ToolButton icon={<NotesIcon />} label="Notes" onClick={controls.openNotes} />
         <PrimaryToolButton icon={<CheckIcon />} disabled={saving} onClick={finalize}>
           Finalize
         </PrimaryToolButton>
       </BottomToolbar>
+      {controls.element}
     </GameScreen>
   );
 }

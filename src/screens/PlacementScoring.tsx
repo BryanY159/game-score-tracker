@@ -1,16 +1,15 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useNavigate, useParams } from 'react-router-dom';
 import { BottomToolbar } from '../components/BottomToolbar';
 import { Button } from '../components/Button';
-import { ConfirmDialog } from '../components/ConfirmDialog';
-import { GameHeader, GameScreen, PrimaryToolButton, TimerChip, ToolButton } from '../components/GameChrome';
-import { MinusIcon, MoreIcon, PlusIcon, UndoIcon } from '../components/Icons';
+import { GameBody, GameHeader, GameScreen, PrimaryToolButton, TimerChip, ToolButton } from '../components/GameChrome';
+import { PausedOverlay, PauseButton, useGameControls } from '../components/GameControls';
+import { MinusIcon, MoreIcon, NotesIcon, PlusIcon, UndoIcon } from '../components/Icons';
 import { NoWrap } from '../components/NoWrap';
 import { Avatar } from '../components/PlayerPill';
-import { Sheet } from '../components/Sheet';
 import { db } from '../db/schema';
-import { appendEvent, cancelMatch, getMatchBundle, undoLastEvent, type MatchBundle } from '../db/repos/matches';
+import { appendEvent, getMatchBundle, undoLastEvent, type MatchBundle } from '../db/repos/matches';
 import { COLOR_HEX } from '../domain/colors';
 import { ordinal } from '../domain/placement';
 import { requireGame } from '../games/registry';
@@ -48,8 +47,8 @@ function ParcheesiScoring({ bundle }: { bundle: MatchBundle }) {
     seats.map((s) => s.player.id),
     match.log,
   );
-  const [more, setMore] = useState(false);
-  const [confirmCancel, setConfirmCancel] = useState(false);
+  const controls = useGameControls(match);
+  const paused = match.pausedAt !== null;
 
   // When the last place is decided by a tap here, go straight to Results (FR-6 AC-3).
   const wasComplete = useRef(state.complete);
@@ -63,8 +62,18 @@ function ParcheesiScoring({ bundle }: { bundle: MatchBundle }) {
 
   return (
     <GameScreen>
-      <GameHeader title={game.name} sub="Pawns home" trailing={<TimerChip match={match} />} />
-      <main className="flex flex-1 flex-col gap-3 px-4 pt-2 pb-4">
+      <GameHeader
+        title={game.name}
+        sub="Pawns home"
+        onBack={controls.saveAndExit}
+        trailing={
+          <TimerChip match={match}>
+            <PauseButton match={match} />
+          </TimerChip>
+        }
+      />
+      <GameBody className="gap-3 px-4 pt-2 pb-4">
+        <PausedOverlay match={match} />
         <ul className="m-0 grid list-none grid-cols-1 gap-3 p-0 md:grid-cols-2">
           {seats.map(({ player, mp }) => {
             const p = state.players.find((x) => x.playerId === player.id)!;
@@ -125,36 +134,22 @@ function ParcheesiScoring({ bundle }: { bundle: MatchBundle }) {
         <p className="m-0 rounded-2xl border-[1.5px] border-border px-3.5 py-3 text-[14px] leading-snug text-text-2">
           When a 4th pawn gets home, that player gets the next place. The last player left is placed automatically.
         </p>
-      </main>
+      </GameBody>
       <BottomToolbar>
-        <ToolButton icon={<UndoIcon />} label="Undo" disabled={match.log.length === 0} onClick={() => undoLastEvent(db, match.id)} />
-        <PrimaryToolButton disabled={!state.complete} onClick={() => navigate(`/play/${match.id}/results`)}>
+        <ToolButton
+          icon={<UndoIcon />}
+          label="Undo"
+          disabled={match.log.length === 0 || paused}
+          onClick={() => undoLastEvent(db, match.id)}
+        />
+        <ToolButton icon={<NotesIcon />} label="Notes" onClick={controls.openNotes} />
+        <PrimaryToolButton disabled={!state.complete || paused} onClick={() => navigate(`/play/${match.id}/results`)}>
           See results
         </PrimaryToolButton>
-        <ToolButton icon={<MoreIcon />} label="More" onClick={() => setMore(true)} />
+        <ToolButton icon={<MoreIcon />} label="More" onClick={controls.openMore} />
       </BottomToolbar>
+      {controls.element}
 
-      {more && (
-        <Sheet title="Game options" onClose={() => setMore(false)}>
-          <div className="flex flex-col gap-2">
-            <Button variant="outline" onClick={() => setConfirmCancel(true)}>
-              Cancel game
-            </Button>
-          </div>
-        </Sheet>
-      )}
-      {confirmCancel && (
-        <ConfirmDialog
-          title="Cancel this game?"
-          body="It will be discarded and won't appear in history."
-          confirmLabel="Discard"
-          onCancel={() => setConfirmCancel(false)}
-          onConfirm={async () => {
-            await cancelMatch(db, match.id);
-            navigate('/', { replace: true });
-          }}
-        />
-      )}
     </GameScreen>
   );
 }

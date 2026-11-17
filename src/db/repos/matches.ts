@@ -179,3 +179,41 @@ export async function listInProgress(db: ScoreDb): Promise<Match[]> {
   const all = await db.matches.where('status').equals('inProgress').toArray();
   return all.filter((m) => m.deletedAt === null).sort((a, b) => b.updatedAt - a.updatedAt);
 }
+
+/** FR-5 AC-1: pause stops the clock. */
+export async function pauseMatch(db: ScoreDb, matchId: string, now: number = Date.now()): Promise<void> {
+  await db.transaction('rw', db.matches, async () => {
+    const m = await db.matches.get(matchId);
+    if (!m || m.status !== 'inProgress' || m.pausedAt !== null) return;
+    await db.matches.put(touch(m, { pausedAt: now }, now));
+  });
+}
+
+/** Resume: the paused stretch is added to pausedDurationMs, so it's left out of the game length. */
+export async function resumeMatch(db: ScoreDb, matchId: string, now: number = Date.now()): Promise<void> {
+  await db.transaction('rw', db.matches, async () => {
+    const m = await db.matches.get(matchId);
+    if (!m || m.pausedAt === null) return;
+    const paused = Math.max(0, now - m.pausedAt);
+    await db.matches.put(touch(m, { pausedAt: null, pausedDurationMs: m.pausedDurationMs + paused }, now));
+  });
+}
+
+/** FR-5 AC-6: free-text notes, e.g. house rules. */
+export async function setNotes(db: ScoreDb, matchId: string, notes: string, now: number = Date.now()): Promise<void> {
+  await db.transaction('rw', db.matches, async () => {
+    const m = await db.matches.get(matchId);
+    if (!m || m.notes === notes) return;
+    await db.matches.put(touch(m, { notes }, now));
+  });
+}
+
+/** Most recently finished games, newest first. */
+export async function listRecentFinished(db: ScoreDb, limit: number): Promise<MatchBundle[]> {
+  const finished = (await db.matches.where('status').equals('finished').toArray())
+    .filter((m) => m.deletedAt === null)
+    .sort((a, b) => (b.endedAt ?? 0) - (a.endedAt ?? 0))
+    .slice(0, limit);
+  const bundles = await Promise.all(finished.map((m) => getMatchBundle(db, m.id)));
+  return bundles.filter((b): b is MatchBundle => b !== null);
+}
