@@ -11,6 +11,7 @@ export type Flip7Raw =
   | { mode: 'cards'; cards: number[]; mods: number[]; x2: boolean; bust: boolean };
 
 export type EntryMode = Flip7Raw['mode'];
+export type CardsRaw = Extract<Flip7Raw, { mode: 'cards' }>;
 
 export function blankRaw(mode: EntryMode): Flip7Raw {
   return mode === 'number' ? { mode, value: null, bust: false, flip7: false } : { mode, cards: [], mods: [], x2: false, bust: false };
@@ -41,17 +42,24 @@ export function flip7Score(raw: Flip7Raw): number {
   return numbers + mods + (hasFlip7(raw) ? FLIP7_BONUS : 0);
 }
 
-export type CardTap = { kind: 'added'; raw: Flip7Raw } | { kind: 'duplicate' } | { kind: 'full' };
-
-/** Tapping a number card: once each; a duplicate asks "Bust?" (AC-2). */
-export function tapNumber(raw: Extract<Flip7Raw, { mode: 'cards' }>, n: number): CardTap {
-  if (raw.bust) return { kind: 'full' };
-  if (raw.cards.includes(n)) return { kind: 'duplicate' };
-  if (new Set(raw.cards).size >= FLIP7_UNIQUE) return { kind: 'full' }; // a Flip 7 ends the player's turn
-  return { kind: 'added', raw: { ...raw, cards: [...raw.cards, n] } };
+/**
+ * Tapping a number card toggles it (FR-8 AC-2). A bust is only ever recorded with the Bust
+ * button. Once 7 different numbers are in (a Flip 7 ends the turn), only removing one works.
+ */
+export function toggleNumber(raw: CardsRaw, n: number): CardsRaw {
+  if (raw.bust) return raw;
+  if (raw.cards.includes(n)) return { ...raw, cards: raw.cards.filter((c) => c !== n) };
+  if (new Set(raw.cards).size >= FLIP7_UNIQUE) return raw;
+  return { ...raw, cards: [...raw.cards, n] };
 }
 
-export function toggleMod(raw: Extract<Flip7Raw, { mode: 'cards' }>, m: number): Flip7Raw {
+/** Tapping a modifier toggles it too. */
+export function toggleX2(raw: CardsRaw): CardsRaw {
+  return raw.bust ? raw : { ...raw, x2: !raw.x2 };
+}
+
+export function toggleMod(raw: CardsRaw, m: number): CardsRaw {
+  if (raw.bust) return raw;
   return { ...raw, mods: raw.mods.includes(m) ? raw.mods.filter((x) => x !== m) : [...raw.mods, m] };
 }
 

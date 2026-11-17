@@ -210,14 +210,14 @@ const SCREENS: Screen[] = [
   { name: 'flip7-mid', hash: `#/play/${FLIP7_MID.matches[0]!.id}`, ready: 'Flip 7', seed: FLIP7_MID },
   { name: 'flip7-cards', hash: `#/play/${FLIP7_CARDS.matches[0]!.id}`, ready: 'Flip 7', seed: FLIP7_CARDS },
   {
-    name: 'flip7-bust-prompt',
+    // Several modifiers selected: each shows the ring and ✓ (FR-8 AC-2).
+    name: 'flip7-modifiers',
     hash: `#/play/${FLIP7_CARDS.matches[0]!.id}`,
     ready: 'Flip 7',
     seed: FLIP7_CARDS,
     act: async (page) => {
       await page.getByRole('button', { name: /^Alex, this round/ }).click();
-      await page.getByRole('button', { name: 'Card 7' }).click();
-      await page.getByRole('alertdialog', { name: 'Bust?' }).waitFor();
+      for (const m of ['+2', '+10', '×2']) await page.getByRole('button', { name: m, exact: true }).click();
     },
   },
   { name: 'flip7-eight', hash: `#/play/${FLIP7_EIGHT.matches[0]!.id}`, ready: 'Flip 7', seed: FLIP7_EIGHT },

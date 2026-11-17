@@ -24,12 +24,21 @@ test('Flip 7 by keyboard: cards, Shift digits, a modifier, ×2, Enter confirms, 
   await page.keyboard.press('4');
   await page.keyboard.press('x');
   await expect(sum(page)).toHaveText('2×(3+7+11) + 4 =46');
-  // A card already taken asks Bust?; Esc keeps the hand.
+  // Keys toggle like taps: 7 again removes it, and again puts it back (FR-20 AC-2).
   await page.keyboard.press('7');
-  await expect(page.getByRole('alertdialog', { name: 'Bust?' })).toBeVisible();
-  await page.keyboard.press('Escape');
-  await expect(page.getByRole('alertdialog', { name: 'Bust?' })).toHaveCount(0);
-  await page.keyboard.press('x'); // back to 21 + 4
+  await expect(sum(page)).toHaveText('2×(3+11) + 4 =32');
+  await expect(page.getByRole('alertdialog')).toHaveCount(0);
+  await page.keyboard.press('7');
+  await expect(sum(page)).toHaveText('2×(3+11+7) + 4 =46');
+  await page.keyboard.press('Shift+Digit2'); // 11 off
+  await expect(sum(page)).toHaveText('2×(3+7) + 4 =24');
+  await page.keyboard.press('Shift+Digit2');
+  await page.keyboard.press('+');
+  await page.keyboard.press('4'); // +4 off
+  await expect(sum(page)).toHaveText('2×(3+7+11) =42');
+  await page.keyboard.press('+');
+  await page.keyboard.press('4');
+  await page.keyboard.press('x'); // ×2 off: back to 21 + 4
   await expect(sum(page)).toHaveText('(3+7+11) + 4 =25');
 
   // Everyone has a score now, so Enter is Confirm round: 212 + 25.

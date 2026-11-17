@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { blankRaw, dealerFor, flip7Entry, flip7Score, hasFlip7, isEntered, rawOf, tapNumber, toggleMod, type Flip7Raw } from './scoring';
+import { blankRaw, dealerFor, flip7Entry, flip7Score, hasFlip7, isEntered, rawOf, toggleMod, toggleNumber, toggleX2, type Flip7Raw } from './scoring';
 import { flip7Details } from './stats';
 import { roundsResult } from '../rounds';
 import type { MatchEvent, Round } from '../../domain/types';
@@ -35,18 +35,38 @@ describe('Flip 7 Cards mode (FR-8 AC-2)', () => {
     expect(flip7Score(r)).toBe(21 + 15);
     expect(flip7Score(cards([0, 1, 2, 3, 4, 5, 6], [2], true))).toBe(42 + 2 + 15);
   });
-  it('each number can be tapped once; a duplicate asks "Bust?"', () => {
-    const t = tapNumber(cards([5]), 8);
-    expect(t).toEqual({ kind: 'added', raw: cards([5, 8]) });
-    expect(tapNumber(cards([5, 8]), 5)).toEqual({ kind: 'duplicate' });
+  it('tapping a number card toggles it: a second tap removes it and the score goes back', () => {
+    const start = cards([5], [4]);
+    const on = toggleNumber(start, 8);
+    expect(on).toEqual(cards([5, 8], [4]));
+    expect(flip7Score(on)).toBe(17);
+    const off = toggleNumber(on, 8);
+    expect(off).toEqual(start);
+    expect(flip7Score(off)).toBe(flip7Score(start));
+    expect(toggleNumber(cards([5, 8]), 5)).toEqual(cards([8])); // no "Bust?": a repeat just unselects
   });
-  it('no more cards after a Flip 7 or a bust', () => {
-    expect(tapNumber(cards([0, 1, 2, 3, 4, 5, 6]), 9)).toEqual({ kind: 'full' });
-    expect(tapNumber(cards([3], [], false, true), 9)).toEqual({ kind: 'full' });
+  it('unselecting the 7th card removes the Flip 7 bonus', () => {
+    const seven = cards([0, 1, 2, 3, 4, 5, 6]);
+    expect(flip7Score(seven)).toBe(21 + 15);
+    const six = toggleNumber(seven, 6);
+    expect(hasFlip7(six)).toBe(false);
+    expect(flip7Score(six)).toBe(15);
+    expect(flip7Entry('a', six).flags).toEqual([]);
   });
-  it('modifiers toggle', () => {
-    expect(toggleMod(cards([]), 4)).toMatchObject({ mods: [4] });
-    expect(toggleMod(cards([], [4]), 4)).toMatchObject({ mods: [] });
+  it('no new cards after a Flip 7 or a bust (removing one still works after a Flip 7)', () => {
+    const seven = cards([0, 1, 2, 3, 4, 5, 6]);
+    expect(toggleNumber(seven, 9)).toBe(seven);
+    const bust = cards([3], [], false, true);
+    expect(toggleNumber(bust, 9)).toBe(bust);
+    expect(toggleNumber(bust, 3)).toBe(bust);
+    expect(toggleMod(bust, 4)).toBe(bust);
+  });
+  it('modifiers and ×2 toggle, and the score goes back', () => {
+    const start = cards([3, 7]);
+    expect(toggleMod(start, 4)).toMatchObject({ mods: [4] });
+    expect(toggleMod(toggleMod(start, 4), 4)).toEqual(start);
+    expect(flip7Score(toggleX2(start))).toBe(20);
+    expect(toggleX2(toggleX2(start))).toEqual(start);
   });
   it('a bust scores 0 and is flagged', () => {
     expect(flip7Entry('a', cards([3, 7], [], false, true))).toMatchObject({ score: 0, flags: ['bust'] });

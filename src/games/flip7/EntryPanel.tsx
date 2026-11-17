@@ -1,7 +1,6 @@
 import { useRef, useState } from 'react';
-import { Button } from '../../components/Button';
 import { NoWrap } from '../../components/NoWrap';
-import { FLIP7_BONUS, FLIP7_UNIQUE, MODIFIERS, NUMBER_CARDS, flip7Score, hasFlip7, tapNumber, toggleMod, type Flip7Raw } from './scoring';
+import { FLIP7_BONUS, FLIP7_UNIQUE, MODIFIERS, NUMBER_CARDS, flip7Score, hasFlip7, toggleMod, toggleNumber, toggleX2, type Flip7Raw } from './scoring';
 import { FLIP7 } from './tokens';
 import { digitOf, isEscape, isPlus, key, shiftDigitOf, useShortcuts, type Shortcut } from '../../hooks/useShortcuts';
 
@@ -11,7 +10,8 @@ export type Panel = 'cards' | 'keypad';
 
 const blankCards: Cards = { mode: 'cards', cards: [], mods: [], x2: false, bust: false };
 const blankTyped: Typed = { mode: 'number', value: null, bust: false, flip7: false };
-const ring = '0 0 0 3px var(--surface), 0 0 0 5px #1F2430';
+// The selected ring and ✓ use the Text color: the mockup's #1F2430 in light mode, light in dark mode so they show.
+const ring = '0 0 0 3px var(--surface), 0 0 0 5px var(--text)';
 const outlined = (width: number) => ({ WebkitTextStroke: `${width}px ${FLIP7.numeralOutline}`, paintOrder: 'stroke fill' as const });
 
 /** "(3+5+8+12) + 4 = 32", "2×(3+5) + 4 + 15 = 35", "Typed 23", "Bust". */
@@ -54,7 +54,6 @@ export function EntryPanel({
   onNext: () => void;
   nextLabel?: string;
 }) {
-  const [bustAsk, setBustAsk] = useState<number | null>(null);
   const cards = raw.mode === 'cards' ? raw : blankCards;
   const typed = raw.mode === 'number' ? raw : blankTyped;
   const input = useRef<HTMLInputElement>(null);
@@ -62,11 +61,10 @@ export function EntryPanel({
   const [plus, setPlus] = useState(false);
   const text = typed.value === null ? '' : String(typed.value);
   const setValue = (v: number | null) => onChange({ ...typed, value: v, bust: false });
+  // Every card is a toggle: tap to select, tap again to unselect (FR-8 AC-2).
   const tapCard = (n: number) => {
-    if (cards.bust || (new Set(cards.cards).size >= FLIP7_UNIQUE && !cards.cards.includes(n))) return;
-    const t = tapNumber(cards, n);
-    if (t.kind === 'added') onChange(t.raw);
-    else if (t.kind === 'duplicate') setBustAsk(n);
+    const next = toggleNumber(cards, n);
+    if (next !== cards) onChange(next);
   };
   const typeDigit = (d: number) => {
     if (text.length < 3) setValue(Number((text === '0' ? '' : text) + d));
@@ -88,7 +86,7 @@ export function EntryPanel({
       : [
           {
             keys: '0–9',
-            label: 'Number card',
+            label: 'Number card (press again to remove)',
             match: (e) => digitOf(e) !== null,
             run: (e) => {
               const d = digitOf(e)!;
@@ -98,9 +96,9 @@ export function EntryPanel({
               else if ([2, 4, 6, 8, 0].includes(d)) onChange(toggleMod(cards, d === 0 ? 10 : d));
             },
           },
-          { keys: '⇧1 ⇧2 ⇧3', label: 'Cards 10, 11 and 12', match: (e) => [1, 2, 3].includes(shiftDigitOf(e) ?? -1), run: (e) => tapCard(9 + shiftDigitOf(e)!) },
-          { keys: '+ then 2/4/6/8/0', label: 'Modifier (+0 is +10)', match: isPlus, run: () => setPlus((p) => !p) },
-          { keys: 'X', label: '×2', match: key('x'), run: () => !cards.bust && onChange({ ...cards, x2: !cards.x2 }) },
+          { keys: '⇧1 ⇧2 ⇧3', label: 'Cards 10, 11 and 12 (toggle)', match: (e) => [1, 2, 3].includes(shiftDigitOf(e) ?? -1), run: (e) => tapCard(9 + shiftDigitOf(e)!) },
+          { keys: '+ then 2/4/6/8/0', label: 'Modifier, toggle (+0 is +10)', match: isPlus, run: () => setPlus((p) => !p) },
+          { keys: 'X', label: '×2 (toggle)', match: key('x'), run: () => !cards.bust && onChange(toggleX2(cards)) },
           { keys: 'C', label: 'Clear', match: key('c'), run: () => onChange(blankCards) },
           { keys: 'K', label: 'Open the keypad', match: key('k'), run: () => onPanel('keypad') },
           ...common,
@@ -208,29 +206,24 @@ export function EntryPanel({
               style={{ background: FLIP7.numberCard, borderColor: FLIP7.numberCardBorder, color: FLIP7.numerals[n], boxShadow: on ? ring : undefined, ...outlined(1.5) }}
             >
               {n}
-              {on && (
-                <span className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full" style={{ background: '#1F2430', WebkitTextStroke: '0' }} aria-hidden="true">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="3.5" strokeLinecap="round">
-                    <path d="M5 12l5 5L19 7" />
-                  </svg>
-                </span>
-              )}
+              {on && <Check />}
             </button>
           );
         })}
       </div>
       <div className="grid grid-cols-6 gap-1.5">
-        {[...MODIFIERS.map((m) => ({ key: `+${m}`, on: cards.mods.includes(m), press: () => onChange(toggleMod(cards, m)) })), { key: '×2', on: cards.x2, press: () => onChange({ ...cards, x2: !cards.x2 }) }].map((m) => (
+        {[...MODIFIERS.map((m) => ({ key: `+${m}`, on: cards.mods.includes(m), press: () => onChange(toggleMod(cards, m)) })), { key: '×2', on: cards.x2, press: () => onChange(toggleX2(cards)) }].map((m) => (
           <button
             key={m.key}
             type="button"
             aria-pressed={m.on}
             disabled={cards.bust}
             onClick={m.press}
-            className="tabular h-11 rounded-[10px] border-[1.5px] text-[20px] font-black disabled:opacity-40"
+            className="tabular relative h-11 rounded-[10px] border-[1.5px] text-[20px] font-black disabled:opacity-40"
             style={{ background: FLIP7.modifierCard, borderColor: FLIP7.modifierCardBorder, color: FLIP7.modifierNumeral, boxShadow: m.on ? ring : undefined, ...outlined(1.2) }}
           >
             {m.key}
+            {m.on && <Check />}
           </button>
         ))}
       </div>
@@ -244,17 +237,6 @@ export function EntryPanel({
         <NextButton label={nextLabel} onClick={onNext} />
       </div>
 
-      {bustAsk !== null && (
-        <BustAsk
-          name={name}
-          card={bustAsk}
-          onBust={() => {
-            setBustAsk(null);
-            onBust();
-          }}
-          onKeep={() => setBustAsk(null)}
-        />
-      )}
     </div>
   );
 }
@@ -270,28 +252,13 @@ function NextButton({ label, onClick }: { label: string; onClick: () => void }) 
   );
 }
 
-/** A second copy of a number card: bust, or a Second Chance saved it (FR-8 AC-2). */
-function BustAsk({ name, card, onBust, onKeep }: { name: string; card: number; onBust: () => void; onKeep: () => void }) {
-  useShortcuts(
-    'Bust?',
-    [
-      { keys: 'B or Enter', label: 'Bust', match: (e) => key('b')(e) || key('Enter')(e), run: onBust },
-      { keys: 'Esc', label: 'Not a bust, remove card', match: isEscape, run: onKeep },
-    ],
-    { modal: true },
-  );
+/** The ✓ badge on a selected card (mockup Flip7Cards), number or modifier. */
+function Check() {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-6" onClick={onKeep}>
-      <div role="alertdialog" aria-modal="true" aria-label="Bust?" className="flex w-full max-w-sm flex-col gap-3 rounded-[24px] bg-bg p-5 ring-1 ring-border" onClick={(e) => e.stopPropagation()}>
-        <h2 className="m-0 text-xl font-extrabold">Bust?</h2>
-        <p className="m-0 text-[15px] leading-snug text-text-2">
-          {name} already has a {card}. A second one is a bust, unless a Second Chance card saved it.
-        </p>
-        <Button onClick={onBust}>Bust</Button>
-        <Button variant="outline" onClick={onKeep}>
-          Not a bust, remove card
-        </Button>
-      </div>
-    </div>
+    <span className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full" style={{ background: 'var(--text)', WebkitTextStroke: '0' }} aria-hidden="true">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--bg)" strokeWidth="3.5" strokeLinecap="round">
+        <path d="M5 12l5 5L19 7" />
+      </svg>
+    </span>
   );
 }
