@@ -21,6 +21,8 @@ jobs:
       - run: npm run typecheck
       - run: npm run lint
       - run: npm test
+      - name: No user data in the repo (R-10)
+        run: node scripts/check-no-user-data.mjs
 
   screenshots:
     runs-on: ubuntu-latest

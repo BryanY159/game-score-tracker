@@ -24,3 +24,12 @@ describe('Dexie schema v1', () => {
     expect(await db.settings.count()).toBe(1);
   });
 });
+
+describe('readSettings', () => {
+  it('returns defaults without writing when missing', async () => {
+    const { readSettings } = await import('./repos/settings');
+    db = new ScoreDb('read-settings-test');
+    expect((await readSettings(db)).statsMinGames).toBe(5);
+    expect(await db.settings.count()).toBe(0);
+  });
+});

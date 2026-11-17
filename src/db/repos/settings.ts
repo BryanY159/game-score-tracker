@@ -25,3 +25,19 @@ export async function getSettings(db: ScoreDb): Promise<Settings> {
     return created;
   });
 }
+
+export async function updateSettings(
+  db: ScoreDb,
+  patch: Partial<Pick<Settings, 'statsMinGames' | 'backupReminder'>>,
+  now: number = Date.now(),
+): Promise<Settings> {
+  const s = await getSettings(db);
+  const next = { ...s, ...patch, updatedAt: Math.max(now, s.updatedAt + 1) };
+  await db.settings.put(next);
+  return next;
+}
+
+/** Read-only, for live queries (which can't write). Defaults if the record isn't there yet. */
+export async function readSettings(db: ScoreDb): Promise<Settings> {
+  return (await db.settings.get(SETTINGS_ID)) ?? defaultSettings(0);
+}
