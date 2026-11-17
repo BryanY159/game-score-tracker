@@ -52,3 +52,102 @@ export const PlusIcon = (p: P) => (
     <path d="M12 5v14M5 12h14" />
   </svg>
 );
+export const MinusIcon = (p: P) => (
+  <svg {...base(p)} strokeWidth={3}>
+    <path d="M5 12h14" />
+  </svg>
+);
+export const UndoIcon = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M9 14L4 9l5-5" />
+    <path d="M4 9h10a6 6 0 010 12h-3" />
+  </svg>
+);
+export const NotesIcon = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M4 6h16M4 12h16M4 18h10" />
+  </svg>
+);
+export const MoreIcon = (p: P) => (
+  <svg {...base(p)}>
+    <circle cx="5" cy="12" r="1.5" />
+    <circle cx="12" cy="12" r="1.5" />
+    <circle cx="19" cy="12" r="1.5" />
+  </svg>
+);
+export const PauseIcon = (p: P) => (
+  <svg {...base(p)} width={14} height={14} strokeWidth={3}>
+    <path d="M8 5v14M16 5v14" />
+  </svg>
+);
+export const PlayIcon = (p: P) => (
+  <svg {...base(p)} fill="currentColor" stroke="none">
+    <path d="M8 5v14l11-7z" />
+  </svg>
+);
+export const PencilIcon = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M4 20h4L19 9l-4-4L4 16z" />
+  </svg>
+);
+export const CheckIcon = (p: P) => (
+  <svg {...base(p)} strokeWidth={2.6}>
+    <path d="M5 12l5 5 9-10" />
+  </svg>
+);
+export const ShuffleIcon = (p: P) => (
+  <svg {...base(p)} width={18} height={18}>
+    <path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5" />
+  </svg>
+);
+export const GripIcon = (p: P) => (
+  <svg {...base(p)} strokeWidth={3}>
+    <path d="M8 6h.01M8 12h.01M8 18h.01M16 6h.01M16 12h.01M16 18h.01" />
+  </svg>
+);
+export const ChevronIcon = (p: P) => (
+  <svg {...base(p)} width={18} height={18} strokeWidth={2.2}>
+    <path d="M9 6l6 6-6 6" />
+  </svg>
+);
+export const CrownIcon = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5z" />
+  </svg>
+);
+
+/** Game picker icons, from the mockup. */
+export const GameIcons: Record<string, (p: P) => React.JSX.Element> = {
+  flip7: (p) => (
+    <svg {...base(p)}>
+      <rect x="3" y="5" width="8" height="12" rx="2" />
+      <rect x="13" y="7" width="8" height="12" rx="2" />
+    </svg>
+  ),
+  dutchBlitz: (p) => (
+    <svg {...base(p)}>
+      <rect x="4" y="3" width="11" height="15" rx="2" />
+      <path d="M9 21h9a2 2 0 002-2V8" />
+    </svg>
+  ),
+  ticketToRide: (p) => (
+    <svg {...base(p)}>
+      <rect x="3" y="8" width="18" height="8" rx="2" />
+      <circle cx="7.5" cy="18" r="1.5" />
+      <circle cx="16.5" cy="18" r="1.5" />
+      <path d="M9 8V6M15 8V6" />
+    </svg>
+  ),
+  parcheesi: (p) => (
+    <svg {...base(p)}>
+      <rect x="4" y="4" width="16" height="16" rx="2" />
+      <path d="M4 12h16M12 4v16" />
+    </svg>
+  ),
+  monopoly: (p) => (
+    <svg {...base(p)}>
+      <path d="M4 20V10l8-6 8 6v10z" />
+      <path d="M10 20v-5h4v5" />
+    </svg>
+  ),
+};

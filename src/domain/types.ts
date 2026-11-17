@@ -19,6 +19,23 @@ export interface Player extends BaseRecord {
   isGuest: boolean;
 }
 
+export interface GameDefinition {
+  key: GameKey;
+  name: string;
+  /** Short tagline for the game picker, e.g. "Finishing order". */
+  tagline: string;
+  template: GameTemplate;
+  minPlayers: number;
+  maxPlayers: number | null;
+  defaultTarget: number | null;
+  /** Colors players may use. Profile palette games use all 8. */
+  pieceColors: PlayerColor[];
+  /** Official tie-breakers, in order (FR-11). */
+  tieBreakers: string[];
+  /** Playable in this build. Games arrive milestone by milestone. */
+  available: boolean;
+}
+
 export type GameKey = 'parcheesi' | 'ticketToRide' | 'flip7' | 'dutchBlitz' | 'monopoly';
 export type GameTemplate = 'placement' | 'rounds' | 'ticketToRide';
 export type MatchStatus = 'inProgress' | 'finished' | 'cancelled';
@@ -33,7 +50,16 @@ export interface Match extends BaseRecord {
   settings: Record<string, unknown>;
   notes: string;
   endedEarly: boolean;
+  /**
+   * Live entries for placement games, oldest first. Replayed to get the
+   * current state, so Undo (FR-5 AC-4) just drops the last one.
+   */
+  log: MatchEvent[];
 }
+
+export type MatchEvent =
+  | { type: 'pawns'; playerId: string; delta: 1 | -1; at: number }
+  | { type: 'bankrupt'; playerId: string; at: number };
 
 export interface MatchPlayer extends BaseRecord {
   matchId: string;
