@@ -34,9 +34,9 @@ The app installs from its GitHub Pages URL using Safari's Add to Home Screen, an
 
 Each profile has a name, an emoji, a color from the profile palette, and a hide-from-stats setting. Guests can play without a profile.
 
-- AC-1: Profiles can be created, edited and soft-deleted. A deleted profile's past games stay in history.
+- AC-1: Profiles can be created, edited and soft-deleted. A deleted profile's past games stay in history. Names are 1–24 characters, and a name already used by another saved profile is refused (case-insensitive). A deleted profile's name can be reused.
 - AC-2: A profile set to hide from stats is left out of leaderboards and comparisons, but its games stay in history.
-- AC-3: Guests can be added during game setup. They appear in that game's history and are never included in stats.
+- AC-3: Guests can be added during game setup. They appear in that game's history and are never included in stats. Each guest is stored as a Player with `isGuest` and `hideFromStats` set, and is hidden from the Players screen and the setup list.
 
 ### FR-3 Game setup
 
@@ -47,7 +47,7 @@ Each profile has a name, an emoji, a color from the profile palette, and a hide-
 5. Adjust that game's settings.
 6. Start the game.
 
-- AC-1: Each game's player range is enforced: Parcheesi 2–4, Ticket to Ride 2–5, Monopoly 2–8, Dutch Blitz 2–8, Flip 7 2+. An explicit override allows going outside it, but never past the number of colors available: Parcheesi 4, Ticket to Ride 5, all other games 8.
+- AC-1: Each game's player range is enforced: Parcheesi 2–4, Ticket to Ride 2–5, Monopoly 2–8, Dutch Blitz 2–8, Flip 7 2+. An explicit override allows going outside it, but never past the number of colors available: Parcheesi 4, Ticket to Ride 5, all other games 8. In practice the override ("Play anyway") only allows going below the minimum.
 - AC-2: Flip 7 and Dutch Blitz targets default to 200 and 75, and can be edited per player.
 - AC-3: Flip 7 setup includes the entry mode (Number or Cards), which can also be changed mid-game.
 - AC-4: Starting a game starts its timer.
@@ -61,7 +61,7 @@ Each profile has a name, an emoji, a color from the profile palette, and a hide-
 ### FR-5 Game lifecycle
 
 - AC-1: Pause stops the timer. Saved game length leaves out paused time.
-- AC-2: Save and Exit keeps the game under In Progress on the Home screen, ready to resume.
+- AC-2: Back pauses the game and returns to Home, where it stays under In Progress.
 - AC-3: Cancel asks for confirmation, then discards the game.
 - AC-4: Undo reverses the most recent entry. Any past round can be opened and edited.
 - AC-5: The dealer or first player is shown, and rotates each round where the game's rules call for it.
@@ -73,6 +73,7 @@ Each profile has a name, an emoji, a color from the profile palette, and a hide-
 - AC-2: When a player's count reaches 4, the app assigns their finishing place (1st, 2nd, and so on).
 - AC-3: Play continues until one player remains. That player is placed last automatically.
 - AC-4: The game saves the finishing order, each player's pawns home, and the game length.
+- AC-5: The main toolbar button says "See results". It's enabled once the finishing order is complete.
 
 ### FR-7 Ticket to Ride
 
@@ -188,11 +189,13 @@ Each profile has a name, an emoji, a color from the profile palette, and a hide-
 | --- | --- | --- |
 | Player | name, emoji, color, hideFromStats, isGuest | has many MatchPlayers |
 | GameDefinition | key, name, template, minPlayers, maxPlayers, defaultTarget, pieceColors, tieBreakers | defined in code |
-| Match | gameKey, status (inProgress / finished / cancelled), startedAt, endedAt, pausedDurationMs, settings, notes, endedEarly | has many MatchPlayers and Rounds |
+| Match | gameKey, status (inProgress / finished / cancelled), startedAt, endedAt, pausedDurationMs, pausedAt, settings, notes, endedEarly, log | has many MatchPlayers and Rounds |
 | MatchPlayer | matchId, playerId, seatOrder, color, target, finalScore, placement, marginPastTarget, isWinner, details (JSON) | belongs to Match and Player |
 | Round | matchId, number, dealerPlayerId, entries (per player: score, raw inputs, flags) | belongs to Match |
 | TurnLog | matchId, entries (player, action, routeLength) | Ticket to Ride only, deleted when the game is finalized |
 | Settings | statsMinGames, backupReminder, lastBackupAt | single record |
+
+`Match.log` is the per-game entry log for placement games (Parcheesi pawn steps, Monopoly bankruptcies), oldest first. The current state is replayed from it, so Undo (FR-5 AC-4) drops the last entry. Rounds games use the Round table instead, and Ticket to Ride uses TurnLog.
 
 What goes in `details` depends on the game:
 

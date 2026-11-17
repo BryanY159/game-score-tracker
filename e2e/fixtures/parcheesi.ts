@@ -18,7 +18,7 @@ export const PARCHEESI_DONE = match('parcheesi', seats, {
   log: [...pawns(RILEY.id, 4), ...pawns(JORDAN.id, 4), ...pawns(SAM.id, 2), ...pawns(ALEX.id, 4, NOW - 1000)],
 });
 
-/** Paused mid-game, as after Save and exit. */
+/** Paused mid-game, as after tapping Back. */
 export const PARCHEESI_PAUSED = match('parcheesi', seats, {
   log: PARCHEESI_MID.matches[0]!.log,
   pausedAt: NOW - 10 * 60_000,

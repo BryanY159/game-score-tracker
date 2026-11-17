@@ -29,7 +29,7 @@ export function Home() {
   return (
     <>
       <ScreenHeader
-        title="Game night"
+        title="Game Night"
         trailing={
           <IconButton label="Settings" onClick={() => navigate('/settings')}>
             <SettingsIcon />

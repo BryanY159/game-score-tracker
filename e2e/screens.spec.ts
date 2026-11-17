@@ -19,7 +19,7 @@ type Screen = {
 };
 
 const SCREENS: Screen[] = [
-  { name: 'home-empty', hash: '#/', ready: 'Game night' },
+  { name: 'home-empty', hash: '#/', ready: 'Game Night' },
   { name: 'history-empty', hash: '#/history', ready: 'History' },
   { name: 'stats-empty', hash: '#/stats', ready: 'Stats' },
   { name: 'players-empty', hash: '#/players', ready: 'Players' },
@@ -56,9 +56,9 @@ const SCREENS: Screen[] = [
       await page.getByRole('alertdialog').waitFor();
     },
   },
-  { name: 'home-in-progress', hash: '#/', ready: 'Game night', seed: PARCHEESI_MID },
-  { name: 'home-full', hash: '#/', ready: 'Game night', seed: merge(PARCHEESI_PAUSED, ...RECENT) },
-  { name: 'home-recent-only', hash: '#/', ready: 'Game night', seed: merge(...RECENT) },
+  { name: 'home-in-progress', hash: '#/', ready: 'Game Night', seed: PARCHEESI_MID },
+  { name: 'home-full', hash: '#/', ready: 'Game Night', seed: merge(PARCHEESI_PAUSED, ...RECENT) },
+  { name: 'home-recent-only', hash: '#/', ready: 'Game Night', seed: merge(...RECENT) },
   {
     name: 'parcheesi-paused',
     hash: `#/play/${PARCHEESI_PAUSED.matches[0]!.id}`,
@@ -104,7 +104,7 @@ const SCREENS: Screen[] = [
   {
     name: 'home-backup-banner',
     hash: '#/',
-    ready: 'Game night',
+    ready: 'Game Night',
     seed: {
       ...merge(...RECENT),
       settings: [
