@@ -171,6 +171,12 @@ Each profile has a name, an emoji, a color from the profile palette, and a hide-
 - AC-2: A preview shows counts of new games, new players and conflicts before anything changes.
 - AC-3: An automatic backup is saved before every merge.
 - AC-4: Players with the same name on both devices are flagged with a "Merge these?" prompt. Settings also has a tool to merge players later.
+- AC-5: How it works:
+  - Records are matched by id across players, games, seats, rounds and turn logs. Settings aren't merged: they're this device's preferences.
+  - If both copies have exactly the same `updatedAt`, this device's copy is kept, so merging can't flip-flop. Running the same merge twice changes nothing the second time.
+  - The preview lists new games, new players, other new records, edits where the other device's copy is newer (taken), edits where this device's is newer (kept), and records already the same. "Merge" is disabled when there's nothing to merge.
+  - The automatic backup is stored on this device (the newest 3 are kept, and they aren't part of exports). Settings offers **Undo last merge**, which restores it after a confirm.
+  - "Merge these?" keeps the profile with more games (its name, emoji and color) and moves the other's games into it. Two players who played in the same game can't be merged. A player merge also saves an automatic backup first.
 
 ### FR-17 Backup reminder
 
@@ -186,7 +192,7 @@ Each profile has a name, an emoji, a color from the profile palette, and a hide-
 
 - AC-1: Scores count up, and player pills slide when the rankings change.
 - AC-2: Mini celebrations play for a Flip 7, a lead change (the new leader briefly gets a crown), the Ticket to Ride final round, and a Monopoly bankruptcy or all four Parcheesi pawns home.
-- AC-3: All animation is turned off when iOS Reduce Motion is on.
+- AC-3: All animation is turned off when iOS Reduce Motion is on: no CSS transitions or animations at all, and no JavaScript motion.
 
 ## 4. Non-functional requirements
 
@@ -209,6 +215,7 @@ Each profile has a name, an emoji, a color from the profile palette, and a hide-
 | Round | matchId, number, dealerPlayerId, entries (per player: score, raw inputs, flags), confirmed | belongs to Match |
 | TurnLog | matchId, entries (player, action, routeLength, at) | Ticket to Ride only, deleted when the game is finalized |
 | Settings | statsMinGames, backupReminder, lastBackupAt | single record |
+| Backup (device only) | createdAt, reason, file (a full export) | automatic backups before a merge; not exported (schema v2) |
 
 `Match.log` is the per-game entry log for placement games (Parcheesi pawn steps and triple doublets; Monopoly bankruptcies and the end-early entry, which holds each remaining player's net worth, the final order and how a tie for first was settled), oldest first. The current state is replayed from it, so Undo (FR-5 AC-4) drops the last entry. Rounds games use the Round table instead: the round being entered is saved as an unconfirmed Round on every change, and Confirm Round marks it confirmed. Their `Match.log` holds only a tie decision (FR-11 AC-3) or, in Flip 7, an "extra round" entry (FR-11 AC-4), which applies while the number of confirmed rounds is unchanged, so editing the rounds asks again if a tie remains. Ticket to Ride uses TurnLog.
 

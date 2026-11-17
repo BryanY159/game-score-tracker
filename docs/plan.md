@@ -365,6 +365,11 @@ Also adds the Settings "Merge a file" button (moved from M4).
 
 **Files:** `src/domain/backup/{merge,playerMerge}.ts`, `src/db/schema.ts` (v2: `backups` store, plus a migration test), `src/screens/{MergePreview,PlayerMerge,Settings}.tsx`.
 
+*Built (M11):*
+- The merge is planned by a pure function (`domain/backup/merge.ts`): previewed against the current data, then planned again and applied inside one transaction, after the automatic backup.
+- The guarantees asked for are each tested: a backup before applying, a preview that changes nothing, and a second run that changes nothing (in Vitest, and in Playwright by comparing the whole database before and after).
+- The global Reduce Motion rule now switches transitions and animations off entirely instead of shortening them, found when a frozen-clock test caught a colour transition stuck mid-way.
+
 **Tests:**
 - Vitest:
   - Disjoint merge. Identical-ID skip. A conflict where the newer one wins, both ways. Deletions on either side carry over.

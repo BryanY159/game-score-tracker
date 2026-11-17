@@ -8,6 +8,7 @@ import { BLITZ_DONE, BLITZ_EIGHT, BLITZ_HANDICAP, BLITZ_MID, BLITZ_TIE } from '.
 import { FLIP7_CARDS, FLIP7_DONE, FLIP7_EIGHT, FLIP7_MID, FLIP7_TIE } from './fixtures/flip7';
 import { TTR_END, TTR_FINAL_ROUND, TTR_FIVE, TTR_MID, TTR_TIE } from './fixtures/ticketToRide';
 import { STATS_HISTORY } from './fixtures/stats';
+import { IPAD_FILE } from './fixtures/merge';
 import { HISTORY, merge, PARCHEESI_DONE, PARCHEESI_MID, PARCHEESI_PAUSED, RECENT } from './fixtures/parcheesi';
 
 /**
@@ -389,6 +390,37 @@ const SCREENS: Screen[] = [
     seed: HISTORY,
   },
   { name: 'settings-new', hash: '#/settings', ready: 'Settings' },
+  {
+    name: 'merge-preview',
+    hash: '#/settings',
+    ready: 'Settings',
+    seed: merge(...RECENT),
+    act: async (page) => {
+      await page.getByLabel('File to merge').setInputFiles({ name: 'ipad.backup.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(IPAD_FILE)) });
+      await page.getByRole('dialog', { name: 'Merge preview' }).waitFor();
+    },
+  },
+  {
+    name: 'merge-these',
+    hash: '#/settings',
+    ready: 'Settings',
+    seed: merge(...RECENT),
+    act: async (page) => {
+      await page.getByLabel('File to merge').setInputFiles({ name: 'ipad.backup.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(IPAD_FILE)) });
+      await page.getByRole('dialog', { name: 'Merge preview' }).getByRole('button', { name: 'Merge' }).click();
+      await page.getByRole('dialog', { name: 'Merge these?' }).waitFor();
+    },
+  },
+  {
+    name: 'merge-players-tool',
+    hash: '#/settings',
+    ready: 'Settings',
+    seed: merge(...RECENT),
+    act: async (page) => {
+      await page.getByRole('button', { name: 'Merge players' }).click();
+      await page.getByRole('dialog', { name: 'Merge players' }).getByRole('radio', { name: 'Alex' }).first().click();
+    },
+  },
   {
     name: 'settings-backed-up',
     hash: '#/settings',

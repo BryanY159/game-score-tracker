@@ -90,14 +90,13 @@
   padding-bottom: env(safe-area-inset-bottom);
 }
 
-/* FR-19 AC-3: no animation when Reduce Motion is on. */
+/* FR-19 AC-3: no animation or transition at all when Reduce Motion is on. */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
   *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+    animation: none !important;
+    transition: none !important;
     scroll-behavior: auto !important;
   }
 }
