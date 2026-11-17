@@ -38,7 +38,7 @@ export function History() {
         <EmptyState title="No finished games" body="Every game you finish is saved here, newest first." />
       ) : (
         <>
-          <div className="flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none]" role="toolbar" aria-label="Filters">
+          <div className="flex flex-wrap gap-2 px-4 pb-1" role="toolbar" aria-label="Filters">
             <Chip active={filter.gameKey === null} onClick={() => setGame(null)}>
               All games
             </Chip>

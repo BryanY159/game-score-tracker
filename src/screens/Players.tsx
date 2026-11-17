@@ -10,6 +10,9 @@ import { db } from '../db/schema';
 import { gamesPlayedByPlayer, listPlayers, suggestColor } from '../db/repos/players';
 import { COLOR_HEX } from '../domain/colors';
 import type { Player } from '../domain/types';
+import { loadStats } from '../db/repos/stats';
+import { overall } from '../domain/stats';
+import { GAMES } from '../games/registry';
 import { PlayerEdit } from './PlayerEdit';
 
 type Editing = { mode: 'new' } | { mode: 'edit'; player: Player } | null;
@@ -17,6 +20,10 @@ type Editing = { mode: 'new' } | { mode: 'edit'; player: Player } | null;
 export function Players() {
   const players = useLiveQuery(() => listPlayers(db), []);
   const games = useLiveQuery(() => gamesPlayedByPlayer(db), []);
+  const stats = useLiveQuery(async () => {
+    const { records, players: ps, minGames } = await loadStats(db);
+    return { minGames, overall: new Map(overall(records, ps, minGames, GAMES.map((g) => g.key)).map((o) => [o.playerId, o])) };
+  }, []);
   const [editing, setEditing] = useState<Editing>(null);
 
   return (
@@ -50,7 +57,20 @@ export function Players() {
                     {p.name}
                   </NoWrap>
                   <NoWrap truncate className="text-[13px] text-text-2">
-                    {n === 0 ? 'No games yet' : `${n} ${n === 1 ? 'game' : 'games'}`}
+                    {n === 0
+                      ? 'No games yet'
+                      : [
+                          `${n} ${n === 1 ? 'game' : 'games'}`,
+                          p.hideFromStats
+                            ? null
+                            : stats?.overall.get(p.id)?.eligible
+                              ? `${Math.round(stats.overall.get(p.id)!.winRate * 100)}% wins`
+                              : stats
+                                ? `stats after ${stats.minGames}`
+                                : null,
+                        ]
+                          .filter(Boolean)
+                          .join(' · ')}
                   </NoWrap>
                 </span>
                 {p.hideFromStats && (

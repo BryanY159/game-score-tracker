@@ -147,11 +147,18 @@ Each profile has a name, an emoji, a color from the profile palette, and a hide-
 - AC-3: A player's stats for a game appear only after they've played the minimum number of games of it (default 5, adjustable in Settings).
 - AC-4: Head-to-head records only count games where both players took part. Whoever placed higher wins the matchup, and a shared placement counts as a tie.
 - AC-5: Game-specific stats:
-  - Parcheesi: average pawns home
+  - Parcheesi: average pawns home; average triple doublets per game, and the most in one game (owner request, M10)
   - Ticket to Ride: ticket completion rate and longest-path wins
   - Flip 7: Flip 7 count, bust rate, and fewest rounds to 200
   - Dutch Blitz: rounds to finish
   - Monopoly: average game length
+- AC-6: How Stats shows them:
+  - Players in stats are saved profiles that aren't deleted, guests or hidden. Their opponents' games still count.
+  - Each game tab has a win-rate board (players under the minimum show "3 of 5 games played"), head to head, the game's records, and a win % over time chart (owner decision). "All games" shows the overall figure.
+  - Game-specific stats are shown as rates or averages, each with the leading player (for example "Most Flip 7s per game", "Lowest bust rate", "Best ticket completion rate", "Longest path most often"). Group-level figures (Dutch Blitz rounds to finish, Monopoly game length, triple doublets per player per game) have no player.
+  - Fewest rounds to 200 is listed for each player count.
+  - Head to head opens on the two players with the most games together. The picker can switch either player.
+  - The Players screen shows each player's overall win %, or "stats after N".
 
 ### FR-15 Export and restore
 

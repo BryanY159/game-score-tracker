@@ -7,6 +7,7 @@ import { MONOPOLY_EIGHT, MONOPOLY_MID, MONOPOLY_SHARED } from './fixtures/monopo
 import { BLITZ_DONE, BLITZ_EIGHT, BLITZ_HANDICAP, BLITZ_MID, BLITZ_TIE } from './fixtures/dutchBlitz';
 import { FLIP7_CARDS, FLIP7_DONE, FLIP7_EIGHT, FLIP7_MID, FLIP7_TIE } from './fixtures/flip7';
 import { TTR_END, TTR_FINAL_ROUND, TTR_FIVE, TTR_MID, TTR_TIE } from './fixtures/ticketToRide';
+import { STATS_HISTORY } from './fixtures/stats';
 import { HISTORY, merge, PARCHEESI_DONE, PARCHEESI_MID, PARCHEESI_PAUSED, RECENT } from './fixtures/parcheesi';
 
 /**
@@ -91,6 +92,76 @@ const SCREENS: Screen[] = [
   },
   { name: 'game-picker', hash: '#/new', ready: 'Choose a game' },
   { name: 'history-all', hash: '#/history', ready: 'History', seed: HISTORY },
+  {
+    name: 'stats-all',
+    hash: '#/stats',
+    ready: 'Stats',
+    seed: STATS_HISTORY,
+    act: async (page) => {
+      await page.getByRole('img', { name: 'Win percentage over time' }).waitFor();
+    },
+  },
+  {
+    name: 'stats-parcheesi',
+    hash: '#/stats',
+    ready: 'Stats',
+    seed: STATS_HISTORY,
+    act: async (page) => {
+      await page.getByRole('tab', { name: 'Parcheesi' }).click();
+      await page.getByRole('img', { name: 'Win percentage over time' }).waitFor();
+    },
+  },
+  {
+    name: 'stats-flip7',
+    hash: '#/stats',
+    ready: 'Stats',
+    seed: STATS_HISTORY,
+    act: async (page) => {
+      await page.getByRole('tab', { name: 'Flip 7' }).click();
+      await page.getByRole('img', { name: 'Win percentage over time' }).waitFor();
+    },
+  },
+  {
+    name: 'stats-dutchBlitz',
+    hash: '#/stats',
+    ready: 'Stats',
+    seed: STATS_HISTORY,
+    act: async (page) => {
+      await page.getByRole('tab', { name: 'Dutch Blitz' }).click();
+      await page.getByRole('img', { name: 'Win percentage over time' }).waitFor();
+    },
+  },
+  {
+    name: 'stats-ticketToRide',
+    hash: '#/stats',
+    ready: 'Stats',
+    seed: STATS_HISTORY,
+    act: async (page) => {
+      await page.getByRole('tab', { name: 'Ticket to Ride' }).click();
+      await page.getByRole('img', { name: 'Win percentage over time' }).waitFor();
+    },
+  },
+  {
+    name: 'stats-monopoly',
+    hash: '#/stats',
+    ready: 'Stats',
+    seed: STATS_HISTORY,
+    act: async (page) => {
+      await page.getByRole('tab', { name: 'Monopoly' }).click();
+      await page.getByRole('img', { name: 'Win percentage over time' }).waitFor();
+    },
+  },
+  {
+    name: 'stats-h2h-pick',
+    hash: '#/stats',
+    ready: 'Stats',
+    seed: STATS_HISTORY,
+    act: async (page) => {
+      await page.getByRole('button', { name: /^Change / }).first().click();
+      await page.getByRole('dialog', { name: 'Choose a player' }).waitFor();
+    },
+  },
+  { name: 'players-stats', hash: '#/players', ready: 'Players', seed: STATS_HISTORY },
   { name: 'ttr-mid', hash: `#/play/${TTR_MID.matches[0]!.id}`, ready: 'Ticket to Ride', seed: TTR_MID },
   { name: 'ttr-final-round', hash: `#/play/${TTR_FINAL_ROUND.matches[0]!.id}`, ready: 'Ticket to Ride', seed: TTR_FINAL_ROUND },
   { name: 'ttr-five', hash: `#/play/${TTR_FIVE.matches[0]!.id}`, ready: 'Ticket to Ride', seed: TTR_FIVE },
