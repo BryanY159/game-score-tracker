@@ -115,6 +115,7 @@ Each profile has a name, an emoji, a color from the profile palette, and a hide-
 - AC-1: In target games (Flip 7 and Dutch Blitz), the winner is the player with the largest margin past their own target. If margins tie, the higher total wins.
 - AC-2: In Ticket to Ride, a tie on total score goes to the player with the most completed destination tickets, then to the longest-path holder.
 - AC-3: If a tie remains or the game has no official tie-breaker, a tie screen offers two choices: declare a shared win, or pick the winner of an outside tie-breaker.
+- AC-4: In Flip 7, if players are still tied on both margin and total, the tie screen's default option is "Play another round" (per the official FAQ). It continues the game with all players, not just the tied ones. After that round, the winner is decided again under AC-1, and the tie screen comes back if the tie remains, as many times as needed. Shared win and the outside tie-breaker stay available each time.
 
 ### FR-12 Results and Finalize
 
@@ -235,6 +236,7 @@ What goes in `details` depends on the game:
 | Text | `#1F2430` | `#F2F3F5` |
 | Secondary text | `#5F6470` | `#A1A1AA` |
 | Charcoal button | `#1F2430` | `#3A3A3C` |
+| Link | Text color, underlined | Text color, underlined |
 
 **Piece colors:** game pieces use the palette's red, blue, green and gold (gold stands in for yellow). Ticket to Ride also uses Black `#1C1C1E`, which gets a light outline in dark mode.
 
@@ -260,7 +262,7 @@ What goes in `details` depends on the game:
 | C-1 | White text on gold has a contrast of about 1.9:1, below accessibility guidelines | Owner accepted it for consistency. Large score numbers partly offset it. |
 | C-2 | iOS can clear website data | Mitigated by installing to the Home Screen, requesting persistent storage, and backups (FR-15 to FR-17) |
 | C-3 | Haptics are very limited in iOS web apps | Use light tap feedback where supported. Don't rely on haptics. |
-| C-4 | The official Flip 7 and Dutch Blitz tie rules haven't been confirmed | Resolved 2026-11-17: Dutch Blitz's official rule (highest score wins when several reach 75 in the same hand) matches FR-11 AC-1, and Flip 7 uses FR-11 AC-1. An exact tie goes to the tie screen. |
+| C-4 | The official Flip 7 and Dutch Blitz tie rules haven't been confirmed | Resolved 2026-11-17: Dutch Blitz's official rule (highest score wins when several reach 75 in the same hand) matches FR-11 AC-1, Flip 7 uses FR-11 AC-1, and per its official FAQ a remaining tie defaults to everyone playing another round (FR-11 AC-4). Any other exact tie goes to the tie screen. |
 | C-5 | Flip 7 is officially for 3 or more players | Owner allows 2 players under the standard rules |
 | C-6 | Free GitHub Pages hosting needs a public repository on a free GitHub plan | Owner accepted a public repo. User data is never stored in it. |
 | C-7 | The Flip 7 ×2 rule is assumed to double number cards only, not modifiers | Resolved 2026-11-17: the publisher's FAQ confirms ×2 doubles number cards only |

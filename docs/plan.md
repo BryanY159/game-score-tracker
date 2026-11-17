@@ -22,7 +22,7 @@ Each issue has a proposed default. I'll build to the default unless the owner ov
 | --- | --- | --- | --- |
 | A-1 ✅ | **The neutral and dark-mode tokens are missing from §6.** CLAUDE.md says "tokens from spec §6 only", but §6 only says "white / near-black" and "neutral charcoal". The mockups use `#1F2430` (charcoal text and buttons), `#5F6470` (secondary text), `#E4E6EA` (borders), `#F2F3F5` (surfaces) and `#1E3A8A` (link hover). The mockups are light-only, so no dark values are given. | Add a neutral token table to §6 using the mockup values, plus dark equivalents (bg `#0B0B0D`, surface `#1C1C1E`, border `#2C2C2E`, text `#F2F3F5`, secondary `#A1A1AA`, charcoal button `#3A3A3C`). **Approved.** The table is now in spec §6. | M0 |
 | A-2 ✅ | **The ×2 card in Flip 7 (C-7).** | **Confirmed** by the publisher's FAQ: ×2 doubles the number cards only, not the modifiers. No constant, and tests cover only this reading. | M8 |
-| A-3 ✅ | **Official tie rules for Flip 7 and Dutch Blitz (C-4).** | **Resolved:** Dutch Blitz's official rule (if more than one player reaches 75 in the same hand, the highest score wins) matches FR-11 AC-1. FR-11 AC-1 is its generalization for handicap targets. Flip 7 uses FR-11 AC-1 as written. An exact tie goes to the tie screen (AC-3). | M7 |
+| A-3 ✅ | **Official tie rules for Flip 7 and Dutch Blitz (C-4).** | **Resolved:** Dutch Blitz's official rule (if more than one player reaches 75 in the same hand, the highest score wins) matches FR-11 AC-1. FR-11 AC-1 is its generalization for handicap targets. Flip 7 uses FR-11 AC-1, and per its official FAQ a remaining tie defaults to "Play another round" for all players, repeated until the tie is broken (FR-11 AC-4). Shared win and the outside tie-breaker stay available. Any other exact tie goes to the tie screen (AC-3). | M7, M8 |
 | A-4 ✅ | **"Fewest rounds to reach 200" (FR-8 AC-5, FR-14)** is unclear under handicap targets. Does it mean a total of 200, or the player's own target? | Count it only for players whose target was exactly 200, grouped by player count. Use the round in which their total first reached 200 or more. **Approved.** | M8, M10 |
 | A-5 ✅ | **"Overall win comparison across all games" (FR-14 AC-1)** has no formula. Pooled win % lets the most-played game dominate, which goes against the intent ("fair, weighted by games played"). | **Approved:** the mean of the player's per-game win %, counting only games where they've reached the minimum. No "wins vs expected" figure in Phase 1. | M10 |
 | A-6 ✅ | **How shared wins count in stats** isn't defined. | A shared win among k players counts as 1/k of a win for each of them in win %. History shows "Shared win". **Approved.** | M2, M10 |
@@ -274,7 +274,7 @@ Pulled early because real data now exists (C-2, R-5).
 
 **Usable result:** play a full Flip 7 game in either entry mode.
 
-**Covers:** FR-8 (AC-1 to AC-5), FR-3 AC-3 (entry mode, changeable mid-game), FR-5 AC-5 (dealer rotation), FR-18 AC-2 (Next player, Bust and Flip 7! keys), A-4, R-2.
+**Covers:** FR-8 (AC-1 to AC-5), FR-11 AC-4 (Flip 7 tie, play another round), FR-3 AC-3 (entry mode, changeable mid-game), FR-5 AC-5 (dealer rotation), FR-18 AC-2 (Next player, Bust and Flip 7! keys), A-4, R-2.
 
 **Order:** `flip7/scoring.ts` (number mode, cards mode, duplicate means bust, auto Flip 7 detection), then keypad game keys, then the Number/Cards toggle and the card grid, then dealer rotation, then the "fewest rounds to 200" record, then the breakdown.
 
@@ -285,6 +285,7 @@ Pulled early because real data now exists (C-2, R-5).
   - Number mode: score, Bust gives 0, the Flip 7! box adds +15.
   - Cards mode: sum of numbers, ×2 doubles number cards only, never modifiers (A-2), modifiers, 7 unique numbers gives +15 and auto-detection, a duplicate tap asks to bust.
   - Switching mode mid-game keeps earlier rounds.
+  - Tie on margin and total: the tie screen defaults to "Play another round". It continues with all players, the winner is decided again after that round, and it repeats when the tie remains (FR-11 AC-4). Shared win and the outside tie-breaker are still offered.
   - Dealer rotates every round.
   - flip7Count. Fewest rounds to 200, grouped by player count (A-4).
 - Playwright: Main mockup state (Number mode with the keypad), Cards mode, the bust prompt, 8 players at 375×667 with the keypad sheet, and Results.
