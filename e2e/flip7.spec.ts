@@ -21,7 +21,7 @@ test('a full game: card selector, keypad from a score chip, bust, toggling a car
   await page.getByRole('button', { name: 'Start game' }).click();
 
   // Round 1: the card selector is showing; Alex's score is typed from the chip (FR-8 AC-7).
-  await expect(page.getByText('Round 1 · Dealer: Alex')).toBeVisible();
+  await expect(page.getByText('Round 1', { exact: true })).toBeVisible();
   await expect(page.getByRole('group', { name: "Alex's cards" })).toBeVisible();
   await chip(page, 'Alex').click();
   await expect(keypad(page)).toBeVisible();
@@ -35,7 +35,7 @@ test('a full game: card selector, keypad from a score chip, bust, toggling a car
   await expect(total(page, 'Sam')).toHaveText('0');
 
   // Round 2 on the cards: back from the keypad.
-  await expect(page.getByText('Round 2 · Dealer: Sam')).toBeVisible();
+  await expect(page.getByText('Round 2', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Back to cards' }).click();
   for (const n of [0, 1, 2, 3, 4, 5, 6]) await page.getByRole('button', { name: `Card ${n}`, exact: true }).click();
   // 7 different numbers: a Flip 7, detected automatically: 21 + 15 (AC-2).
@@ -116,7 +116,7 @@ test('games saved before the change still load and play (FR-8 AC-9)', async ({ p
   await expect(total(page, 'Jordan')).toHaveText('127');
   await expect(chip(page, 'Riley')).toHaveText('+23');
   await page.getByRole('button', { name: 'Confirm round' }).click();
-  await expect(page.getByText('Round 7 · Dealer: Jordan')).toBeVisible();
+  await expect(page.getByText('Round 7', { exact: true })).toBeVisible();
   await openApp(page, `#/play/${FLIP7_CARDS.matches[0]!.id}`, FLIP7_CARDS);
   await expect(chip(page, 'Alex')).toHaveText('+26'); // a cards-mode draft: 3+7+12+4
 });
@@ -127,7 +127,7 @@ test('tie: play another round, everyone plays, running totals, Alex wins (FR-11 
   await expect(tie.getByRole('button').nth(1)).toHaveText('Play another round');
   await tie.getByRole('button', { name: 'Play another round' }).click();
   await expect(page.getByText('Tie-break round: everyone plays one more round.')).toBeVisible();
-  await expect(page.getByText('Round 3 · Dealer: Jordan')).toBeVisible();
+  await expect(page.getByText('Round 3', { exact: true })).toBeVisible();
   await chip(page, 'Alex').click();
   await digits(page, '20');
   await keypad(page).getByRole('button', { name: 'Next player' }).click();

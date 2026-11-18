@@ -467,6 +467,15 @@ Also adds the Settings "Merge a file" button (moved from M4).
 - **Save and Exit removed:** Back pauses and returns Home (spec FR-5 AC-2). The More menu holds Cancel game, plus Notes on screens whose toolbar has no room for it.
 - **Undo log:** placement games keep their entries in `Match.log` (spec §5).
 
+## 6b. Final fixes before 1.0.0 (2026-11-18)
+
+- Notes removed from every screen (spec FR-5 AC-6, FR-13 AC-2). Stored notes are kept and the schema is unchanged. The More menu and the Game options sheet are gone: the toolbar's Cancel (×) goes straight to the confirmation (FR-5 AC-3).
+- Temporary **Clear all data** in Settings (spec FR-21). Remove it in the 1.0.0 PR: `src/db/repos/clear.ts`, its test, the Danger section in `src/screens/Settings.tsx`, the e2e test in `backup.spec.ts`, and FR-21.
+- Flip 7 has no dealer (FR-5 AC-5, FR-8 AC-3, FR-11 AC-4). New rounds save `dealerPlayerId: null`, and old rounds keep theirs, unused.
+- Dutch Blitz keeps the true minus sign in "Blitz −2" (FR-9 AC-1).
+- Ticket to Ride: the ticket list sits above the keypad in a fixed-height scrolling box (FR-7 AC-6).
+- Monopoly net worth is shown in dollars, e.g. $2,000 (FR-10 AC-3). Stored values are unchanged.
+
 ## 7. Traceability
 
 | Requirement | Milestone(s) |

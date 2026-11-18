@@ -97,6 +97,7 @@ export function EndEarly({
         <div className="pb-safe sticky bottom-0">
           <Keypad
             label={`${seatOf(active).player.name}'s net worth`}
+            format={formatMoney}
             value={worth[active] ?? null}
             onChange={(v) => setWorth((w) => ({ ...w, [active]: v }))}
             next={

@@ -38,24 +38,13 @@ test('back pauses the game and keeps it under In progress (FR-5 AC-2)', async ({
   await expect(page.getByLabel('2 of 4 pawns home')).toHaveCount(2);
 });
 
-test('the More menu holds Cancel only, and Cancel asks first (FR-5 AC-3)', async ({ page }) => {
+test('Cancel (×) goes straight to the confirmation; there are no notes (FR-5 AC-3)', async ({ page }) => {
   await openApp(page, `#/play/${id}`, PARCHEESI_MID);
-  await page.getByRole('button', { name: 'More', exact: true }).click();
-  const menu = page.getByRole('dialog', { name: 'Game options' });
-  await expect(menu.getByRole('button')).toHaveText(['Close', 'Cancel game']);
-  await menu.getByRole('button', { name: 'Cancel game' }).click();
+  await expect(page.getByRole('button', { name: 'More', exact: true })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Notes' })).toHaveCount(0);
+  await page.getByRole('button', { name: 'Cancel', exact: true }).click();
   await expect(page.getByRole('alertdialog', { name: 'Cancel this game?' })).toBeVisible();
-});
-
-test('notes are kept (FR-5 AC-6)', async ({ page }) => {
-  await openApp(page, `#/play/${id}`, PARCHEESI_MID);
-  await page.getByRole('button', { name: 'Notes' }).click();
-  await page.getByRole('dialog').getByRole('textbox').fill('Doubles roll again.');
-  await page.getByRole('button', { name: 'Done' }).click();
-  await expect(page.getByRole('dialog')).toBeHidden();
-  await page.reload();
-  await page.getByRole('button', { name: 'Notes' }).click();
-  await expect(page.getByRole('dialog').getByRole('textbox')).toHaveValue('Doubles roll again.');
+  await expect(page.getByRole('dialog', { name: 'Game options' })).toHaveCount(0);
 });
 
 test('a finalized game shows under Recent games', async ({ page }) => {

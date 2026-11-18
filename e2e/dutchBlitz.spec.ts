@@ -106,3 +106,9 @@ test('undo reopens the last round only when the new round is blank', async ({ pa
   await expect(page.getByRole('button', { name: 'Undo' })).toBeDisabled(); // round 4 has entries
   await expect(page.getByText('Round 4 · to 75')).toBeVisible();
 });
+
+test('the Blitz label keeps the true minus sign (−, not a hyphen)', async ({ page }) => {
+  await openApp(page, `#/play/${BLITZ_MID.matches[0]!.id}`, BLITZ_MID);
+  await expect(page.getByText('Blitz −2').first()).toBeVisible();
+  await expect(page.getByText('Blitz -2')).toHaveCount(0);
+});

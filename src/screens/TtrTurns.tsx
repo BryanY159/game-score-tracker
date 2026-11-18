@@ -4,7 +4,7 @@ import { BottomToolbar } from '../components/BottomToolbar';
 import { GameBody, GameHeader, GameScreen, PrimaryToolButton, TimerChip, ToolButton, TwoPaneGame } from '../components/GameChrome';
 import { useLandscape } from '../hooks/useLandscape';
 import { PausedOverlay, PauseButton, useGameControls, useGameShortcuts } from '../components/GameControls';
-import { MoreIcon, RoundsIcon, UndoIcon } from '../components/Icons';
+import { CancelIcon, RoundsIcon, UndoIcon } from '../components/Icons';
 import { NoWrap } from '../components/NoWrap';
 import { Avatar } from '../components/PlayerPill';
 import { db } from '../db/schema';
@@ -23,7 +23,7 @@ export function TtrTurns({ bundle }: { bundle: MatchBundle }) {
   const { match, seats, turns } = bundle;
   const navigate = useNavigate();
   const game = requireGame(match.gameKey);
-  const controls = useGameControls(match, { notesInMenu: true });
+  const controls = useGameControls(match);
   const paused = match.pausedAt !== null;
   const ids = seats.map((s) => s.player.id);
   const st = ttrState(ids, turns);
@@ -207,7 +207,7 @@ export function TtrTurns({ bundle }: { bundle: MatchBundle }) {
         <PrimaryToolButton disabled={paused || !st.playComplete} onClick={() => navigate(`/play/${match.id}/final`)}>
           Final scoring
         </PrimaryToolButton>
-        <ToolButton icon={<MoreIcon />} label="More" onClick={controls.openMore} />
+        <ToolButton icon={<CancelIcon />} label="Cancel" onClick={controls.openCancel} />
       </BottomToolbar>
   );
   const sheets = (

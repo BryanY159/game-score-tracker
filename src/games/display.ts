@@ -1,4 +1,5 @@
 import type { MatchBundle, Seat } from '../db/repos/matches';
+import { formatMoney } from './monopoly/scoring';
 
 /** The per-player value shown in history rows and game detail, by game. */
 export function seatValue(b: MatchBundle, s: Seat): string {
@@ -7,7 +8,7 @@ export function seatValue(b: MatchBundle, s: Seat): string {
       return `${(s.mp.details.pawnsHome as number | undefined) ?? 0} home`;
     case 'monopoly': {
       const nw = s.mp.details.netWorth as number | undefined;
-      if (nw !== undefined) return nw.toLocaleString('en-US');
+      if (nw !== undefined) return formatMoney(nw);
       return s.mp.details.bankruptAt !== undefined ? 'Bankrupt' : 'Last standing';
     }
     default:

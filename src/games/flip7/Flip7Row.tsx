@@ -16,7 +16,6 @@ export function Flip7Row({
   total,
   target,
   showTarget,
-  dealer,
   active,
   typing,
   compact,
@@ -31,7 +30,6 @@ export function Flip7Row({
   total: number;
   target: number;
   showTarget: boolean;
-  dealer: boolean;
   active: boolean;
   /** The keypad is open for this player: the chip is shown filled. */
   typing: boolean;
@@ -44,7 +42,7 @@ export function Flip7Row({
 }) {
   const name = seat.player.name;
   const entry = raw.bust ? 'Bust' : isEntered(raw) ? `+${flip7Score(raw)}` : '–';
-  const sub = [showTarget ? `to ${target}` : null, dealer ? 'deals' : null].filter(Boolean).join(' · ');
+  const sub = showTarget ? `to ${target}` : '';
   return (
     <div
       className={`flex w-full items-center gap-2 rounded-[24px] pr-3 pl-1.5 text-white ${compact ? 'h-12' : 'h-[52px]'}`}

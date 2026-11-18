@@ -71,7 +71,7 @@ test('end early by net worth, with a drag to reorder (FR-10 AC-3, AC-4)', async 
   await page.getByRole('button', { name: 'End game' }).click();
   await typeWorth(page, ['1500', '3200', '800']);
   const ranked = page.getByRole('listitem').filter({ has: page.getByRole('button', { name: /^Drag/ }) });
-  await expect(ranked).toHaveText([/Sam.*3,200/, /Alex.*1,500/, /Jordan.*800/]);
+  await expect(ranked).toHaveText([/Sam.*\$3,200/, /Alex.*\$1,500/, /Jordan.*\$800/]);
   // Keyboard drag: move Jordan above Alex.
   const grip = page.getByRole('button', { name: 'Drag Jordan to reorder' });
   await grip.focus();
@@ -84,6 +84,7 @@ test('end early by net worth, with a drag to reorder (FR-10 AC-3, AC-4)', async 
   await page.getByRole('button', { name: 'See results' }).click();
   await expect(page.getByRole('heading', { name: 'Sam wins' })).toBeVisible();
   await expect(page.getByText('Ended early · highest net worth')).toBeVisible();
+  await expect(page.getByText('$3,200').first()).toBeVisible(); // Results in dollars (FR-10 AC-3)
   await page.getByRole('button', { name: 'Finalize' }).click();
   expect(await finished(page)).toEqual({
     status: 'finished',
@@ -104,7 +105,7 @@ test('a net-worth tie opens the tie screen: shared win (FR-11 AC-3)', async ({ p
   await typeWorth(page, ['2000', '2000', '500']);
   await page.getByRole('button', { name: 'See results' }).click();
   const tie = page.getByRole('dialog', { name: "It's a tie" });
-  await expect(tie).toContainText('Alex and Sam have the same net worth (2,000).');
+  await expect(tie).toContainText('Alex and Sam have the same net worth ($2,000).');
   await tie.getByRole('button', { name: 'Shared win' }).click();
   await expect(page.getByRole('heading', { name: 'Shared win' })).toBeVisible();
   await expect(page.getByText('Alex and Sam', { exact: true })).toBeVisible();
@@ -134,7 +135,8 @@ test('the iOS number pad can be used instead of the keypad (FR-18 AC-3)', async 
   const input = page.getByRole('textbox', { name: "Alex's net worth value" });
   await expect(input).toHaveAttribute('inputmode', 'numeric');
   await input.fill('4,25x0');
-  await expect(page.getByRole('button', { name: /Alex/ })).toContainText('4,250');
+  await expect(page.getByRole('button', { name: /Alex/ })).toContainText('$4,250');
+  await expect(input).toHaveValue('$4,250'); // shown as dollars, stored as 4250
 });
 
 test('edit a finished Monopoly game from History', async ({ page }) => {
@@ -150,5 +152,5 @@ test('edit a finished Monopoly game from History', async ({ page }) => {
   await typeWorth(page, ['100', '900']);
   await page.getByRole('button', { name: 'See results' }).click();
   await page.getByRole('button', { name: 'Save' }).click();
-  await expect(page.getByRole('list', { name: 'Players' }).getByRole('listitem')).toHaveText([/Jordan1st · Winner900/, /Alex2nd100/, /Sam3rdBankrupt/]);
+  await expect(page.getByRole('list', { name: 'Players' }).getByRole('listitem')).toHaveText([/Jordan1st · Winner\$900/, /Alex2nd\$100/, /Sam3rdBankrupt/]);
 });

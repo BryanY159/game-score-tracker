@@ -155,3 +155,26 @@ test('Add ticket stays open for back-to-back entry, lists the tickets with a tot
   await page.mouse.click(10, 10);
   await expect(dialog).toHaveCount(0);
 });
+
+test('in Add ticket the list sits above the keypad, and the keypad stays put from 1 ticket to 6 (FR-7 AC-6)', async ({ page }) => {
+  await openApp(page, `#/play/${TTR_END.matches[0]!.id}/final`, TTR_END);
+  await page.getByRole('tab', { name: 'Alex' }).click();
+  await page.getByRole('button', { name: 'Add ticket' }).click();
+  const dialog = page.getByRole('dialog', { name: 'Add ticket' });
+  const pad = dialog.getByRole('group', { name: 'Number pad' });
+  const list = dialog.getByRole('region', { name: "Alex's tickets" });
+  const add = async (v: string) => {
+    for (const d of v) await pad.getByRole('button', { name: d, exact: true }).click();
+    await dialog.getByRole('button', { name: `Completed +${v}` }).click();
+  };
+  await add('5');
+  const listBox = (await list.boundingBox())!;
+  const first = (await pad.boundingBox())!;
+  expect(listBox.y + listBox.height).toBeLessThanOrEqual(first.y); // list above the keypad
+  for (const v of ['6', '7', '8', '9', '10']) await add(v);
+  await expect(list.getByRole('listitem')).toHaveCount(6);
+  const after = (await pad.boundingBox())!;
+  expect(after.y).toBe(first.y); // the keypad didn't move
+  await expect(list.getByRole('listitem').last()).toBeInViewport(); // newest in view
+  await expect(list.getByRole('listitem').last()).toHaveText(/\+10\s*Completed/);
+});

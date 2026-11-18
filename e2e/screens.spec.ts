@@ -72,23 +72,25 @@ const SCREENS: Screen[] = [
     seed: PARCHEESI_PAUSED,
   },
   {
-    name: 'parcheesi-notes',
+    name: 'parcheesi-cancel',
     hash: `#/play/${PARCHEESI_MID.matches[0]!.id}`,
     ready: 'Parcheesi',
     seed: PARCHEESI_MID,
     act: async (page) => {
-      await page.getByRole('button', { name: 'Notes' }).click();
-      await page.getByRole('dialog', { name: 'Notes' }).waitFor();
+      await page.getByRole('button', { name: 'Cancel', exact: true }).click();
+      await page.getByRole('alertdialog', { name: 'Cancel this game?' }).waitFor();
     },
   },
   {
-    name: 'parcheesi-more',
-    hash: `#/play/${PARCHEESI_MID.matches[0]!.id}`,
-    ready: 'Parcheesi',
-    seed: PARCHEESI_MID,
+    // FR-21 (temporary): the second confirmation names what will be deleted.
+    name: 'settings-clear-confirm',
+    hash: '#/settings',
+    ready: 'Settings',
+    seed: HISTORY,
     act: async (page) => {
-      await page.getByRole('button', { name: 'More', exact: true }).click();
-      await page.getByRole('dialog', { name: 'Game options' }).waitFor();
+      await page.getByRole('button', { name: 'Clear all data' }).click();
+      await page.getByRole('dialog', { name: 'Clear all data' }).getByRole('button', { name: 'Continue' }).click();
+      await page.getByRole('alertdialog', { name: 'Delete all data?' }).waitFor();
     },
   },
   { name: 'game-picker', hash: '#/new', ready: 'Choose a game' },

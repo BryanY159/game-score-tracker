@@ -3,8 +3,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { BottomToolbar } from '../components/BottomToolbar';
 import { GameScreen, PrimaryToolButton, ToolButton } from '../components/GameChrome';
-import { CheckIcon, NotesIcon, PencilIcon } from '../components/Icons';
-import { useGameControls } from '../components/GameControls';
+import { CheckIcon, PencilIcon } from '../components/Icons';
 import { NoWrap } from '../components/NoWrap';
 import { Avatar } from '../components/PlayerPill';
 import { Podium, type PodiumEntry } from '../components/Podium';
@@ -33,7 +32,6 @@ function ResultsView({ bundle }: { bundle: MatchBundle }) {
   const navigate = useNavigate();
   const game = requireGame(match.gameKey);
   const [saving, setSaving] = useState(false);
-  const controls = useGameControls(match);
   const outcome = outcomeFor(bundle);
   const [tieOpen, setTieOpen] = useState(true);
   if (!outcome.complete) return <Navigate to={`/play/${match.id}`} replace />;
@@ -133,12 +131,10 @@ function ResultsView({ bundle }: { bundle: MatchBundle }) {
           label="Edit scores"
           onClick={() => navigate(match.gameKey === 'ticketToRide' ? `/play/${match.id}/final` : `/play/${match.id}`)}
         />
-        <ToolButton icon={<NotesIcon />} label="Notes" onClick={controls.openNotes} />
         <PrimaryToolButton icon={<CheckIcon />} disabled={saving || tied.length > 0} onClick={finalize}>
           Finalize
         </PrimaryToolButton>
       </BottomToolbar>
-      {controls.element}
       {tied.length > 0 && tieOpen && (
         <TieScreen
           tied={tied}

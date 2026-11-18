@@ -23,7 +23,10 @@ export function Keypad({
   maxDigits = 7,
   bare = false,
   headerExtra,
+  format,
 }: {
+  /** How the typed value is shown, e.g. dollars for Monopoly net worth. Typing still enters digits only. */
+  format?: (v: number) => string;
   /** Extra control on the label row, e.g. the Flip 7 Number/Cards switch. */
   headerExtra?: React.ReactNode;
   /** Inside a panel that already has a border and padding. */
@@ -63,8 +66,8 @@ export function Keypad({
           inputMode="numeric"
           pattern="[0-9]*"
           enterKeyHint="next"
-          value={text}
-          placeholder="0"
+          value={value === null ? '' : format ? format(value) : text}
+          placeholder={format ? format(0) : '0'}
           onChange={(e) => {
             const digits = e.target.value.replace(/\D/g, '').slice(0, maxDigits);
             onChange(digits === '' ? null : Number(digits));

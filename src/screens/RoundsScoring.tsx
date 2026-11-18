@@ -10,7 +10,7 @@ import { blitzRoundScore } from '../games/dutchBlitz/scoring';
 import { PausedOverlay, PauseButton, useGameControls, useGameShortcuts } from '../components/GameControls';
 import { moveField } from '../components/CountStepper';
 import { key } from '../hooks/useShortcuts';
-import { MoreIcon, RoundsIcon, UndoIcon } from '../components/Icons';
+import { CancelIcon, RoundsIcon, UndoIcon } from '../components/Icons';
 import { NoWrap } from '../components/NoWrap';
 import { db } from '../db/schema';
 import type { MatchBundle } from '../db/repos/matches';
@@ -29,7 +29,7 @@ export function RoundsScoring({ bundle }: { bundle: MatchBundle }) {
   const { match, seats, rounds } = bundle;
   const navigate = useNavigate();
   const game = requireGame(match.gameKey);
-  const controls = useGameControls(match, { notesInMenu: true });
+  const controls = useGameControls(match);
   const paused = match.pausedAt !== null;
   const outcome = outcomeFor(bundle);
   const [listOpen, setListOpen] = useState(false);
@@ -149,7 +149,7 @@ export function RoundsScoring({ bundle }: { bundle: MatchBundle }) {
           Confirm round
         </PrimaryToolButton>
       )}
-      <ToolButton icon={<MoreIcon />} label="More" onClick={controls.openMore} />
+      <ToolButton icon={<CancelIcon />} label="Cancel" onClick={controls.openCancel} />
     </BottomToolbar>
   );
   const sheets = (

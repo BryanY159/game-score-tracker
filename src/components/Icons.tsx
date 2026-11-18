@@ -64,16 +64,9 @@ export const UndoIcon = (p: P) => (
     <path d="M4 9h10a6 6 0 010 12h-3" />
   </svg>
 );
-export const NotesIcon = (p: P) => (
+export const CancelIcon = (p: P) => (
   <svg {...base(p)}>
-    <path d="M4 6h16M4 12h16M4 18h10" />
-  </svg>
-);
-export const MoreIcon = (p: P) => (
-  <svg {...base(p)}>
-    <circle cx="5" cy="12" r="1.5" />
-    <circle cx="12" cy="12" r="1.5" />
-    <circle cx="19" cy="12" r="1.5" />
+    <path d="M6 6l12 12M18 6L6 18" />
   </svg>
 );
 export const PauseIcon = (p: P) => (

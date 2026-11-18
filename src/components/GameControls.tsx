@@ -1,24 +1,21 @@
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../db/schema';
-import { cancelMatch, pauseMatch, resumeMatch, setNotes } from '../db/repos/matches';
+import { cancelMatch, pauseMatch, resumeMatch } from '../db/repos/matches';
 import type { Match } from '../domain/types';
 import { Button } from './Button';
 import { ConfirmDialog } from './ConfirmDialog';
 import { PauseIcon, PlayIcon } from './Icons';
 import { NoWrap } from './NoWrap';
-import { Sheet } from './Sheet';
 import { cmd, isEscape, isTypingTarget, key, useShortcuts, type Shortcut } from '../hooks/useShortcuts';
 
-type Open = null | 'more' | 'notes' | 'cancel';
-
 /**
- * Shared game controls: More (Notes when the toolbar has no room for it, and
- * Cancel), Notes, and Pause. FR-5 AC-1 to AC-3 and AC-6.
+ * Shared game controls: Cancel (FR-5 AC-3: straight to the confirmation) and
+ * Back (AC-2). Notes were removed on 2026-11-18; stored notes are kept, unused.
  */
-export function useGameControls(match: Match, { notesInMenu = false }: { notesInMenu?: boolean } = {}) {
+export function useGameControls(match: Match) {
   const navigate = useNavigate();
-  const [open, setOpen] = useState<Open>(null);
+  const [cancelling, setCancelling] = useState(false);
 
   /** Back (AC-2): pause, return Home; the game stays under In Progress. */
   const exitToHome = async () => {
@@ -26,74 +23,20 @@ export function useGameControls(match: Match, { notesInMenu = false }: { notesIn
     navigate('/', { replace: true });
   };
 
-  const element = (
-    <>
-      {open === 'more' && (
-        <Sheet title="Game options" closeLabel="Close" onClose={() => setOpen(null)}>
-          <div className="flex flex-col gap-3">
-            {notesInMenu && (
-              <Button variant="secondary" onClick={() => setOpen('notes')}>
-                Notes
-              </Button>
-            )}
-            <Button variant="outline" onClick={() => setOpen('cancel')}>
-              Cancel game
-            </Button>
-            <p className="m-0 text-center text-[13px] text-text-2">
-              To keep the game for later, use the back arrow. It pauses the game.
-            </p>
-          </div>
-        </Sheet>
-      )}
-      {open === 'cancel' && (
-        <ConfirmDialog
-          title="Cancel this game?"
-          body="It will be discarded and won't appear in history."
-          confirmLabel="Discard"
-          onCancel={() => setOpen(null)}
-          onConfirm={async () => {
-            await cancelMatch(db, match.id);
-            navigate('/', { replace: true });
-          }}
-        />
-      )}
-      {open === 'notes' && <NotesSheet match={match} onClose={() => setOpen(null)} />}
-    </>
+  const element = cancelling && (
+    <ConfirmDialog
+      title="Cancel this game?"
+      body="It will be discarded and won't appear in history."
+      confirmLabel="Discard"
+      onCancel={() => setCancelling(false)}
+      onConfirm={async () => {
+        await cancelMatch(db, match.id);
+        navigate('/', { replace: true });
+      }}
+    />
   );
 
-  return {
-    element,
-    openMore: () => setOpen('more'),
-    openNotes: () => setOpen('notes'),
-    exitToHome,
-  };
-}
-
-export function NotesSheet({ match, onClose }: { match: Match; onClose: () => void }) {
-  const [text, setText] = useState(match.notes);
-  const latest = useRef(text);
-  // Save as you type (debounced) and once more on close, so nothing is lost.
-  useEffect(() => {
-    latest.current = text;
-    const t = setTimeout(() => void setNotes(db, match.id, text), 400);
-    return () => clearTimeout(t);
-  }, [text, match.id]);
-  const close = async () => {
-    await setNotes(db, match.id, latest.current);
-    onClose();
-  };
-  return (
-    <Sheet title="Notes" closeLabel="Close" onClose={close} footer={<Button className="flex-1" onClick={close}>Done</Button>}>
-      <textarea
-        autoFocus
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-        placeholder="House rules, who brought snacks, anything worth remembering."
-        rows={6}
-        className="w-full resize-none rounded-[14px] border-[1.5px] border-border bg-bg p-3 text-[17px] leading-snug text-text outline-none placeholder:text-text-2 focus:border-text"
-      />
-    </Sheet>
-  );
+  return { element, openCancel: () => setCancelling(true), exitToHome };
 }
 
 /** The pause button inside the timer chip. */

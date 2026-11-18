@@ -43,7 +43,7 @@ Each profile has a name, an emoji, a color from the profile palette, and a hide-
 1. Pick a game.
 2. Pick the players, either saved profiles or guests.
 3. Set the turn order by dragging, or randomize it.
-4. Pick the first player or dealer.
+4. Pick the first player ("Goes first"; Dutch Blitz says "Deals first").
 5. Adjust that game's settings.
 6. Start the game.
 
@@ -62,10 +62,10 @@ Each profile has a name, an emoji, a color from the profile palette, and a hide-
 
 - AC-1: Pause stops the timer. Saved game length leaves out paused time.
 - AC-2: Back pauses the game and returns to Home, where it stays under In Progress.
-- AC-3: Cancel asks for confirmation, then discards the game.
+- AC-3: The game toolbar's **Cancel** button (an × icon) goes straight to the "Cancel this game?" confirmation, then discards the game. There's no More menu or Game options sheet (changed 2026-11-18).
 - AC-4: Undo reverses the most recent entry. Any past round can be opened and edited.
-- AC-5: The dealer or first player is shown, and rotates each round where the game's rules call for it.
-- AC-6: Each game has an optional free-text notes field, for things like house rules.
+- AC-5: The first player is set in setup, and scores are entered in seat order. Flip 7 has no dealer (removed 2026-11-18): no dealer is shown or rotated, and the dealer saved on older rounds is ignored, so old games still load.
+- AC-6: Removed 2026-11-18: games have no notes. Notes saved earlier stay in the data (the `notes` field and the schema are unchanged) but are no longer shown or saved anywhere.
 
 ### FR-6 Parcheesi (Placement template)
 
@@ -83,7 +83,7 @@ Each profile has a name, an emoji, a color from the profile palette, and a hide-
 - AC-3: A scoreboard shows each player's route points and trains left, starting from 45.
 - AC-4: A turn log can be viewed during the game, and any logged turn can be edited.
 - AC-5: When a player ends a turn with 2 or fewer trains, a Final Round banner appears. Every player, that player included, gets exactly one more turn, then the app moves to end-of-game scoring.
-- AC-6: End-of-game scoring lists each player's destination tickets. Each ticket has a value and is marked completed (+value) or failed (−value). The ticket keypad has **Completed** and **Failed** buttons that add the ticket with that status. **Add ticket** stays open for back-to-back entry: after a ticket is added, its value clears for the next one. While it's open, it lists the tickets added so far for that player (value and status) with a running total, and any of them can be removed there. Only **Done**, a tap outside, or Esc (⌘.) closes it. The completed/failed toggle on each ticket row stays, for changing it later.
+- AC-6: End-of-game scoring lists each player's destination tickets. Each ticket has a value and is marked completed (+value) or failed (−value). The ticket keypad has **Completed** and **Failed** buttons that add the ticket with that status. **Add ticket** stays open for back-to-back entry: after a ticket is added, its value clears for the next one. While it's open, it lists the tickets added so far for that player (value and status) with a running total, and any of them can be removed there. The list sits above the keypad in a fixed-height box that scrolls and keeps the newest ticket in view, so the keypad doesn't move as tickets are added. Only **Done**, a tap outside, or Esc (⌘.) closes it. The completed/failed toggle on each ticket row stays, for changing it later.
 - AC-7: The player with the longest continuous path is selected and gets +10. If players tie for it, each gets +10.
 - AC-8: Finalizing deletes the turn log. The final score breakdown is kept: route points, tickets completed and failed, and the longest-path bonus. The deletion happens in the same save as finalizing.
 - AC-9: Phase 1 supports the US map only: route lengths 1–6. Longer routes (the Europe map's 8-length, 21 points) and Stations aren't included (owner decision).
@@ -101,7 +101,7 @@ Each profile has a name, an emoji, a color from the profile palette, and a hide-
   - A Flip 7 is detected automatically when 7 different number cards are selected, and it goes away if one of them is unselected. Once there are 7, no more number cards can be added (a Flip 7 ends the turn).
   - **Bust** scores 0 and moves to the next player. **Clear** empties the player's cards for this round.
   - The panel shows the player's sum, e.g. "(3+5+8+12) + 4 = 32".
-- AC-3: The dealer rotates every round. Confirm Round updates the totals and the round count.
+- AC-3: Confirm Round updates the totals and the round count. There's no dealer: the header shows only the round number.
 - AC-4: The game ends after a round in which any player reaches their target.
 - AC-5: The game saves scores, rounds played, and each player's Flip 7 count and busts. It also tracks the fewest rounds to reach 200 for each player count (saved per player as `roundsTo200`, only for players whose target was 200).
 - AC-6: Action cards (Freeze, Flip Three, Second Chance) aren't tracked. The **Bust** button covers every bust.
@@ -111,7 +111,7 @@ Each profile has a name, an emoji, a color from the profile palette, and a hide-
 
 ### FR-9 Dutch Blitz (Rounds template)
 
-- AC-1: Each round, every player has two steppers: Dutch pile cards (+1 each, 0–40) and Blitz pile cards left (−2 each, 0–10). Tapping a stepper's number opens the number pad. A player with Dutch cards and an empty Blitz pile is marked "Blitz!".
+- AC-1: Each round, every player has two steppers: Dutch pile cards (+1 each, 0–40) and Blitz pile cards left (−2 each, 0–10). The labels read "Dutch +1" and "Blitz −2", with the true minus sign (−), as do negative round scores. Tapping a stepper's number opens the number pad. A player with Dutch cards and an empty Blitz pile is marked "Blitz!".
 - AC-2: The round score is shown before confirming. Confirm Round updates the totals.
 - AC-3: The game ends after a round in which any player reaches their target. Confirming that round opens Results. If editing a past round ends the game, the screen shows a Game over banner instead of leaving.
 - AC-4: Undo reopens the last confirmed round for correction. It's available while the new round is still blank.
@@ -120,7 +120,7 @@ Each profile has a name, an emoji, a color from the profile palette, and a hide-
 
 - AC-1: Each player has a Bankrupt button. Tapping it records their elimination order and the time.
 - AC-2: When only one player is left, that player wins and the game moves to Results.
-- AC-3: End Game (ending early) asks for each remaining player's net worth, as a single number. The app ranks remaining players by net worth, above the bankrupt players, and the order can be adjusted by dragging before finalizing. Net worth is a whole number shown without a currency sign. If players tie for the top net worth, the tie screen opens (FR-11 AC-3). A shared win puts every tied player in 1st, and the next player takes the place after them (1st, 1st, 3rd). Ties lower down keep the order shown on the ranking screen.
+- AC-3: End Game (ending early) asks for each remaining player's net worth, as a single number. The app ranks remaining players by net worth, above the bankrupt players, and the order can be adjusted by dragging before finalizing. Net worth is stored as a plain whole number and shown as dollars with thousands separators, for example $2,000, everywhere it appears: the entry display, the ranking screen, Results, History and the tie screen (changed 2026-11-18). If players tie for the top net worth, the tie screen opens (FR-11 AC-3). A shared win puts every tied player in 1st, and the next player takes the place after them (1st, 1st, 3rd). Ties lower down keep the order shown on the ranking screen.
 - AC-4: The game saves placements, net worth (if the game ended early), start and end times, and game length without pauses.
 
 ### FR-11 Winners and tie-breakers
@@ -128,7 +128,7 @@ Each profile has a name, an emoji, a color from the profile palette, and a hide-
 - AC-1: In target games (Flip 7 and Dutch Blitz), the winner is the player with the largest margin past their own target. If margins tie, the higher total wins.
 - AC-2: In Ticket to Ride, a tie on total score goes to the player with the most completed destination tickets, then to the longest-path holder.
 - AC-3: If a tie remains or the game has no official tie-breaker, a tie screen offers two choices: declare a shared win, or pick the winner of an outside tie-breaker. With a shared win, Results says "Shared win" with the winners' names on the line below.
-- AC-4: In Flip 7, if players are still tied on both margin and total, the tie screen's default option is "Play another round" (per the official FAQ). It continues the game with all players, not just the tied ones. The extra round adds to the running totals, targets don't change, and the dealer keeps rotating. Any player can win it, including one who wasn't tied. After that round, the winner is decided again under AC-1, and the tie screen comes back if the tie remains, as many times as needed. Shared win and the outside tie-breaker stay available each time. Example: Alex and Sam both on 212 to a 200 target (+12), Jordan on 185. In the extra round Alex scores 20, Sam busts and Jordan scores 30: Alex wins on 232 (+32), Jordan is 2nd on 215 (+15), Sam 3rd on 212.
+- AC-4: In Flip 7, if players are still tied on both margin and total, the tie screen's default option is "Play another round" (per the official FAQ). It continues the game with all players, not just the tied ones. The extra round adds to the running totals and targets don't change. Any player can win it, including one who wasn't tied. After that round, the winner is decided again under AC-1, and the tie screen comes back if the tie remains, as many times as needed. Shared win and the outside tie-breaker stay available each time. Example: Alex and Sam both on 212 to a 200 target (+12), Jordan on 185. In the extra round Alex scores 20, Sam busts and Jordan scores 30: Alex wins on 232 (+32), Jordan is 2nd on 215 (+15), Sam 3rd on 212.
 
 ### FR-12 Results and Finalize
 
@@ -138,7 +138,7 @@ Each profile has a name, an emoji, a color from the profile palette, and a hide-
 ### FR-13 History
 
 - AC-1: History lists finished games, newest first, and can be filtered by game and by player. Games are grouped as This week (the last 7 days), Earlier in <month>, then <Month Year>. The player filter lists saved players who appear in history, deleted ones included.
-- AC-2: Each game's detail screen shows players, scores, the game's score breakdown, length, handicap targets, and notes.
+- AC-2: Each game's detail screen shows players, scores, the game's score breakdown, length and handicap targets.
 
 ### FR-14 Stats
 
@@ -235,6 +235,14 @@ These only apply when a hardware keyboard is used (iPad with a keyboard case). N
   - Dutch Blitz: Tab skips the − and + buttons, since + and − (or =) do their job. The first arrow press goes to the first field. Holding + or − repeats through the keyboard's own key repeat.
   - On the iPad, Tab may only move between text fields unless keyboard navigation is on in Settings. Nothing in FR-20 needs Tab to reach a button.
 
+### FR-21 Clear all data (TEMPORARY)
+
+This is temporary: the owner uses it to clear test data before 1.0.0, and it's removed in the 1.0.0 PR.
+
+- AC-1: Settings ends with a **Danger** section holding a **Clear all data** button, styled as destructive: a red outline and red text in the palette Red. It isn't filled, so it can't be mistaken for a player pill.
+- AC-2: The first step offers **Export backup first**. A switch also clears settings and the automatic merge backups; it's off by default.
+- AC-3: **Continue** opens a second confirmation that names exactly what will be deleted, with counts: players, games, rounds and turn logs, plus settings and the automatic merge backups if that switch is on. **Delete everything** deletes them from this device. Settings go back to their defaults.
+
 ## 4. Non-functional requirements
 
 - **NFR-1 Offline-first:** no feature needs a network connection after install.
@@ -251,9 +259,9 @@ These only apply when a hardware keyboard is used (iPad with a keyboard case). N
 | --- | --- | --- |
 | Player | name, emoji, color, hideFromStats, isGuest | has many MatchPlayers |
 | GameDefinition | key, name, template, minPlayers, maxPlayers, defaultTarget, pieceColors, tieBreakers | defined in code |
-| Match | gameKey, status (inProgress / finished / cancelled), startedAt, endedAt, pausedDurationMs, pausedAt, settings, notes, endedEarly, log | has many MatchPlayers and Rounds |
+| Match | gameKey, status (inProgress / finished / cancelled), startedAt, endedAt, pausedDurationMs, pausedAt, settings, notes (kept but unused since 2026-11-18), endedEarly, log | has many MatchPlayers and Rounds |
 | MatchPlayer | matchId, playerId, seatOrder, color, target, finalScore, placement, marginPastTarget, isWinner, details (JSON) | belongs to Match and Player |
-| Round | matchId, number, dealerPlayerId, entries (per player: score, raw inputs, flags), confirmed | belongs to Match |
+| Round | matchId, number, dealerPlayerId (kept but unused since 2026-11-18), entries (per player: score, raw inputs, flags), confirmed | belongs to Match |
 | TurnLog | matchId, entries (player, action, routeLength, at) | Ticket to Ride only, deleted when the game is finalized |
 | Settings | statsMinGames, backupReminder, lastBackupAt | single record |
 | Backup (device only) | createdAt, reason, file (a full export) | automatic backups before a merge; not exported (schema v2) |
