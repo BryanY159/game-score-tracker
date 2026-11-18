@@ -235,14 +235,6 @@ These only apply when a hardware keyboard is used (iPad with a keyboard case). N
   - Dutch Blitz: Tab skips the − and + buttons, since + and − (or =) do their job. The first arrow press goes to the first field. Holding + or − repeats through the keyboard's own key repeat.
   - On the iPad, Tab may only move between text fields unless keyboard navigation is on in Settings. Nothing in FR-20 needs Tab to reach a button.
 
-### FR-21 Clear all data (TEMPORARY)
-
-This is temporary: the owner uses it to clear test data before 1.0.0, and it's removed in the 1.0.0 PR.
-
-- AC-1: Settings ends with a **Danger** section holding a **Clear all data** button, styled as destructive: a red outline and red text in the palette Red. It isn't filled, so it can't be mistaken for a player pill.
-- AC-2: The first step offers **Export backup first**. A switch also clears settings and the automatic merge backups; it's off by default.
-- AC-3: **Continue** opens a second confirmation that names exactly what will be deleted, with counts: players, games, rounds and turn logs, plus settings and the automatic merge backups if that switch is on. **Delete everything** deletes them from this device. Settings go back to their defaults.
-
 ## 4. Non-functional requirements
 
 - **NFR-1 Offline-first:** no feature needs a network connection after install.

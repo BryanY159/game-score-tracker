@@ -82,35 +82,3 @@ test('settings persist: reminder mode and minimum games', async ({ page }) => {
   await expect(page.getByRole('radio', { name: 'Month' })).toHaveAttribute('aria-checked', 'true');
   await expect(page.getByLabel('6 games')).toBeVisible();
 });
-
-test('Clear all data (temporary): offers an export, names what goes, then deletes it (FR-21)', async ({ page }) => {
-  await openApp(page, '#/settings', merge(...RECENT));
-  await page.getByRole('button', { name: 'Clear all data' }).click();
-  const sheet = page.getByRole('dialog', { name: 'Clear all data' });
-  // Step 1: export first.
-  const download = page.waitForEvent('download');
-  await sheet.getByRole('button', { name: 'Export backup first' }).click();
-  expect((await download).suggestedFilename()).toMatch(/\.backup\.json$/);
-  await expect(sheet.getByText('Backup downloaded.')).toBeVisible();
-  // Step 2: a second confirmation names exactly what will be deleted.
-  await sheet.getByRole('button', { name: 'Continue' }).click();
-  const confirm = page.getByRole('alertdialog', { name: 'Delete all data?' });
-  await expect(confirm).toContainText(/This deletes \d+ players, 3 games, \d+ rounds? and \d+ turn logs? from this device\. This can't be undone\./);
-  await expect(confirm).not.toContainText('settings');
-  // Keep backs out with nothing deleted.
-  await confirm.getByRole('button', { name: 'Keep' }).click();
-  await expect(page.getByText('3 games saved')).toBeVisible();
-
-  // Again, also clearing settings and backups.
-  await page.getByRole('button', { name: 'Clear all data' }).click();
-  await sheet.getByRole('switch', { name: 'Also clear settings and the automatic merge backups' }).click();
-  await sheet.getByRole('button', { name: 'Continue' }).click();
-  await expect(confirm).toContainText('plus your settings and 0 automatic merge backups');
-  await confirm.getByRole('button', { name: 'Delete everything' }).click();
-  await expect(page.getByRole('status').filter({ hasText: 'All data cleared.' })).toBeVisible();
-  await expect(page.getByText('Not backed up yet')).toBeVisible(); // settings back to defaults
-  await page.goto('./#/history');
-  await expect(page.getByText('No finished games')).toBeVisible();
-  await page.goto('./#/players');
-  await expect(page.getByText('No players yet')).toBeVisible();
-});

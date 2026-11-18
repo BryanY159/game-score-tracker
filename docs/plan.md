@@ -2,7 +2,7 @@
 
 - **Source:** `docs/spec.md` (approved 2026-11-16), `docs/intent.md`, `docs/mockup/*.dc.html`
 - **Date:** 2026-11-17
-- **Status:** Approved by owner, 2026-11-17. All milestones M0–M12 built (Phase 1 complete, pending the owner's iPhone check). Decisions A-1 to A-6, A-12 and R-1 are settled (marked ✅). Every other item in §1 uses its proposed default.
+- **Status:** Complete. Phase 1 released as 1.0.0 on 2026-11-18. All milestones M0–M14 and the fix PRs are built and checked by the owner on the iPhone and iPad. Decisions A-1 to A-6, A-12 and R-1 are settled (marked ✅). Every other item in §1 uses its proposed default.
 
 ## 0. How to read this plan
 
@@ -470,7 +470,7 @@ Also adds the Settings "Merge a file" button (moved from M4).
 ## 6b. Final fixes before 1.0.0 (2026-11-18)
 
 - Notes removed from every screen (spec FR-5 AC-6, FR-13 AC-2). Stored notes are kept and the schema is unchanged. The More menu and the Game options sheet are gone: the toolbar's Cancel (×) goes straight to the confirmation (FR-5 AC-3).
-- Temporary **Clear all data** in Settings (spec FR-21). Remove it in the 1.0.0 PR: `src/db/repos/clear.ts`, its test, the Danger section in `src/screens/Settings.tsx`, the e2e test in `backup.spec.ts`, and FR-21.
+- A temporary **Clear all data** in Settings (spec FR-21) let the owner clear test data; it was removed in the 1.0.0 PR, and FR-21 with it.
 - Flip 7 has no dealer (FR-5 AC-5, FR-8 AC-3, FR-11 AC-4). New rounds save `dealerPlayerId: null`, and old rounds keep theirs, unused.
 - Dutch Blitz keeps the true minus sign in "Blitz −2" (FR-9 AC-1).
 - Ticket to Ride: the ticket list sits above the keypad in a fixed-height scrolling box (FR-7 AC-6).

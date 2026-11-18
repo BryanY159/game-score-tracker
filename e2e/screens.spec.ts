@@ -81,18 +81,6 @@ const SCREENS: Screen[] = [
       await page.getByRole('alertdialog', { name: 'Cancel this game?' }).waitFor();
     },
   },
-  {
-    // FR-21 (temporary): the second confirmation names what will be deleted.
-    name: 'settings-clear-confirm',
-    hash: '#/settings',
-    ready: 'Settings',
-    seed: HISTORY,
-    act: async (page) => {
-      await page.getByRole('button', { name: 'Clear all data' }).click();
-      await page.getByRole('dialog', { name: 'Clear all data' }).getByRole('button', { name: 'Continue' }).click();
-      await page.getByRole('alertdialog', { name: 'Delete all data?' }).waitFor();
-    },
-  },
   { name: 'game-picker', hash: '#/new', ready: 'Choose a game' },
   { name: 'history-all', hash: '#/history', ready: 'History', seed: HISTORY },
   {
