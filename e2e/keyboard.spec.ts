@@ -43,14 +43,14 @@ test('Flip 7 by keyboard: cards, Shift digits, a modifier, ×2, Enter confirms, 
 
   // Everyone has a score now, so Enter is Confirm round: 212 + 25.
   await page.keyboard.press('Enter');
-  await expect(page.getByText('Round 7 · Dealer: Jordan')).toBeVisible();
+  await expect(page.getByText('Round 7', { exact: true })).toBeVisible();
   await expect(page.getByLabel('Alex total')).toHaveText('237');
 
   // ⌘Z reopens the round (the new one is blank).
   await page.keyboard.press('Meta+z');
-  await expect(page.getByText('Round 6 · Dealer: Sam')).toBeVisible();
+  await expect(page.getByText('Round 6', { exact: true })).toBeVisible();
   await page.keyboard.press('Enter'); // confirm again
-  await expect(page.getByText('Round 7 · Dealer: Jordan')).toBeVisible();
+  await expect(page.getByText('Round 7', { exact: true })).toBeVisible();
 
   // K opens the keypad: digits type, F marks a Flip 7, Enter goes to the next player.
   await page.keyboard.press('k');

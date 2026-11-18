@@ -23,13 +23,15 @@ test('browse and filter history (FR-13 AC-1)', async ({ page }) => {
   await expect(rows).toHaveCount(1);
 });
 
-test('game detail shows players, scores, length and notes (FR-13 AC-2)', async ({ page }) => {
+test('game detail shows players, scores and length, and no notes (FR-13 AC-2)', async ({ page }) => {
   const id = HISTORY.matches[3]!.id;
   await openApp(page, `#/history/${id}`, HISTORY);
   const players = page.getByRole('list', { name: 'Players' }).getByRole('listitem');
   await expect(players).toHaveText([/Drew1st · Winner · deleted profile · 0 triple doublets4 home/, /Sam2nd · 0 triple doublets2 home/]);
   await expect(page.getByText('41 min')).toBeVisible();
-  await expect(page.getByText('Played on the porch.')).toBeVisible();
+  // Notes saved before they were removed stay in the data but aren't shown.
+  await expect(page.getByText('Played on the porch.')).toHaveCount(0);
+  await expect(page.getByRole('heading', { name: 'Notes' })).toHaveCount(0);
 });
 
 test('edit a finished game: changes it in place and it stays finished', async ({ page }) => {

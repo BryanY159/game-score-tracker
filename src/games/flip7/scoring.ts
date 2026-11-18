@@ -74,8 +74,3 @@ export function rawOf(e: RoundEntry | undefined, mode: EntryMode): Flip7Raw {
   const r = e?.raw as Flip7Raw | undefined;
   return r && (r.mode === 'number' || r.mode === 'cards') ? r : blankRaw(mode);
 }
-
-/** FR-5 AC-5 / FR-8 AC-3: the dealer rotates every round, starting with the first seat. */
-export function dealerFor(roundNumber: number, seatIds: string[]): string {
-  return seatIds[(roundNumber - 1) % seatIds.length]!;
-}

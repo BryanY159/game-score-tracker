@@ -1,11 +1,9 @@
 import { useLiveQuery } from 'dexie-react-hooks';
-import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { BottomToolbar } from '../components/BottomToolbar';
 import { Button } from '../components/Button';
-import { GameHeader, GameScreen, PrimaryToolButton, ToolButton } from '../components/GameChrome';
-import { NotesSheet } from '../components/GameControls';
-import { NotesIcon, PencilIcon } from '../components/Icons';
+import { GameHeader, GameScreen, PrimaryToolButton } from '../components/GameChrome';
+import { PencilIcon } from '../components/Icons';
 import { NoWrap } from '../components/NoWrap';
 import { Avatar } from '../components/PlayerPill';
 import { db } from '../db/schema';
@@ -18,12 +16,11 @@ import { rankedSeats, seatDetail, seatValue } from '../games/display';
 import { requireGame } from '../games/registry';
 import { Tile } from './Results';
 
-/** FR-13 AC-2: one finished game: players, scores, breakdown, length, notes. */
+/** FR-13 AC-2: one finished game: players, scores, breakdown, length. */
 export function MatchDetail() {
   const { matchId = '' } = useParams();
   const navigate = useNavigate();
   const bundle = useLiveQuery(() => getMatchBundle(db, matchId), [matchId]);
-  const [notes, setNotes] = useState(false);
   if (bundle === undefined) return null;
   if (bundle === null || bundle.match.status !== 'finished') {
     return (
@@ -46,17 +43,15 @@ export function MatchDetail() {
         <DetailContent bundle={bundle} />
       </main>
       <BottomToolbar>
-        <ToolButton icon={<NotesIcon />} label="Notes" onClick={() => setNotes(true)} />
         <PrimaryToolButton icon={<PencilIcon />} onClick={() => navigate(`/history/${match.id}/edit`)}>
           Edit scores
         </PrimaryToolButton>
       </BottomToolbar>
-      {notes && <NotesSheet match={match} onClose={() => setNotes(false)} />}
     </GameScreen>
   );
 }
 
-/** The players, tiles and notes of a finished game: the page above, and History's side pane in landscape. */
+/** The players and tiles of a finished game: the page above, and History's side pane in landscape. */
 function DetailContent({ bundle }: { bundle: MatchBundle }) {
   const { match } = bundle;
   const game = requireGame(match.gameKey);
@@ -102,13 +97,6 @@ function DetailContent({ bundle }: { bundle: MatchBundle }) {
             <Tile label="Players" value={String(bundle.seats.length)} />
           )}
         </div>
-
-        <section className="flex flex-col gap-1.5">
-          <h2 className="m-0 text-[17px] font-extrabold">Notes</h2>
-          <p className="m-0 rounded-2xl bg-surface px-3.5 py-3 text-[15px] leading-snug whitespace-pre-wrap text-text">
-            {match.notes || <span className="text-text-2">No notes.</span>}
-          </p>
-        </section>
     </>
   );
 }
@@ -117,7 +105,6 @@ function DetailContent({ bundle }: { bundle: MatchBundle }) {
 export function MatchDetailPanel({ matchId }: { matchId: string }) {
   const navigate = useNavigate();
   const bundle = useLiveQuery(() => getMatchBundle(db, matchId), [matchId]);
-  const [notes, setNotes] = useState(false);
   if (!bundle || bundle.match.status !== 'finished') return null;
   const { match } = bundle;
   const game = requireGame(match.gameKey);
@@ -133,15 +120,11 @@ export function MatchDetailPanel({ matchId }: { matchId: string }) {
             {date}
           </NoWrap>
         </div>
-        <Button variant="secondary" icon={<NotesIcon />} onClick={() => setNotes(true)}>
-          Notes
-        </Button>
         <Button icon={<PencilIcon />} onClick={() => navigate(`/history/${match.id}/edit`)}>
           Edit scores
         </Button>
       </div>
       <DetailContent bundle={bundle} />
-      {notes && <NotesSheet match={match} onClose={() => setNotes(false)} />}
     </section>
   );
 }

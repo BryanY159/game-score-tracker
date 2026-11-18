@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Button } from '../../components/Button';
 import { Keypad } from '../../components/Keypad';
 import { NoWrap } from '../../components/NoWrap';
@@ -205,6 +205,12 @@ function AddTicket({
   };
   const text = value === null ? '' : String(value);
   const sum = tickets.reduce((a, t) => a + (t.completed ? t.value : -t.value), 0);
+  // Keep the newest ticket in view.
+  const listRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = listRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
+  }, [tickets.length]);
   // FR-20 AC-3: digits type; C or X adds as completed or failed; Enter adds as completed,
   // or closes when nothing is typed. All of them keep the sheet open for the next ticket.
   useShortcuts('Add tickets', [
@@ -217,15 +223,6 @@ function AddTicket({
   return (
     <Sheet title="Add ticket" closeLabel="Done" onClose={onClose}>
       <div className="flex flex-col gap-3">
-        <Keypad label="Ticket value" value={value} maxDigits={2} onChange={setValue} bare />
-        <div className="grid grid-cols-2 gap-2">
-          <Button disabled={!value} onClick={() => add(true)}>
-            {value ? `Completed +${value}` : 'Completed'}
-          </Button>
-          <Button variant="outline" disabled={!value} onClick={() => add(false)}>
-            {value ? `Failed −${value}` : 'Failed'}
-          </Button>
-        </div>
         <section className="flex flex-col gap-1.5" aria-label={`${name}'s tickets`}>
           <div className="flex items-baseline justify-between px-1">
             <NoWrap truncate className="text-[15px] font-extrabold">
@@ -235,8 +232,10 @@ function AddTicket({
               {sum >= 0 ? `+${sum}` : `−${Math.abs(sum)}`}
             </NoWrap>
           </div>
+          {/* A fixed height that scrolls: the keypad below stays put as tickets are added. */}
+          <div ref={listRef} className="h-[140px] overflow-y-auto overscroll-contain" data-testid="ticket-list">
           {tickets.length === 0 ? (
-            <p className="m-0 px-1 text-[14px] text-text-2">No tickets yet.</p>
+            <p className="m-0 px-1 pt-1 text-[14px] text-text-2">No tickets yet.</p>
           ) : (
             <ul className="m-0 flex list-none flex-col gap-1 p-0">
               {tickets.map((t, i) => (
@@ -257,7 +256,17 @@ function AddTicket({
               ))}
             </ul>
           )}
+          </div>
         </section>
+        <Keypad label="Ticket value" value={value} maxDigits={2} onChange={setValue} bare />
+        <div className="grid grid-cols-2 gap-2">
+          <Button disabled={!value} onClick={() => add(true)}>
+            {value ? `Completed +${value}` : 'Completed'}
+          </Button>
+          <Button variant="outline" disabled={!value} onClick={() => add(false)}>
+            {value ? `Failed −${value}` : 'Failed'}
+          </Button>
+        </div>
       </div>
     </Sheet>
   );

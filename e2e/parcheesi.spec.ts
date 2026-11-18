@@ -81,12 +81,10 @@ test('cancel asks first, then discards the game (FR-5 AC-3)', async ({ page }) =
   await page.getByRole('button', { name: 'Alex', exact: true }).click();
   await page.getByRole('button', { name: 'Sam', exact: true }).click();
   await page.getByRole('button', { name: 'Start game' }).click();
-  await page.getByRole('button', { name: 'More', exact: true }).click();
-  await page.getByRole('button', { name: 'Cancel game' }).click();
+  await page.getByRole('button', { name: 'Cancel', exact: true }).click();
   await page.getByRole('button', { name: 'Keep' }).click();
   await expect(page.getByRole('heading', { name: 'Parcheesi' })).toBeVisible();
-  await page.getByRole('button', { name: 'More', exact: true }).click();
-  await page.getByRole('button', { name: 'Cancel game' }).click();
+  await page.getByRole('button', { name: 'Cancel', exact: true }).click();
   await page.getByRole('button', { name: 'Discard' }).click();
   await expect(page.getByRole('heading', { name: 'Game Night' })).toBeVisible();
   await expect(page.getByText('In progress')).toHaveCount(0);

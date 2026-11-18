@@ -11,7 +11,6 @@ import {
   listRecentFinished,
   pauseMatch,
   resumeMatch,
-  setNotes,
   saveFinishedEdit,
   undoLastEvent,
 } from './matches';
@@ -122,11 +121,6 @@ describe('game lifecycle (FR-5)', () => {
     expect(elapsedMs(m, 305_000)).toBe(300_000 - 80_000);
   });
 
-  it('keeps notes (AC-6)', async () => {
-    const { match } = await twoPlayerGame();
-    await setNotes(db, match.id, 'Doubles roll again');
-    expect((await db.matches.get(match.id))!.notes).toBe('Doubles roll again');
-  });
 
   it('lists recent finished games, newest first, skipping cancelled', async () => {
     const a = (await twoPlayerGame()).match;

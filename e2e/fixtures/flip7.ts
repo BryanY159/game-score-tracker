@@ -1,7 +1,7 @@
 import { ALEX, CASEY, CHRISTOPHER, DREW, JORDAN, MORGAN, RILEY, SAM } from './players';
 import { match, NOW } from './matches';
 import type { MatchEvent, PaletteColor, Player, Round } from '../../src/domain/types';
-import { dealerFor, flip7Entry, type Flip7Raw } from '../../src/games/flip7/scoring';
+import { flip7Entry, type Flip7Raw } from '../../src/games/flip7/scoring';
 
 type Cell = number | 'bust' | 'f7';
 const raw = (c: Cell): Flip7Raw =>
@@ -23,7 +23,8 @@ function flip7Game(
     deletedAt: null,
     matchId: g.matches[0]!.id,
     number,
-    dealerPlayerId: dealerFor(number, ids),
+    // Saved before the dealer was removed (2026-11-18): old rounds still carry one, and it's ignored.
+    dealerPlayerId: ids[(number - 1) % ids.length]!,
     confirmed,
     entries,
   });
@@ -39,7 +40,7 @@ const four = [
   { player: RILEY, color: 'gold' as const },
 ];
 
-/** The mockup: round 6, Sam deals, Alex plays to 250, Riley is entering. */
+/** The mockup: round 6, Alex plays to 250, Riley is entering. */
 export const FLIP7_MID = flip7Game(
   four,
   [

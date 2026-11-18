@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { blankRaw, dealerFor, flip7Entry, flip7Score, hasFlip7, isEntered, rawOf, toggleMod, toggleNumber, toggleX2, type Flip7Raw } from './scoring';
+import { blankRaw, flip7Entry, flip7Score, hasFlip7, isEntered, rawOf, toggleMod, toggleNumber, toggleX2, type Flip7Raw } from './scoring';
 import { flip7Details } from './stats';
 import { roundsResult } from '../rounds';
 import type { MatchEvent, Round } from '../../domain/types';
@@ -74,12 +74,6 @@ describe('Flip 7 Cards mode (FR-8 AC-2)', () => {
   });
 });
 
-describe('dealer (FR-8 AC-3, FR-5 AC-5)', () => {
-  it('rotates every round, starting with the first seat', () => {
-    const seats = ['a', 'b', 'c'];
-    expect([1, 2, 3, 4, 5].map((n) => dealerFor(n, seats))).toEqual(['a', 'b', 'c', 'a', 'b']);
-  });
-});
 
 const round = (n: number, scores: Record<string, number | 'bust' | 'flip7'>): Round => ({
   id: `r${n}`,

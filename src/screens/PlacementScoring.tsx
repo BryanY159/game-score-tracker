@@ -10,7 +10,7 @@ import { COLOR_HEX } from '../domain/colors';
 import { ordinal } from '../domain/placement';
 import { NoWrap } from '../components/NoWrap';
 import { PausedOverlay, PauseButton, useGameControls, useGameShortcuts } from '../components/GameControls';
-import { MoreIcon, NotesIcon, UndoIcon } from '../components/Icons';
+import { CancelIcon, UndoIcon } from '../components/Icons';
 import { db } from '../db/schema';
 import { appendEvent, getMatchBundle, undoLastEvent, type MatchBundle } from '../db/repos/matches';
 import { ParcheesiBoard } from '../games/parcheesi/ParcheesiBoard';
@@ -142,7 +142,6 @@ function PlacementScoring({ bundle }: { bundle: MatchBundle }) {
   const toolbar = (
       <BottomToolbar>
         <ToolButton icon={<UndoIcon />} label="Undo" disabled={match.log.length === 0 || paused} onClick={() => undoLastEvent(db, match.id)} />
-        <ToolButton icon={<NotesIcon />} label="Notes" onClick={controls.openNotes} />
         {monopoly && !outcome.complete ? (
           <PrimaryToolButton disabled={paused || monopoly.remaining.length < 2} onClick={() => setEnding(true)}>
             End game
@@ -152,7 +151,7 @@ function PlacementScoring({ bundle }: { bundle: MatchBundle }) {
             See results
           </PrimaryToolButton>
         )}
-        <ToolButton icon={<MoreIcon />} label="More" onClick={controls.openMore} />
+        <ToolButton icon={<CancelIcon />} label="Cancel" onClick={controls.openCancel} />
       </BottomToolbar>
   );
   const sheets = (

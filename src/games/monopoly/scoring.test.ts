@@ -92,6 +92,9 @@ describe('Monopoly (FR-10)', () => {
   });
 
   it('formats money', () => {
-    expect(formatMoney(1520)).toBe('1,520');
+    expect(formatMoney(1520)).toBe('$1,520');
+    expect(formatMoney(2000)).toBe('$2,000');
+    expect(formatMoney(0)).toBe('$0');
+    expect(formatMoney(1250000)).toBe('$1,250,000');
   });
 });

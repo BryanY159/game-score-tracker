@@ -18,6 +18,8 @@ import { applyMerge, latestAutoBackup, previewMerge } from '../db/repos/merge';
 import { sameNamePairs, type MergePlan } from '../domain/backup/merge';
 import type { Player } from '../domain/types';
 import { MergePlayersTool, MergePreview, MergeThese } from './MergeSheets';
+import { Sheet } from '../components/Sheet';
+import { clearAllData, countForClear, type ClearCounts } from '../db/repos/clear';
 
 /** Settings and backup (FR-15, FR-17, FR-14 AC-3 setting). */
 export function Settings() {
@@ -36,6 +38,10 @@ export function Settings() {
   const [playerTool, setPlayerTool] = useState(false);
   const [undoMerge, setUndoMerge] = useState(false);
   const autoBackup = useLiveQuery(() => latestAutoBackup(db), []);
+  // TEMPORARY Clear all data (FR-21): step 1 offers an export, step 2 names what goes.
+  const [clearing, setClearing] = useState<null | 'offer' | ClearCounts>(null);
+  const [alsoSettings, setAlsoSettings] = useState(false);
+  const [cleared, setCleared] = useState(false);
 
   if (!data) return null;
   const { settings, status } = data;
@@ -256,6 +262,27 @@ export function Settings() {
           </p>
         </section>
 
+        <section className="flex flex-col gap-2" aria-label="Danger">
+          <h2 className="m-0 text-[17px] font-extrabold">Danger</h2>
+          <p className="m-0 text-[14px] leading-snug text-text-2">Temporary, for clearing test data before version 1.0. It deletes everything on this device.</p>
+          <button
+            type="button"
+            onClick={() => {
+              setCleared(false);
+              setAlsoSettings(false);
+              setClearing('offer');
+            }}
+            className="h-[52px] rounded-2xl border-[1.5px] border-red text-base font-extrabold text-red"
+          >
+            <NoWrap>Clear all data</NoWrap>
+          </button>
+          {cleared && (
+            <p className="m-0 text-center text-[14px] font-bold" role="status">
+              All data cleared.
+            </p>
+          )}
+        </section>
+
         <p className="m-0 text-center text-[12px] text-text-2">Version {__APP_VERSION__}</p>
       </div>
 
@@ -281,6 +308,49 @@ export function Settings() {
             await db.backups.delete(autoBackup.id);
             setUndoMerge(false);
             setMessage({ text: 'Merge undone.' });
+          }}
+        />
+      )}
+      {clearing === 'offer' && (
+        <Sheet title="Clear all data" closeLabel="Cancel" onClose={() => setClearing(null)}>
+          <div className="flex flex-col gap-3">
+            <p className="m-0 text-[15px] leading-snug">Export a backup first, so you can restore it if you need to.</p>
+            <Button variant="secondary" disabled={busy} onClick={exportBackup}>
+              Export backup first
+            </Button>
+            {message && (
+              <p className={`m-0 text-[14px] ${message.error ? 'font-bold' : 'text-text-2'}`} role="status">
+                {message.text}
+              </p>
+            )}
+            <div className="flex items-center gap-3">
+              <span className="flex-1 text-[15px] leading-snug">Also clear settings and the automatic merge backups</span>
+              <Toggle label="Also clear settings and the automatic merge backups" checked={alsoSettings} onChange={setAlsoSettings} />
+            </div>
+            <button
+              type="button"
+              onClick={async () => setClearing(await countForClear(db))}
+              className="h-[52px] rounded-2xl border-[1.5px] border-red text-base font-extrabold text-red"
+            >
+              <NoWrap>Continue</NoWrap>
+            </button>
+          </div>
+        </Sheet>
+      )}
+      {clearing && clearing !== 'offer' && (
+        <ConfirmDialog
+          title="Delete all data?"
+          body={`This deletes ${plural(clearing.players, 'player')}, ${plural(clearing.games, 'game')}, ${plural(clearing.rounds, 'round')} and ${plural(
+            clearing.turnLogs,
+            'turn log',
+          )}${alsoSettings ? `, plus your settings and ${plural(clearing.backups, 'automatic merge backup')}` : ''} from this device. This can't be undone.`}
+          confirmLabel="Delete everything"
+          onCancel={() => setClearing(null)}
+          onConfirm={async () => {
+            await clearAllData(db, { settingsAndBackups: alsoSettings });
+            setClearing(null);
+            setMessage(null);
+            setCleared(true);
           }}
         />
       )}

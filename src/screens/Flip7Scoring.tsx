@@ -4,7 +4,7 @@ import { BottomToolbar } from '../components/BottomToolbar';
 import { GameBody, GameHeader, GameScreen, PrimaryToolButton, TimerChip, ToolButton, TwoPaneGame } from '../components/GameChrome';
 import { useLandscape } from '../hooks/useLandscape';
 import { PausedOverlay, PauseButton, useGameControls, useGameShortcuts } from '../components/GameControls';
-import { MoreIcon, RoundsIcon, UndoIcon } from '../components/Icons';
+import { CancelIcon, RoundsIcon, UndoIcon } from '../components/Icons';
 import { NoWrap } from '../components/NoWrap';
 import { db } from '../db/schema';
 import type { MatchBundle } from '../db/repos/matches';
@@ -12,7 +12,7 @@ import { confirmDraft, listRounds, reopenLastRound, saveDraft, updateRound } fro
 import type { Round } from '../domain/types';
 import { EntryPanel, type Panel } from '../games/flip7/EntryPanel';
 import { Flip7Row } from '../games/flip7/Flip7Row';
-import { blankRaw, dealerFor, flip7Entry, hasFlip7, isEntered, rawOf, type EntryMode, type Flip7Raw } from '../games/flip7/scoring';
+import { blankRaw, flip7Entry, hasFlip7, isEntered, rawOf, type EntryMode, type Flip7Raw } from '../games/flip7/scoring';
 import { useCelebrate } from '../components/Celebration';
 import { useStandings } from '../hooks/useStandings';
 import { useFlip } from '../hooks/useFlip';
@@ -27,7 +27,7 @@ export function Flip7Scoring({ bundle }: { bundle: MatchBundle }) {
   const { match, seats, rounds } = bundle;
   const navigate = useNavigate();
   const game = requireGame(match.gameKey);
-  const controls = useGameControls(match, { notesInMenu: true });
+  const controls = useGameControls(match);
   const paused = match.pausedAt !== null;
   const outcome = outcomeFor(bundle);
   // Saved games may carry an old `entryMode` setting; it's ignored now (FR-8 AC-9).
@@ -35,7 +35,6 @@ export function Flip7Scoring({ bundle }: { bundle: MatchBundle }) {
   const ids = seats.map((s) => s.player.id);
   const confirmedCount = rounds.filter((r) => r.confirmed).length;
   const roundNumber = confirmedCount + 1;
-  const dealerId = dealerFor(roundNumber, ids);
   const draft = rounds.find((r) => !r.confirmed);
   const totals = roundTotals(ids, rounds);
   const targets = seats.map((s) => s.mp.target ?? game.defaultTarget ?? 0);
@@ -69,7 +68,7 @@ export function Flip7Scoring({ bundle }: { bundle: MatchBundle }) {
       db,
       match.id,
       ids.map((id) => flip7Entry(id, next[id]!)),
-      dealerId,
+      null, // no dealer in Flip 7 (removed 2026-11-18); old rounds keep theirs, unused
     );
   }
   function nextPlayer() {
@@ -124,7 +123,7 @@ export function Flip7Scoring({ bundle }: { bundle: MatchBundle }) {
   const header = (
     <GameHeader
       title={game.name}
-      sub={`Round ${over ? confirmedCount : roundNumber} · Dealer: ${seats.find((s) => s.player.id === dealerId)!.player.name}`}
+      sub={`Round ${over ? confirmedCount : roundNumber}`}
       onBack={controls.exitToHome}
       trailing={
         <TimerChip match={match}>
@@ -166,7 +165,6 @@ export function Flip7Scoring({ bundle }: { bundle: MatchBundle }) {
               total={totals[s.player.id] ?? 0}
               target={targets[i]!}
               showTarget={handicap}
-              dealer={s.player.id === dealerId}
               active={!over && s.player.id === active}
               typing={!over && s.player.id === active && panel === 'keypad'}
               onType={() => {
@@ -211,7 +209,7 @@ export function Flip7Scoring({ bundle }: { bundle: MatchBundle }) {
           Confirm round
         </PrimaryToolButton>
       )}
-      <ToolButton icon={<MoreIcon />} label="More" onClick={controls.openMore} />
+      <ToolButton icon={<CancelIcon />} label="Cancel" onClick={controls.openCancel} />
     </BottomToolbar>
   );
   const sheets = (

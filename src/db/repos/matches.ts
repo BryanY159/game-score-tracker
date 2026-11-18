@@ -238,14 +238,6 @@ export async function resumeMatch(db: ScoreDb, matchId: string, now: number = Da
   });
 }
 
-/** FR-5 AC-6: free-text notes, e.g. house rules. */
-export async function setNotes(db: ScoreDb, matchId: string, notes: string, now: number = Date.now()): Promise<void> {
-  await db.transaction('rw', db.matches, async () => {
-    const m = await db.matches.get(matchId);
-    if (!m || m.notes === notes) return;
-    await db.matches.put(touch(m, { notes }, now));
-  });
-}
 
 /** Most recently finished games, newest first (FR-13 AC-1). */
 export async function listRecentFinished(db: ScoreDb, limit = Infinity): Promise<MatchBundle[]> {

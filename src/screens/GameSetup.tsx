@@ -152,7 +152,7 @@ function Setup({ game }: { game: GameDefinition }) {
                     key={p.key}
                     p={p}
                     first={i === 0}
-                    firstLabel={game.template === 'rounds' ? 'Deals first' : 'Goes first'}
+                    firstLabel={game.key === 'dutchBlitz' ? 'Deals first' : 'Goes first'}
                     onOpen={() => setOptions(p.key)}
                     onTarget={(target) => update(p.key, { target })}
                   />
@@ -214,7 +214,7 @@ function Setup({ game }: { game: GameDefinition }) {
                   setOptions(null);
                 }}
               >
-                {game.template === 'rounds' ? 'Deals first' : 'Goes first'}
+                {game.key === 'dutchBlitz' ? 'Deals first' : 'Goes first'}
               </Button>
             )}
             <section className="flex flex-col gap-2">

@@ -115,6 +115,7 @@ export function monopolyResults(
 }
 
 /** 1520 → "1,520". */
+/** Net worth as dollars with thousands separators, e.g. $2,000 (FR-10 AC-3). Stored as a plain whole number. */
 export function formatMoney(n: number): string {
-  return n.toLocaleString('en-US');
+  return `${n < 0 ? '−' : ''}$${Math.abs(n).toLocaleString('en-US')}`;
 }
